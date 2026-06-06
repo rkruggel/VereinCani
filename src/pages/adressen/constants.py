@@ -2,12 +2,24 @@
 
 FIELD_LABELS = {
 	'id': {'type': 'string', 'text': 'ID', 'steuerelement': 'label', 'formular': False},
-	'anrede': {'type': 'string', 'text': 'Anrede', 'steuerelement': 'select', 'formular': True},
-	'titel': {'type': 'string', 'text': 'Titel', 'steuerelement': 'select', 'formular': True},
+	'anrede': {
+		'type': 'string',
+		'text': 'Anrede',
+		'steuerelement': 'select',
+		'formular': True,
+		'optionen': ['Herr', 'Frau', 'Diverse'],
+	},
+	'titel': {
+		'type': 'string',
+		'text': 'Titel',
+		'steuerelement': 'select',
+		'formular': True,
+		'optionen': ['Dr.', 'Prof.', 'Prof. Dr.'],
+	},
 	'vorname': {'type': 'string', 'text': 'Vorname', 'steuerelement': 'input', 'formular': True},
 	'nachname': {'type': 'string', 'text': 'Nachname', 'steuerelement': 'input', 'formular': True},
-	'zusatz': {'type': 'string', 'text': 'Zusatz', 'steuerelement': 'input', 'formular': True},
-	'adresse': {'type': 'string', 'text': 'Adresse', 'steuerelement': 'input', 'formular': True},
+	'zusatz': {'type': 'string', 'text': 'Zusatz', 'steuerelement': 'textarea', 'formular': True},
+	'adresse': {'type': 'string', 'text': 'Adresse', 'steuerelement': 'textarea', 'formular': True},
 	'ort': {'type': 'string', 'text': 'Ort', 'steuerelement': 'input', 'formular': True},
 	'geboren': {'type': 'datum', 'text': 'Geboren', 'steuerelement': 'date', 'formular': True},
 	'festnetz': {'type': 'telefon', 'text': 'Festnetz', 'steuerelement': 'input', 'formular': True},
@@ -19,9 +31,11 @@ FIELD_LABELS = {
 		'text': 'Nicht an Wochentagen',
 		'steuerelement': 'multiselect',
 		'formular': True,
+		'optionen': ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
 	},
 	'beruf': {'type': 'string', 'text': 'Beruf', 'steuerelement': 'input', 'formular': True},
 	'hobby': {'type': 'string', 'text': 'Hobby', 'steuerelement': 'input', 'formular': True},
+	'hossa': {'type': 'string', 'text': 'Hossa', 'steuerelement': 'input', 'formular': True},
 	'faehigkeiten': {
 		'type': 'string',
 		'text': 'Fähigkeiten',
@@ -38,5 +52,4 @@ FORM_FIELDS = [
 	for field, definition in FIELD_LABELS.items()
 	if definition['formular']
 ]
-WOCHENTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
 DEFAULT_SORT_CRITERIA = ['nachname:asc', 'vorname:asc']

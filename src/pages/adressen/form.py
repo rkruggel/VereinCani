@@ -5,7 +5,35 @@ from typing import Any
 
 from nicegui import ui
 
-from src.pages.adressen.constants import FIELD_LABELS, WOCHENTAGE
+from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
+
+
+def create_form_control(field: str, validate_phone: Callable[[Any], str | None]) -> Any:
+	"""Erzeugt das in den Feldmetadaten konfigurierte NiceGUI-Steuerelement."""
+
+	definition = FIELD_LABELS[field]
+	label = definition['text']
+	control_type = definition['steuerelement']
+
+	if control_type == 'select':
+		return ui.select(definition['optionen'], label=label).props('dense options-dense').classes('w-full')
+	if control_type == 'multiselect':
+		return ui.select(
+			definition['optionen'],
+			label=label,
+			multiple=True,
+			clearable=True,
+		).props('dense options-dense use-chips').classes('w-full')
+	if control_type == 'textarea':
+		return ui.textarea(label).props('autogrow dense').classes('w-full')
+
+	validation = validate_phone if definition['type'] == 'telefon' else None
+	input_props = 'dense'
+	if definition['type'] == 'datum':
+		input_props = 'type=date dense'
+	elif definition['type'] == 'email':
+		input_props = 'type=email dense'
+	return ui.input(label, validation=validation).props(input_props).classes('w-full')
 
 
 def render_address_form(
@@ -15,59 +43,18 @@ def render_address_form(
 ) -> dict[str, Any]:
 	"""Erzeugt alle Formularfelder und gibt sie nach Feldnamen indiziert zurück."""
 
-	controls: dict[str, Any] = {}
+	with ui.column().classes('w-full gap-2'):
+		controls = {
+			field: create_form_control(field, validate_phone)
+			for field in FORM_FIELDS
+		}
 
-	with ui.grid(columns=2).classes('w-full gap-2'):
-		controls['anrede'] = ui.select(
-			['Herr', 'Frau', 'Diverse'],
-			label=FIELD_LABELS['anrede']['text'],
-		).props('dense options-dense').classes('w-full')
-		controls['titel'] = ui.select(
-			['Dr.', 'Prof.', 'Prof. Dr.'],
-			label=FIELD_LABELS['titel']['text'],
-		).props('dense options-dense').classes('w-full')
-
-	with ui.grid(columns=2).classes('w-full gap-2'):
-		controls['vorname'] = ui.input(FIELD_LABELS['vorname']['text']).classes('w-full').props('dense')
-		controls['nachname'] = ui.input(FIELD_LABELS['nachname']['text']).classes('w-full').props('dense')
-	controls['zusatz'] = ui.textarea(FIELD_LABELS['zusatz']['text']).classes('w-full').props('autogrow dense')
-	controls['adresse'] = ui.textarea(FIELD_LABELS['adresse']['text']).classes('w-full').props('autogrow dense')
-
-	with ui.grid(columns=2).classes('w-full gap-2'):
-		controls['ort'] = ui.input(FIELD_LABELS['ort']['text']).props('dense').classes('w-full')
-		controls['geboren'] = ui.input(FIELD_LABELS['geboren']['text']).props('type=date dense').classes('w-full')
-		controls['festnetz'] = ui.input(
-			FIELD_LABELS['festnetz']['text'],
-			validation=validate_phone,
-		).props('dense').classes('w-full')
-		controls['handy'] = ui.input(
-			FIELD_LABELS['handy']['text'],
-			validation=validate_phone,
-		).props('dense').classes('w-full')
-		controls['email'] = ui.input(FIELD_LABELS['email']['text']).props('type=email dense').classes('w-full')
-		controls['www'] = ui.input(FIELD_LABELS['www']['text']).props('dense').classes('w-full')
-
-	controls['nichtWochentag'] = ui.select(
-		WOCHENTAGE,
-		label=FIELD_LABELS['nichtWochentag']['text'],
-		multiple=True,
-		clearable=True,
-	).props('dense options-dense use-chips').classes('w-full')
-
-	with ui.grid(columns=2).classes('w-full gap-2'):
-		controls['beruf'] = ui.input(FIELD_LABELS['beruf']['text']).props('dense').classes('w-full')
-		controls['hobby'] = ui.input(FIELD_LABELS['hobby']['text']).props('dense').classes('w-full')
-
-	controls['faehigkeiten'] = ui.textarea(
-		FIELD_LABELS['faehigkeiten']['text'],
-	).classes('w-full').props('autogrow dense')
-
-	with ui.row().classes('w-full justify-end gap-2'):
-		ui.button('Neu', icon='add', on_click=on_new).props('flat no-caps dense').classes(
-			'text-slate-700 bg-slate-100 px-3'
-		)
-		ui.button('Speichern', icon='save', on_click=on_save).props('no-caps dense').classes(
-			'bg-primary text-white px-3'
-		)
+		with ui.row().classes('w-full justify-end gap-2'):
+			ui.button('Neu', icon='add', on_click=on_new).props('flat no-caps dense').classes(
+				'text-slate-700 bg-slate-100 px-3'
+			)
+			ui.button('Speichern', icon='save', on_click=on_save).props('no-caps dense').classes(
+				'bg-primary text-white px-3'
+			)
 
 	return controls
