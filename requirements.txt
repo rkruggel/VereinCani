@@ -1,0 +1,3 @@
+# requirements.txt
+nicegui==3.12.1
+ravendb==7.2.2
