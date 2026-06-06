@@ -1,111 +1,35 @@
-import base64
-import unicodedata
+"""NiceGUI-Seite zur Pflege, Suche und Anzeige von Adressen."""
+
 from typing import Any
 
-from nicegui import app, events, ui
+from nicegui import events, ui
 
 from src.auth.session import get_authenticated_user
 from src.pages.adressen.constants import (
-	ADDRESS_FIELDS,
-	CONTENT_STATUS_FIELDS,
 	DEFAULT_SORT_CRITERIA,
 	FIELD_LABELS,
 	FORM_FIELDS,
 	LIST_DISPLAY_FIELDS,
-	PHONE_FIELDS,
-	WOCHENTAGE,
 )
+from src.pages.adressen.form import render_address_form
+from src.pages.adressen.list_logic import (
+	cycle_sort_criterion,
+	display_value,
+	filter_records,
+	image_data_url,
+	validate_phone,
+)
+from src.pages.adressen.preferences import load_sort_criteria, load_visible_fields, save_visible_fields
 from src.pages.adressen.repository import ADRESSEN_DB
 from src.pages.adressen.settings import ADRESSLISTEN_EINSTELLUNGEN
 
 
-LEGACY_VISIBLE_FIELDS_STORAGE_KEY = 'adressen_visible_fields'
 PAGE_TOP_ANCHOR_ID = 'adressen-page-top'
 
 
-def image_data_url(content_type: str, data: bytes) -> str:
-	encoded_data = base64.b64encode(data).decode('ascii')
-	return f'data:{content_type};base64,{encoded_data}'
-
-
-def load_visible_fields(benutzer_name: str) -> set[str]:
-	saved_fields = ADRESSLISTEN_EINSTELLUNGEN.get(benutzer_name)
-	if saved_fields is None:
-		legacy_fields = app.storage.general.get(LEGACY_VISIBLE_FIELDS_STORAGE_KEY)
-		if isinstance(legacy_fields, list):
-			save_visible_fields(benutzer_name, set(legacy_fields))
-			app.storage.general.pop(LEGACY_VISIBLE_FIELDS_STORAGE_KEY, None)
-			saved_fields = legacy_fields
-	if saved_fields is None:
-		return set(ADDRESS_FIELDS)
-	return {field for field in saved_fields if field in LIST_DISPLAY_FIELDS}
-
-
-def save_visible_fields(benutzer_name: str, visible_fields: set[str]) -> None:
-	ADRESSLISTEN_EINSTELLUNGEN.save(
-		benutzer_name,
-		[field for field in LIST_DISPLAY_FIELDS if field in visible_fields],
-	)
-
-
-def load_sort_criteria(benutzer_name: str) -> list[str]:
-	document = ADRESSLISTEN_EINSTELLUNGEN.get_document(benutzer_name)
-	if document is None:
-		return list(DEFAULT_SORT_CRITERIA)
-	if document.sortierungen:
-		return normalize_sort_criteria(document.sortierungen)
-	return []
-
-
-def normalize_sort_criteria(sortierungen: list[str]) -> list[str]:
-	result: list[str] = []
-	used_fields: set[str] = set()
-	for criterion in sortierungen:
-		field, separator, direction = criterion.partition(':')
-		if separator and field in ADDRESS_FIELDS and direction in {'asc', 'desc'} and field not in used_fields:
-			result.append(criterion)
-			used_fields.add(field)
-	return result
-
-
-def cycle_sort_criterion(sortierungen: list[str], field: str) -> list[str]:
-	result = list(sortierungen)
-	for index, criterion in enumerate(result):
-		selected_field, _separator, direction = criterion.partition(':')
-		if selected_field != field:
-			continue
-		if direction == 'asc':
-			result[index] = f'{field}:desc'
-		else:
-			result.pop(index)
-		return result
-	result.append(f'{field}:asc')
-	return result
-
-
-def normalize_search_text(value: Any) -> str:
-	if isinstance(value, list):
-		value = ' '.join(str(item) for item in value)
-	text = unicodedata.normalize('NFKD', str(value or ''))
-	return ''.join(character for character in text if not unicodedata.combining(character)).casefold()
-
-
-def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
-	search_terms = normalize_search_text(query).split()
-	if not search_terms:
-		return records
-	result = []
-	for record in records:
-		searchable_text = ' '.join(
-			normalize_search_text(record.get(field))
-			for field in ADDRESS_FIELDS
-		)
-		if all(term in searchable_text for term in search_terms):
-			result.append(record)
-	return result
-
-
 def render_adressen_page() -> None:
+	"""Erzeugt die vollständige Adressen-Seite für den angemeldeten Benutzer."""
+
 	benutzer = get_authenticated_user()
 	if benutzer is None:
 		ui.notify('Bitte zuerst anmelden.', type='warning')
@@ -126,20 +50,18 @@ def render_adressen_page() -> None:
 		visible_fields = load_visible_fields(benutzer_name)
 		sort_criteria = {'value': load_sort_criteria(benutzer_name)}
 	except Exception as error:
-		visible_fields = set(ADDRESS_FIELDS)
+		visible_fields = {'id', *FORM_FIELDS}
 		sort_criteria = {'value': list(DEFAULT_SORT_CRITERIA)}
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
-	def validate_phone(value: Any) -> str | None:
-		text = str(value or '')
-		if all(character.isdigit() or character == '+' or character == ' ' for character in text):
-			return None
-		return 'Nur Zahlen, + und Leerzeichen erlaubt'
-
 	def collect_form_data() -> dict[str, Any]:
+		"""Liest die aktuellen Werte aller Steuerelemente des Adressformulars."""
+
 		return {field: form_controls[field].value for field in FORM_FIELDS}
 
 	def clear_form() -> None:
+		"""Setzt Formular, Text, Bilder und aktive Adressauswahl zurück."""
+
 		selected_id['value'] = None
 		text_value['value'] = ''
 		uploaded_images.clear()
@@ -154,12 +76,16 @@ def render_adressen_page() -> None:
 		render_active_actions.refresh()
 
 	def scroll_to_page_top() -> None:
+		"""Scrollt den Arbeitsbereich zum Anfang des Adressformulars."""
+
 		ui.run_javascript(
 			f'document.getElementById("{PAGE_TOP_ANCHOR_ID}")'
 			'?.scrollIntoView({behavior: "smooth", block: "start"});'
 		)
 
 	def load_record(record_id: str) -> None:
+		"""Lädt eine Adresse samt Text und Bildern in den Bearbeitungszustand."""
+
 		scroll_to_page_top()
 		try:
 			record = ADRESSEN_DB.get(record_id)
@@ -194,11 +120,15 @@ def render_adressen_page() -> None:
 			mode_label['element'].set_text(f'Adresse bearbeiten: #{record_id}')
 
 	def save_record() -> None:
+		"""Validiert und erstellt beziehungsweise aktualisiert eine Adresse."""
+
 		data = collect_form_data()
 		if not str(data['vorname']).strip() or not str(data['nachname']).strip():
 			ui.notify('Vorname und Nachname sind Pflichtfelder', type='warning')
 			return
-		for field in PHONE_FIELDS:
+		for field in FORM_FIELDS:
+			if FIELD_LABELS[field]['type'] != 'telefon':
+				continue
 			if validate_phone(data[field]) is not None:
 				ui.notify('Festnetz und Handy duerfen nur Zahlen, + und Leerzeichen enthalten', type='warning')
 				return
@@ -224,6 +154,8 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def request_delete_record(record_id: str, name: str) -> None:
+		"""Bereitet den Bestätigungsdialog für das Löschen einer Adresse vor."""
+
 		scroll_to_page_top()
 		pending_delete['record_id'] = record_id
 		pending_delete['name'] = name
@@ -231,6 +163,8 @@ def render_adressen_page() -> None:
 		delete_dialog.open()
 
 	def delete_record() -> None:
+		"""Löscht die im Bestätigungsdialog vorgemerkte Adresse."""
+
 		record_id = pending_delete['record_id']
 		if record_id is None:
 			delete_dialog.close()
@@ -252,6 +186,8 @@ def render_adressen_page() -> None:
 			ui.notify('Adresse nicht gefunden', type='warning')
 
 	def set_field_visibility(field: str, visible: bool | None) -> None:
+		"""Ändert und speichert die Sichtbarkeit eines Feldes in der Adressliste."""
+
 		if visible:
 			visible_fields.add(field)
 		else:
@@ -264,6 +200,8 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def cycle_sort_field(field: str) -> None:
+		"""Schaltet die Sortierrichtung eines Feldes weiter und speichert sie."""
+
 		new_sortierungen = cycle_sort_criterion(sort_criteria['value'], field)
 		try:
 			ADRESSLISTEN_EINSTELLUNGEN.save_sortierungen(benutzer_name, new_sortierungen)
@@ -275,6 +213,8 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def clear_sorting() -> None:
+		"""Setzt die Sortierung auf die Standardreihenfolge zurück."""
+
 		default_sortierungen = list(DEFAULT_SORT_CRITERIA)
 		try:
 			ADRESSLISTEN_EINSTELLUNGEN.save_sortierungen(benutzer_name, default_sortierungen)
@@ -286,11 +226,15 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def apply_search() -> None:
+		"""Übernimmt den Suchtext und aktualisiert die Adressliste."""
+
 		search_query['value'] = str(search_input['element'].value or '').strip()
 		search_dialog.close()
 		render_records.refresh()
 
 	def clear_search() -> None:
+		"""Leert den Suchtext und zeigt wieder alle Adressen an."""
+
 		search_query['value'] = ''
 		if search_input['element'] is not None:
 			search_input['element'].value = ''
@@ -298,6 +242,8 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def save_text() -> None:
+		"""Speichert den freien Text der aktuell bearbeiteten Adresse."""
+
 		record_id = selected_id['value']
 		if record_id is None:
 			ui.notify('Bitte zuerst eine Adresse auswaehlen.', type='warning')
@@ -316,6 +262,8 @@ def render_adressen_page() -> None:
 		ui.notify('Text wurde gespeichert.')
 
 	async def handle_image_upload(event: events.UploadEventArguments) -> None:
+		"""Prüft und speichert ein hochgeladenes Bild für die aktive Adresse."""
+
 		record_id = selected_id['value']
 		if record_id is None:
 			ui.notify('Bitte zuerst eine Adresse auswaehlen.', type='warning')
@@ -341,22 +289,32 @@ def render_adressen_page() -> None:
 		ui.notify(f'{event.file.name} wurde gespeichert.')
 
 	def handle_rejected_images() -> None:
+		"""Informiert über abgelehnte Bilddateien oder überschrittene Uploadgrenzen."""
+
 		ui.notify(
 			'Bild abgelehnt. Pro Auswahl sind maximal 50 Bilder mit jeweils bis zu 50 MB erlaubt.',
 			type='warning',
 		)
 
 	def upload_selected_images() -> None:
+		"""Startet den Upload der lokal ausgewählten Dateien."""
+
 		image_upload['element'].run_method('upload')
 
 	def reset_image_upload() -> None:
+		"""Leert die Upload-Warteschlange nach abgeschlossenem Mehrfach-Upload."""
+
 		image_upload['element'].reset()
 
 	def select_image(attachment_name: str, selected: bool | None) -> None:
+		"""Markiert genau ein vorhandenes Bild für eine mögliche Löschung."""
+
 		selected_image['attachment_name'] = attachment_name if selected else None
 		render_uploaded_images.refresh()
 
 	def delete_selected_image() -> None:
+		"""Löscht das ausgewählte Bild aus RavenDB und der lokalen Vorschau."""
+
 		record_id = selected_id['value']
 		attachment_name = selected_image['attachment_name']
 		if record_id is None or attachment_name is None:
@@ -379,6 +337,8 @@ def render_adressen_page() -> None:
 		ui.notify('Bild wurde geloescht.')
 
 	def clear_images() -> None:
+		"""Löscht alle Bilder der aktuell bearbeiteten Adresse."""
+
 		record_id = selected_id['value']
 		if record_id is None:
 			return
@@ -395,23 +355,21 @@ def render_adressen_page() -> None:
 		render_uploaded_images.refresh()
 		ui.notify('Bilder wurden entfernt.')
 
-	def display_value(record: dict[str, Any], field: str) -> str:
-		value = record[field]
-		if field == 'nichtWochentag':
-			return ', '.join(value) if value else '-'
-		return str(value or '-')
-
 	def render_field_value(record: dict[str, Any], field: str, value_classes: str = 'text-slate-700') -> None:
+		"""Zeigt Beschriftung und formatierten Wert eines Adressfeldes an."""
+
 		with ui.row().classes('items-baseline gap-1'):
-			ui.label(f'{FIELD_LABELS[field]}:').classes('font-medium text-green-600')
+			ui.label(f'{FIELD_LABELS[field]["text"]}:').classes('font-medium text-green-600')
 			ui.label(display_value(record, field)).classes(value_classes)
 
 	def render_content_status(record: dict[str, Any], field: str) -> None:
+		"""Zeigt nur an, ob Text beziehungsweise Bilder vorhanden sind."""
+
 		available = bool(record.get(field))
 		status = 'Ja' if available else 'Nein'
 		status_classes = 'text-green-700 font-medium' if available else 'text-slate-400'
 		with ui.row().classes('items-center gap-1'):
-			ui.label(f'{FIELD_LABELS[field]}:').classes('font-medium text-green-600')
+			ui.label(f'{FIELD_LABELS[field]["text"]}:').classes('font-medium text-green-600')
 			ui.label(status).classes(status_classes)
 
 	with ui.dialog() as field_dialog, ui.card().classes('w-[440px] max-w-full gap-3'):
@@ -420,7 +378,7 @@ def render_adressen_page() -> None:
 		with ui.grid(columns=2).classes('w-full gap-x-4 gap-y-1 max-sm:grid-cols-1'):
 			for field in LIST_DISPLAY_FIELDS:
 				ui.checkbox(
-					FIELD_LABELS[field],
+					FIELD_LABELS[field]['text'],
 					value=field in visible_fields,
 					on_change=lambda event, selected_field=field: set_field_visibility(selected_field, event.value),
 				).props('dense')
@@ -430,6 +388,8 @@ def render_adressen_page() -> None:
 	with ui.dialog() as sort_dialog, ui.card().classes('w-[520px] max-w-full gap-3'):
 		@ui.refreshable
 		def render_sort_controls() -> None:
+			"""Rendert Prioritäten und Schaltflächen der aktuellen Sortierung."""
+
 			ui.label('Sortierreihenfolge').classes('text-lg font-semibold text-slate-900')
 			ui.label(
 				'Klick: aufsteigend, nochmals: absteigend, nochmals: entfernen. '
@@ -440,14 +400,14 @@ def render_adressen_page() -> None:
 					for priority, criterion in enumerate(sort_criteria['value'], start=1):
 						field, _separator, direction = criterion.partition(':')
 						direction_label = 'A-Z' if direction == 'asc' else 'Z-A'
-						ui.label(f'{priority}. {FIELD_LABELS[field]} {direction_label}').classes(
+						ui.label(f'{priority}. {FIELD_LABELS[field]["text"]} {direction_label}').classes(
 							'text-sm font-medium text-green-700'
 						)
 			else:
 				ui.label('Keine Sortierung ausgewaehlt.').classes('text-sm text-slate-500')
 			ui.separator()
 			with ui.grid(columns=2).classes('w-full gap-2 max-sm:grid-cols-1'):
-				for field in ADDRESS_FIELDS:
+				for field in ('id', *FORM_FIELDS):
 					criterion = next(
 						(item for item in sort_criteria['value'] if item.startswith(f'{field}:')),
 						None,
@@ -456,7 +416,7 @@ def render_adressen_page() -> None:
 					if criterion is not None:
 						suffix = ' A-Z' if criterion.endswith(':asc') else ' Z-A'
 					ui.button(
-						f'{FIELD_LABELS[field]}{suffix}',
+						f'{FIELD_LABELS[field]["text"]}{suffix}',
 						on_click=lambda selected_field=field: cycle_sort_field(selected_field),
 					).props('flat no-caps dense').classes('justify-start bg-slate-100 text-slate-700')
 			with ui.row().classes('w-full justify-between gap-2'):
@@ -522,6 +482,8 @@ def render_adressen_page() -> None:
 
 		@ui.refreshable
 		def render_uploaded_images() -> None:
+			"""Rendert die gespeicherten Bilder samt Einzelauswahl."""
+
 			if not uploaded_images:
 				ui.label('Noch keine Bilder hochgeladen.').classes('text-sm text-slate-500')
 				return
@@ -553,6 +515,8 @@ def render_adressen_page() -> None:
 
 	@ui.refreshable
 	def render_active_actions() -> None:
+		"""Zeigt Text- und Bildaktionen nur bei einer aktiven Adresse."""
+
 		if selected_id['value'] is None:
 			return
 		with ui.row().classes('w-full gap-2'):
@@ -565,6 +529,8 @@ def render_adressen_page() -> None:
 
 	@ui.refreshable
 	def render_records() -> None:
+		"""Lädt, filtert und rendert die Adressen als Kartenliste."""
+
 		try:
 			all_records = ADRESSEN_DB.list(sort_criteria['value'])
 			records = filter_records(all_records, search_query['value'])
@@ -641,7 +607,9 @@ def render_adressen_page() -> None:
 								render_field_value(record, field, 'text-slate-500')
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm'):
-						for field in CONTENT_STATUS_FIELDS:
+						for field in LIST_DISPLAY_FIELDS:
+							if FIELD_LABELS[field]['formular'] or field == 'id':
+								continue
 							if field in visible_fields:
 								render_content_status(record, field)
 
@@ -653,40 +621,7 @@ def render_adressen_page() -> None:
 				ui.label('Daten werden in RavenDB gespeichert.').classes('text-xs text-slate-600')
 				render_active_actions()
 
-				with ui.grid(columns=2).classes('w-full gap-2'):
-					form_controls['anrede'] = ui.select(['Herr', 'Frau', 'Diverse'], label='Anrede').props('dense options-dense').classes('w-full')
-					form_controls['titel'] = ui.select(['Dr.', 'Prof.', 'Prof. Dr.'], label='Titel').props('dense options-dense').classes('w-full')
-
-				with ui.grid(columns=2).classes('w-full gap-2'):
-					form_controls['vorname'] = ui.input('Vorname').classes('w-full').props('dense')
-					form_controls['nachname'] = ui.input('Nachname').classes('w-full').props('dense')
-				form_controls['zusatz'] = ui.textarea('Zusatz').classes('w-full').props('autogrow dense')
-				form_controls['adresse'] = ui.textarea('Adresse').classes('w-full').props('autogrow dense')
-
-				with ui.grid(columns=2).classes('w-full gap-2'):
-					form_controls['ort'] = ui.input('Ort').props('dense').classes('w-full')
-					form_controls['geboren'] = ui.input('Geboren').props('type=date dense').classes('w-full')
-					form_controls['festnetz'] = ui.input('Festnetz', validation=validate_phone).props('dense').classes('w-full')
-					form_controls['handy'] = ui.input('Handy', validation=validate_phone).props('dense').classes('w-full')
-					form_controls['email'] = ui.input('E-Mail').props('type=email dense').classes('w-full')
-					form_controls['www'] = ui.input('WWW').props('dense').classes('w-full')
-
-				form_controls['nichtWochentag'] = ui.select(
-					WOCHENTAGE,
-					label='nichtWochentag',
-					multiple=True,
-					clearable=True,
-				).props('dense options-dense use-chips').classes('w-full')
-
-				with ui.grid(columns=2).classes('w-full gap-2'):
-					form_controls['beruf'] = ui.input('Beruf').props('dense').classes('w-full')
-					form_controls['hobby'] = ui.input('Hobby').props('dense').classes('w-full')
-
-				form_controls['faehigkeiten'] = ui.textarea('Faehigkeiten').classes('w-full').props('autogrow dense')
-
-				with ui.row().classes('w-full justify-end gap-2'):
-					ui.button('Neu', icon='add', on_click=clear_form).props('flat no-caps dense').classes('text-slate-700 bg-slate-100 px-3')
-					ui.button('Speichern', icon='save', on_click=save_record).props('no-caps dense').classes('bg-primary text-white px-3')
+				form_controls.update(render_address_form(validate_phone, clear_form, save_record))
 
 			with ui.column().classes('flex-1 w-full gap-3'):
 				render_records()

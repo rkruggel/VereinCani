@@ -1,9 +1,13 @@
+"""Datenmodelle der Adressenverwaltung."""
+
 from dataclasses import dataclass
 from typing import Any
 
 
 @dataclass
 class Adresse:
+	"""Repräsentiert ein Adressdokument einschließlich Text- und Bildmetadaten."""
+
 	id: str = ''
 	anrede: str = ''
 	titel: str = ''
@@ -25,11 +29,15 @@ class Adresse:
 	bilder: list[dict[str, str]] | None = None
 
 	def __post_init__(self) -> None:
+		"""Normalisiert optionale Listenfelder zu veränderbaren Listen."""
+
 		self.nichtWochentag = list(self.nichtWochentag or [])
 		self.bilder = list(self.bilder or [])
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> 'Adresse':
+		"""Erstellt eine Adresse aus RavenDB-Daten und migriert alte Namensfelder."""
+
 		values = {key: value for key, value in data.items() if key != '@metadata'}
 		legacy_name = str(values.pop('name', '') or '').strip()
 		if legacy_name and not values.get('vorname') and not values.get('nachname'):
@@ -37,6 +45,8 @@ class Adresse:
 		return cls(**values)
 
 	def to_json(self) -> dict[str, Any]:
+		"""Gibt die Adresse als serialisierbares Wörterbuch zurück."""
+
 		return {
 			'id': self.id,
 			'anrede': self.anrede,
@@ -61,6 +71,8 @@ class Adresse:
 
 
 def split_legacy_name(name: str) -> tuple[str, str]:
+	"""Teilt einen alten vollständigen Namen in Vorname und Nachname auf."""
+
 	parts = name.split()
 	if len(parts) < 2:
 		return '', name
