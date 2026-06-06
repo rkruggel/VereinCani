@@ -6,7 +6,7 @@ Datum: 05.06.2026
 Author: Roland Kruggel
 Lizenz: MIT
  
- 
+
 
 ## Schnellstart
 

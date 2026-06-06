@@ -104,7 +104,7 @@ def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, 
 			result.append(record)
 	return result
 
- 
+
 def render_adressen_page() -> None:
 	benutzer = get_authenticated_user()
 	if benutzer is None:
