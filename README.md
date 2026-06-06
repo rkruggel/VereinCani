@@ -1,10 +1,12 @@
 # VereinCani
 
-Vereinssoftware. Erstellt mit niceGUI und revenbDB
+Vereinssoftware. Erstellt mit niceGUI und ravenbDB
 
 Datum: 05.06.2026
 Author: Roland Kruggel
 Lizenz: MIT
+ 
+ 
 
 ## Schnellstart
 
