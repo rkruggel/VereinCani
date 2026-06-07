@@ -19,7 +19,7 @@ from pathlib import Path
 
 from nicegui import ui
 
-from src.pages.start import render_start_page
+from src.run import render_start_page
 
 
 CONFIG_PATH = Path(__file__).resolve().parent / 'config.ini'
