@@ -134,4 +134,3 @@ FORM_FIELDS = [
 	for field, definition in FIELD_LABELS.items()
 	if definition['formular']
 ]
-DEFAULT_SORT_CRITERIA = ['nachname:asc', 'vorname:asc']

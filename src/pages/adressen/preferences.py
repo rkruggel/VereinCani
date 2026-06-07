@@ -2,7 +2,7 @@
 
 from nicegui import app
 
-from src.pages.adressen.constants import DEFAULT_SORT_CRITERIA, FORM_FIELDS, LIST_DISPLAY_FIELDS
+from src.pages.adressen.constants import FORM_FIELDS, LIST_DISPLAY_FIELDS
 from src.pages.adressen.list_logic import normalize_sort_criteria
 from src.pages.adressen.settings import ADRESSLISTEN_EINSTELLUNGEN
 
@@ -39,7 +39,7 @@ def load_sort_criteria(benutzer_name: str) -> list[str]:
 
 	document = ADRESSLISTEN_EINSTELLUNGEN.get_document(benutzer_name)
 	if document is None:
-		return list(DEFAULT_SORT_CRITERIA)
+		return []
 	if document.sortierungen:
 		return normalize_sort_criteria(document.sortierungen)
 	return []

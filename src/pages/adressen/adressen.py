@@ -6,7 +6,6 @@ from nicegui import events, ui
 
 from src.auth.session import get_authenticated_user
 from src.pages.adressen.constants import (
-	DEFAULT_SORT_CRITERIA,
 	FIELD_LABELS,
 	FORM_FIELDS,
 	LIST_DISPLAY_FIELDS,
@@ -44,6 +43,7 @@ def render_adressen_page() -> None:
 	search_input = {'element': None}
 	text_value = {'value': ''}
 	text_editor = {'element': None}
+	text_save_button = {'element': None}
 	image_upload = {'element': None}
 	uploaded_images: list[dict[str, str]] = []
 	selected_image = {'attachment_name': None}
@@ -53,7 +53,7 @@ def render_adressen_page() -> None:
 		sort_criteria = {'value': load_sort_criteria(benutzer_name)}
 	except Exception as error:
 		visible_fields = {'id', *FORM_FIELDS}
-		sort_criteria = {'value': list(DEFAULT_SORT_CRITERIA)}
+		sort_criteria = {'value': []}
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
 	def collect_form_data() -> dict[str, Any]:
@@ -74,6 +74,8 @@ def render_adressen_page() -> None:
 			mode_label['element'].set_text('Neue Adresse')
 		if text_editor['element'] is not None:
 			text_editor['element'].value = ''
+		if text_save_button['element'] is not None:
+			text_save_button['element'].set_enabled(False)
 		render_uploaded_images.refresh()
 		render_active_actions.refresh()
 
@@ -101,6 +103,8 @@ def render_adressen_page() -> None:
 		text_value['value'] = str(record.get('text') or '')
 		if text_editor['element'] is not None:
 			text_editor['element'].value = text_value['value']
+		if text_save_button['element'] is not None:
+			text_save_button['element'].set_enabled(False)
 		try:
 			images = ADRESSEN_DB.get_images(record_id)
 		except Exception as error:
@@ -215,9 +219,9 @@ def render_adressen_page() -> None:
 		render_records.refresh()
 
 	def clear_sorting() -> None:
-		"""Setzt die Sortierung auf die Standardreihenfolge zurück."""
+		"""Entfernt die gespeicherte Sortierung."""
 
-		default_sortierungen = list(DEFAULT_SORT_CRITERIA)
+		default_sortierungen: list[str] = []
 		try:
 			ADRESSLISTEN_EINSTELLUNGEN.save_sortierungen(benutzer_name, default_sortierungen)
 		except Exception as error:
@@ -260,9 +264,23 @@ def render_adressen_page() -> None:
 			ui.notify('Adresse nicht gefunden', type='warning')
 			return
 		text_value['value'] = value
+		text_save_button['element'].set_enabled(False)
 		text_dialog.close()
 		ui.notify('Text wurde gespeichert.')
 		render_records.refresh()
+
+	def handle_text_change(event: events.ValueChangeEventArguments) -> None:
+		"""Aktiviert das Speichern nur bei einer Änderung des Editor-Inhalts."""
+
+		changed = str(event.value or '') != text_value['value']
+		text_save_button['element'].set_enabled(changed)
+
+	def cancel_text_editing() -> None:
+		"""Verwirft ungespeicherte Editor-Änderungen und schließt den Dialog."""
+
+		text_editor['element'].value = text_value['value']
+		text_save_button['element'].set_enabled(False)
+		text_dialog.close()
 
 	async def handle_image_upload(event: events.UploadEventArguments) -> None:
 		"""Prüft und speichert ein hochgeladenes Bild für die aktive Adresse."""
@@ -460,10 +478,16 @@ def render_adressen_page() -> None:
 		text_editor['element'] = ui.editor(
 			placeholder='Text eingeben',
 			value=text_value['value'],
+			on_change=handle_text_change,
 		).classes('w-full min-h-[280px]')
 		with ui.row().classes('w-full justify-end gap-2'):
-			ui.button('Abbrechen', on_click=text_dialog.close).props('flat no-caps')
-			ui.button('Uebernehmen', icon='save', on_click=save_text).props('no-caps')
+			ui.button('Abbrechen', on_click=cancel_text_editing).props('flat no-caps')
+			text_save_button['element'] = ui.button(
+				'Uebernehmen',
+				icon='save',
+				on_click=save_text,
+			).props('no-caps')
+			text_save_button['element'].set_enabled(False)
 
 	with ui.dialog() as picture_dialog, ui.card().classes('w-[720px] max-w-full gap-3'):
 		ui.label('Bilder hochladen').classes('text-lg font-semibold text-slate-900')

@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.db.client import create_document_store
-from src.pages.adressen.constants import DEFAULT_SORT_CRITERIA, FIELD_LABELS, FORM_FIELDS
+from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
 from src.pages.adressen.models import Adresse
 
 
@@ -24,7 +24,7 @@ class RavenAdressenDatabase:
 
 		with self._get_store().open_session() as session:
 			records = list(session.query_collection('Adressen', Adresse))
-			criteria = DEFAULT_SORT_CRITERIA if sortierungen is None else sortierungen
+			criteria = [] if sortierungen is None else sortierungen
 			return sort_records([asdict(record) for record in records], criteria)
 
 	def get(self, record_id: str) -> dict[str, Any] | None:

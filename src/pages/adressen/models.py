@@ -1,7 +1,7 @@
-
+"""Dynamisch aus den Felddefinitionen erzeugte Adressmodelle."""
 
 from dataclasses import asdict, field, make_dataclass
-from typing import Any
+from typing import Any, Self
 
 from src.pages.adressen.constants import FIELD_LABELS
 
@@ -28,7 +28,7 @@ class AdresseModel:
 				setattr(self, field_name, list(getattr(self, field_name, None) or []))
 
 	@classmethod
-	def from_json(cls, data: dict[str, Any]) -> 'Adresse':
+	def from_json(cls, data: dict[str, Any]) -> Self:
 		"""Erstellt eine Adresse aus RavenDB-Daten und migriert alte Namensfelder."""
 
 		values = {
