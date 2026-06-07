@@ -16,16 +16,25 @@ def create_form_control(field: str, validate_phone: Callable[[Any], str | None])
 	control_type = definition['steuerelement']
 
 	if control_type == 'select':
-		return ui.select(definition['optionen'], label=label).props('dense options-dense').classes('w-full')
+		props = 'dense options-dense'
+		if definition.get('pflichtfeld'):
+			props += ' required'
+		return ui.select(definition['optionen'], label=label).props(props).classes('w-full')
 	if control_type == 'multiselect':
+		props = 'dense options-dense use-chips'
+		if definition.get('pflichtfeld'):
+			props += ' required'
 		return ui.select(
 			definition['optionen'],
 			label=label,
 			multiple=True,
 			clearable=True,
-		).props('dense options-dense use-chips').classes('w-full')
+		).props(props).classes('w-full')
 	if control_type == 'textarea':
-		return ui.textarea(label).props('autogrow dense').classes('w-full')
+		props = 'autogrow dense'
+		if definition.get('pflichtfeld'):
+			props += ' required'
+		return ui.textarea(label).props(props).classes('w-full')
 
 	validation = validate_phone if definition['type'] == 'telefon' else None
 	input_props = 'dense'
@@ -33,6 +42,8 @@ def create_form_control(field: str, validate_phone: Callable[[Any], str | None])
 		input_props = 'type=date dense'
 	elif definition['type'] == 'email':
 		input_props = 'type=email dense'
+	if definition.get('pflichtfeld'):
+		input_props += ' required'
 	return ui.input(label, validation=validation).props(input_props).classes('w-full')
 
 

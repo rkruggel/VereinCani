@@ -6,9 +6,13 @@ from nicegui import events, ui
 
 from src.auth.session import get_authenticated_user
 from src.pages.adressen.constants import (
+	CONTENT_ACTION_FIELDS,
+	EDITOR_FIELD,
 	FIELD_LABELS,
 	FORM_FIELDS,
-	LIST_DISPLAY_FIELDS,
+	REQUIRED_FIELDS,
+	SORT_FIELDS,
+	list_fields,
 )
 from src.pages.adressen.form import render_address_form
 from src.pages.adressen.list_logic import (
@@ -69,7 +73,7 @@ def render_adressen_page() -> None:
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
 		for field in FORM_FIELDS:
-			form_controls[field].value = [] if field == 'nichtWochentag' else ''
+			form_controls[field].value = [] if FIELD_LABELS[field]['type'] == 'liste' else ''
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text('Neue Adresse')
 		if text_editor['element'] is not None:
@@ -100,7 +104,7 @@ def render_adressen_page() -> None:
 			ui.notify('Adresse nicht gefunden', type='warning')
 			return
 		selected_id['value'] = record_id
-		text_value['value'] = str(record.get('text') or '')
+		text_value['value'] = str(record.get(EDITOR_FIELD) or '')
 		if text_editor['element'] is not None:
 			text_editor['element'].value = text_value['value']
 		if text_save_button['element'] is not None:
@@ -129,14 +133,22 @@ def render_adressen_page() -> None:
 		"""Validiert und erstellt beziehungsweise aktualisiert eine Adresse."""
 
 		data = collect_form_data()
-		if not str(data['vorname']).strip() or not str(data['nachname']).strip():
-			ui.notify('Vorname und Nachname sind Pflichtfelder', type='warning')
+		missing_fields = [
+			FIELD_LABELS[field]['text']
+			for field in REQUIRED_FIELDS
+			if not str(data.get(field) or '').strip()
+		]
+		if missing_fields:
+			ui.notify(f'Pflichtfelder ausfüllen: {", ".join(missing_fields)}', type='warning')
 			return
 		for field in FORM_FIELDS:
 			if FIELD_LABELS[field]['type'] != 'telefon':
 				continue
 			if validate_phone(data[field]) is not None:
-				ui.notify('Festnetz und Handy duerfen nur Zahlen, + und Leerzeichen enthalten', type='warning')
+				ui.notify(
+					f'{FIELD_LABELS[field]["text"]} darf nur Zahlen, + und Leerzeichen enthalten',
+					type='warning',
+				)
 				return
 
 		if selected_id['value'] is None:
@@ -400,7 +412,7 @@ def render_adressen_page() -> None:
 		ui.label('Felder der Adressliste').classes('text-lg font-semibold text-slate-900')
 		ui.label('Waehle aus, welche Felder in den Adresskarten angezeigt werden.').classes('text-sm text-slate-600')
 		with ui.grid(columns=2).classes('w-full gap-x-4 gap-y-1 max-sm:grid-cols-1'):
-			for field in LIST_DISPLAY_FIELDS:
+			for field in FIELD_LABELS:
 				ui.checkbox(
 					FIELD_LABELS[field]['text'],
 					value=field in visible_fields,
@@ -431,7 +443,7 @@ def render_adressen_page() -> None:
 				ui.label('Keine Sortierung ausgewaehlt.').classes('text-sm text-slate-500')
 			ui.separator()
 			with ui.grid(columns=2).classes('w-full gap-2 max-sm:grid-cols-1'):
-				for field in ('id', *FORM_FIELDS):
+				for field in SORT_FIELDS:
 					criterion = next(
 						(item for item in sort_criteria['value'] if item.startswith(f'{field}:')),
 						None,
@@ -549,13 +561,18 @@ def render_adressen_page() -> None:
 
 		if selected_id['value'] is None:
 			return
+		action_handlers = {
+			'editor': text_dialog.open,
+			'upload': picture_dialog.open,
+		}
 		with ui.row().classes('w-full gap-2'):
-			ui.button('Text', icon='description', on_click=text_dialog.open).props('flat no-caps dense').classes(
-				'flex-1 bg-slate-100 text-slate-700'
-			)
-			ui.button('Pic', icon='image', on_click=picture_dialog.open).props('flat no-caps dense').classes(
-				'flex-1 bg-slate-100 text-slate-700'
-			)
+			for field in CONTENT_ACTION_FIELDS:
+				definition = FIELD_LABELS[field]
+				ui.button(
+					definition['actionLabel'],
+					icon=definition['actionIcon'],
+					on_click=action_handlers[definition['steuerelement']],
+				).props('flat no-caps dense').classes('flex-1 bg-slate-100 text-slate-700')
 
 	@ui.refreshable
 	def render_records() -> None:
@@ -604,10 +621,13 @@ def render_adressen_page() -> None:
 							heading = record_heading(record, visible_fields, fallback_to_id=False)
 							if heading:
 								ui.label(heading).classes('text-base font-semibold text-slate-900')
-							if 'id' in visible_fields:
-								render_field_value(record, 'id', 'text-xs tracking-wide text-slate-500')
-							if 'zusatz' in visible_fields:
-								render_field_value(record, 'zusatz', 'text-sm text-slate-500')
+							for field in list_fields('headerDetail'):
+								if field in visible_fields:
+									render_field_value(
+										record,
+										field,
+										FIELD_LABELS[field].get('listValueClasses', 'text-slate-700'),
+									)
 						with ui.row().classes('items-center gap-2'):
 							ui.button(icon='edit', on_click=lambda record_id=record['id']: load_record(record_id)).props('flat round').classes('text-primary')
 							record_name = record_heading(record)
@@ -620,19 +640,25 @@ def render_adressen_page() -> None:
 							).props('flat round').classes('text-red-600')
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm text-slate-700'):
-						for field in ('adresse', 'ort', 'email', 'handy', 'festnetz', 'www'):
+						for field in list_fields('primary'):
 							if field in visible_fields:
-								render_field_value(record, field)
+								render_field_value(
+									record,
+									field,
+									FIELD_LABELS[field].get('listValueClasses', 'text-slate-700'),
+								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm text-slate-500'):
-						for field in ('geboren', 'beruf', 'hobby', 'nichtWochentag', 'faehigkeiten'):
+						for field in list_fields('secondary'):
 							if field in visible_fields:
-								render_field_value(record, field, 'text-slate-500')
+								render_field_value(
+									record,
+									field,
+									FIELD_LABELS[field].get('listValueClasses', 'text-slate-500'),
+								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm'):
-						for field in LIST_DISPLAY_FIELDS:
-							if FIELD_LABELS[field]['formular'] or field == 'id':
-								continue
+						for field in list_fields('status'):
 							if field in visible_fields:
 								render_content_status(record, field)
 

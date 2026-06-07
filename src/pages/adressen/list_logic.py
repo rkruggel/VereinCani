@@ -6,7 +6,7 @@ import re
 import unicodedata
 from typing import Any
 
-from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
+from src.pages.adressen.constants import FIELD_LABELS, SEARCH_FIELDS, SORT_FIELDS
 
 
 def image_data_url(content_type: str, data: bytes) -> str:
@@ -34,7 +34,7 @@ def normalize_sort_criteria(sortierungen: list[str]) -> list[str]:
 		field, separator, direction = criterion.partition(':')
 		if (
 			separator
-			and field in ('id', *FORM_FIELDS)
+			and field in SORT_FIELDS
 			and direction in {'asc', 'desc'}
 			and field not in used_fields
 		):
@@ -69,6 +69,14 @@ def normalize_search_text(value: Any) -> str:
 	return ''.join(character for character in text if not unicodedata.combining(character)).casefold()
 
 
+def searchable_value(field: str, value: Any) -> str:
+	"""Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf."""
+
+	if FIELD_LABELS[field]['steuerelement'] == 'editor':
+		value = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
+	return normalize_search_text(value)
+
+
 def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
 	"""Filtert Adressen nach Suchbegriffen, die über mehrere Felder verteilt sein dürfen."""
 
@@ -78,8 +86,8 @@ def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, 
 	result = []
 	for record in records:
 		searchable_text = ' '.join(
-			normalize_search_text(record.get(field))
-			for field in ('id', *FORM_FIELDS)
+			searchable_value(field, record.get(field))
+			for field in SEARCH_FIELDS
 		)
 		if all(term in searchable_text for term in search_terms):
 			result.append(record)
@@ -98,7 +106,7 @@ def display_value(record: dict[str, Any], field: str) -> str:
 def content_available(field: str, value: Any) -> bool:
 	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
 
-	if field != 'text':
+	if FIELD_LABELS[field]['steuerelement'] != 'editor':
 		return bool(value)
 	text = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	text = text.replace('\xa0', ' ')

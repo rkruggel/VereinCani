@@ -2,7 +2,7 @@
 
 from nicegui import app
 
-from src.pages.adressen.constants import FORM_FIELDS, LIST_DISPLAY_FIELDS
+from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
 from src.pages.adressen.list_logic import normalize_sort_criteria
 from src.pages.adressen.settings import ADRESSLISTEN_EINSTELLUNGEN
 
@@ -22,7 +22,7 @@ def load_visible_fields(benutzer_name: str) -> set[str]:
 			saved_fields = legacy_fields
 	if saved_fields is None:
 		return {'id', *FORM_FIELDS}
-	return {field for field in saved_fields if field in LIST_DISPLAY_FIELDS}
+	return {field for field in saved_fields if field in FIELD_LABELS}
 
 
 def save_visible_fields(benutzer_name: str, visible_fields: set[str]) -> None:
@@ -30,7 +30,7 @@ def save_visible_fields(benutzer_name: str, visible_fields: set[str]) -> None:
 
 	ADRESSLISTEN_EINSTELLUNGEN.save(
 		benutzer_name,
-		[field for field in LIST_DISPLAY_FIELDS if field in visible_fields],
+		[field for field in FIELD_LABELS if field in visible_fields],
 	)
 
 

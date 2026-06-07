@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from src.db.client import create_document_store
-from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
+from src.pages.adressen.constants import EDITOR_FIELD, FIELD_LABELS, FORM_FIELDS, IMAGE_FIELD, SORT_FIELDS
 from src.pages.adressen.models import Adresse
 
 
@@ -65,7 +65,7 @@ class RavenAdressenDatabase:
 			record = session.load(record_id, Adresse)
 			if record is None:
 				return False
-			record.text = text
+			setattr(record, EDITOR_FIELD, text)
 			session.save_changes()
 			return True
 
@@ -88,8 +88,9 @@ class RavenAdressenDatabase:
 				'name': file_name,
 				'content_type': content_type,
 			}
-			record.bilder = list(record.bilder or [])
-			record.bilder.append(image)
+			images = list(getattr(record, IMAGE_FIELD) or [])
+			images.append(image)
+			setattr(record, IMAGE_FIELD, images)
 			session.advanced.attachments.store(record_id, attachment_name, data, content_type)
 			session.save_changes()
 			return image
@@ -102,7 +103,7 @@ class RavenAdressenDatabase:
 			if record is None:
 				return []
 			images = []
-			for image in record.bilder or []:
+			for image in getattr(record, IMAGE_FIELD) or []:
 				with session.advanced.attachments.get(record_id, image['attachment_name']) as attachment:
 					images.append({
 						**image,
@@ -117,9 +118,9 @@ class RavenAdressenDatabase:
 			record = session.load(record_id, Adresse)
 			if record is None:
 				return False
-			for image in record.bilder or []:
+			for image in getattr(record, IMAGE_FIELD) or []:
 				session.advanced.attachments.delete(record_id, image['attachment_name'])
-			record.bilder = []
+			setattr(record, IMAGE_FIELD, [])
 			session.save_changes()
 			return True
 
@@ -130,14 +131,14 @@ class RavenAdressenDatabase:
 			record = session.load(record_id, Adresse)
 			if record is None:
 				return False
-			images = list(record.bilder or [])
+			images = list(getattr(record, IMAGE_FIELD) or [])
 			if not any(image.get('attachment_name') == attachment_name for image in images):
 				return False
 			session.advanced.attachments.delete(record_id, attachment_name)
-			record.bilder = [
+			setattr(record, IMAGE_FIELD, [
 				image for image in images
 				if image.get('attachment_name') != attachment_name
-			]
+			])
 			session.save_changes()
 			return True
 
@@ -183,8 +184,7 @@ def sort_records(records: list[dict[str, Any]], sortierungen: list[str]) -> list
 		field, separator, direction = criterion.partition(':')
 		if (
 			not separator
-			or field not in FIELD_LABELS
-			or (field != 'id' and not FIELD_LABELS[field]['formular'])
+			or field not in SORT_FIELDS
 			or direction not in {'asc', 'desc'}
 		):
 			continue
