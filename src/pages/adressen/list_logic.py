@@ -1,6 +1,8 @@
 """Reine Hilfsfunktionen für Suche, Sortierung und Wertdarstellung."""
 
 import base64
+import html
+import re
 import unicodedata
 from typing import Any
 
@@ -91,3 +93,40 @@ def display_value(record: dict[str, Any], field: str) -> str:
 	if FIELD_LABELS[field]['type'] == 'liste':
 		return ', '.join(value) if value else '-'
 	return str(value or '-')
+
+
+def content_available(field: str, value: Any) -> bool:
+	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
+
+	if field != 'text':
+		return bool(value)
+	text = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
+	text = text.replace('\xa0', ' ')
+	return bool(text.strip())
+
+
+def record_heading(
+	record: dict[str, Any],
+	visible_fields: set[str] | None = None,
+	*,
+	fallback_to_id: bool = True,
+) -> str:
+	"""Erzeugt die Überschrift aus numerisch markierten Feldern."""
+
+	heading_fields = sorted(
+		(
+			(definition['formHeaderPos'], field)
+			for field, definition in FIELD_LABELS.items()
+			if 'formHeaderPos' in definition
+			and (visible_fields is None or field in visible_fields)
+		),
+	)
+	values = [
+		str(record.get(field) or '').strip()
+		for _position, field in heading_fields
+		if str(record.get(field) or '').strip()
+	]
+	heading = ' '.join(values)
+	if heading or not fallback_to_id:
+		return heading
+	return str(record.get('id') or '')

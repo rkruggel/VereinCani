@@ -1,3 +1,19 @@
+"""
+Projekt:
+  VereinCani - Eine dynamische Vereinsverwaltung.
+
+Modul:
+  main.py
+
+Beschreibung:
+  Startpunkt und Konfiguration der VereinCani-Anwendung.
+
+Autor: Roland Kruggel
+Version: 0.0.1
+Stand: 06.06.2026
+Lizens: MIT
+"""
+
 import configparser
 from pathlib import Path
 

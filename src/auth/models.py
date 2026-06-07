@@ -1,3 +1,5 @@
+"""Datenmodelle der Benutzeranmeldung."""
+
 from dataclasses import dataclass
 
 

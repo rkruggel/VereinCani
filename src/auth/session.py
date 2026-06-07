@@ -1,3 +1,5 @@
+"""Verwaltung des angemeldeten Benutzers in der NiceGUI-Sitzung."""
+
 from nicegui import app
 
 

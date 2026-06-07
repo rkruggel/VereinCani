@@ -14,9 +14,11 @@ from src.pages.adressen.constants import (
 from src.pages.adressen.form import render_address_form
 from src.pages.adressen.list_logic import (
 	cycle_sort_criterion,
+	content_available,
 	display_value,
 	filter_records,
 	image_data_url,
+	record_heading,
 	validate_phone,
 )
 from src.pages.adressen.preferences import load_sort_criteria, load_visible_fields, save_visible_fields
@@ -41,7 +43,7 @@ def render_adressen_page() -> None:
 	search_query = {'value': ''}
 	search_input = {'element': None}
 	text_value = {'value': ''}
-	text_input = {'element': None}
+	text_editor = {'element': None}
 	image_upload = {'element': None}
 	uploaded_images: list[dict[str, str]] = []
 	selected_image = {'attachment_name': None}
@@ -70,8 +72,8 @@ def render_adressen_page() -> None:
 			form_controls[field].value = [] if field == 'nichtWochentag' else ''
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text('Neue Adresse')
-		if text_input['element'] is not None:
-			text_input['element'].value = ''
+		if text_editor['element'] is not None:
+			text_editor['element'].value = ''
 		render_uploaded_images.refresh()
 		render_active_actions.refresh()
 
@@ -97,8 +99,8 @@ def render_adressen_page() -> None:
 			return
 		selected_id['value'] = record_id
 		text_value['value'] = str(record.get('text') or '')
-		if text_input['element'] is not None:
-			text_input['element'].value = text_value['value']
+		if text_editor['element'] is not None:
+			text_editor['element'].value = text_value['value']
 		try:
 			images = ADRESSEN_DB.get_images(record_id)
 		except Exception as error:
@@ -117,7 +119,7 @@ def render_adressen_page() -> None:
 		for field in FORM_FIELDS:
 			form_controls[field].value = record[field]
 		if mode_label['element'] is not None:
-			mode_label['element'].set_text(f'Adresse bearbeiten: #{record_id}')
+			mode_label['element'].set_text(f'Adresse bearbeiten: {record_heading(record)}')
 
 	def save_record() -> None:
 		"""Validiert und erstellt beziehungsweise aktualisiert eine Adresse."""
@@ -248,7 +250,7 @@ def render_adressen_page() -> None:
 		if record_id is None:
 			ui.notify('Bitte zuerst eine Adresse auswaehlen.', type='warning')
 			return
-		value = str(text_input['element'].value or '')
+		value = str(text_editor['element'].value or '')
 		try:
 			saved = ADRESSEN_DB.update_text(record_id, value)
 		except Exception as error:
@@ -260,6 +262,7 @@ def render_adressen_page() -> None:
 		text_value['value'] = value
 		text_dialog.close()
 		ui.notify('Text wurde gespeichert.')
+		render_records.refresh()
 
 	async def handle_image_upload(event: events.UploadEventArguments) -> None:
 		"""Prüft und speichert ein hochgeladenes Bild für die aktive Adresse."""
@@ -286,6 +289,7 @@ def render_adressen_page() -> None:
 			'source': image_data_url(content_type, data),
 		})
 		render_uploaded_images.refresh()
+		render_records.refresh()
 		ui.notify(f'{event.file.name} wurde gespeichert.')
 
 	def handle_rejected_images() -> None:
@@ -334,6 +338,7 @@ def render_adressen_page() -> None:
 		]
 		selected_image['attachment_name'] = None
 		render_uploaded_images.refresh()
+		render_records.refresh()
 		ui.notify('Bild wurde geloescht.')
 
 	def clear_images() -> None:
@@ -353,6 +358,7 @@ def render_adressen_page() -> None:
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
 		render_uploaded_images.refresh()
+		render_records.refresh()
 		ui.notify('Bilder wurden entfernt.')
 
 	def render_field_value(record: dict[str, Any], field: str, value_classes: str = 'text-slate-700') -> None:
@@ -365,7 +371,7 @@ def render_adressen_page() -> None:
 	def render_content_status(record: dict[str, Any], field: str) -> None:
 		"""Zeigt nur an, ob Text beziehungsweise Bilder vorhanden sind."""
 
-		available = bool(record.get(field))
+		available = content_available(field, record.get(field))
 		status = 'Ja' if available else 'Nein'
 		status_classes = 'text-green-700 font-medium' if available else 'text-slate-400'
 		with ui.row().classes('items-center gap-1'):
@@ -450,11 +456,11 @@ def render_adressen_page() -> None:
 			ui.button('Loeschen', icon='delete', on_click=delete_record).props('no-caps color=negative')
 
 	with ui.dialog() as text_dialog, ui.card().classes('w-[620px] max-w-full gap-3'):
-		ui.label('Text eingeben').classes('text-lg font-semibold text-slate-900')
-		text_input['element'] = ui.textarea(
-			'Text',
+		ui.label('Text bearbeiten').classes('text-lg font-semibold text-slate-900')
+		text_editor['element'] = ui.editor(
+			placeholder='Text eingeben',
 			value=text_value['value'],
-		).props('autogrow autofocus').classes('w-full min-h-[180px]')
+		).classes('w-full min-h-[280px]')
 		with ui.row().classes('w-full justify-end gap-2'):
 			ui.button('Abbrechen', on_click=text_dialog.close).props('flat no-caps')
 			ui.button('Uebernehmen', icon='save', on_click=save_text).props('no-caps')
@@ -571,23 +577,16 @@ def render_adressen_page() -> None:
 				with ui.card().classes('w-full p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
 					with ui.row().classes('w-full items-start justify-between gap-2 max-md:flex-col'):
 						with ui.column().classes('gap-0 min-w-[180px]'):
-							name_parts = [
-								record[field]
-								for field in ('anrede', 'titel', 'vorname', 'nachname')
-								if field in visible_fields and record[field]
-							]
-							if name_parts:
-								ui.label(' '.join(name_parts)).classes('text-base font-semibold text-slate-900')
+							heading = record_heading(record, visible_fields, fallback_to_id=False)
+							if heading:
+								ui.label(heading).classes('text-base font-semibold text-slate-900')
 							if 'id' in visible_fields:
 								render_field_value(record, 'id', 'text-xs tracking-wide text-slate-500')
 							if 'zusatz' in visible_fields:
 								render_field_value(record, 'zusatz', 'text-sm text-slate-500')
 						with ui.row().classes('items-center gap-2'):
 							ui.button(icon='edit', on_click=lambda record_id=record['id']: load_record(record_id)).props('flat round').classes('text-primary')
-							record_name = ' '.join(
-								str(record.get(field) or '').strip()
-								for field in ('vorname', 'nachname')
-							).strip() or record['id']
+							record_name = record_heading(record)
 							ui.button(
 								icon='delete',
 								on_click=lambda record_id=record['id'], name=record_name: request_delete_record(

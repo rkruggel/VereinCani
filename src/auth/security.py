@@ -1,3 +1,5 @@
+"""Hilfsfunktionen zur sicheren Verarbeitung von Kennungen."""
+
 import hashlib
 import hmac
 import secrets

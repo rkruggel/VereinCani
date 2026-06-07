@@ -1,4 +1,4 @@
-"""Dynamisch aus den Felddefinitionen erzeugte Datenmodelle."""
+
 
 from dataclasses import asdict, field, make_dataclass
 from typing import Any

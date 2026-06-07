@@ -1,3 +1,5 @@
+"""NiceGUI-Hauptseite mit Navigation und geschützten Programmbereichen."""
+
 from nicegui import ui
 
 from src.auth import is_authenticated, render_login_panel

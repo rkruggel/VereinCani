@@ -1,3 +1,5 @@
+"""NiceGUI-Anmeldebereich für Registrierung, Anmeldung und Abmeldung."""
+
 import re
 from typing import Any, Callable
 

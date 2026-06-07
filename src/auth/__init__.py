@@ -1,3 +1,5 @@
+"""Öffentliche Schnittstelle des Authentifizierungspakets."""
+
 from src.auth.panel import render_login_panel
 from src.auth.session import is_authenticated
 

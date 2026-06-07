@@ -1,3 +1,5 @@
+"""Konfiguration und Aufbau der gemeinsamen RavenDB-Verbindung."""
+
 import configparser
 import os
 from dataclasses import dataclass

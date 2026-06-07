@@ -1,3 +1,5 @@
+"""RavenDB-Zugriff für Benutzerkonten und Anmeldedaten."""
+
 import hashlib
 
 from src.auth.models import Benutzer
