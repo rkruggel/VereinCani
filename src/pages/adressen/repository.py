@@ -52,7 +52,9 @@ class RavenAdressenDatabase:
 				return None
 			for field in FORM_FIELDS:
 				value = data.get(field, '')
-				setattr(record, field, list(value or []) if field == 'nichtWochentag' else value)
+				if FIELD_LABELS[field]['type'] == 'liste':
+					value = list(value or [])
+				setattr(record, field, value)
 			session.save_changes()
 			return asdict(record)
 
@@ -161,8 +163,12 @@ class RavenAdressenDatabase:
 	def _create_record(data: dict[str, Any], record_id: str) -> Adresse:
 		"""Erstellt ein normalisiertes Adressmodell aus Formularwerten."""
 
-		values = {field: data.get(field, '') for field in FORM_FIELDS}
-		values['nichtWochentag'] = list(data.get('nichtWochentag') or [])
+		values = {}
+		for field in FORM_FIELDS:
+			value = data.get(field, '')
+			if FIELD_LABELS[field]['type'] == 'liste':
+				value = list(value or [])
+			values[field] = value
 		return Adresse(id=record_id, **values)
 
 

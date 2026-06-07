@@ -1,73 +1,62 @@
-"""Datenmodelle der Adressenverwaltung."""
+"""Dynamisch aus den Felddefinitionen erzeugte Datenmodelle."""
 
-from dataclasses import dataclass
+from dataclasses import asdict, field, make_dataclass
 from typing import Any
 
+from src.pages.adressen.constants import FIELD_LABELS
 
-@dataclass
-class Adresse:
-	"""Repräsentiert ein Adressdokument einschließlich Text- und Bildmetadaten."""
 
-	id: str = ''
-	anrede: str = ''
-	titel: str = ''
-	vorname: str = ''
-	nachname: str = ''
-	zusatz: str = ''
-	adresse: str = ''
-	ort: str = ''
-	geboren: str = ''
-	festnetz: str = ''
-	handy: str = ''
-	email: str = ''
-	www: str = ''
-	nichtWochentag: list[str] | None = None
-	beruf: str = ''
-	hobby: str = ''
-	faehigkeiten: str = ''
-	text: str = ''
-	bilder: list[dict[str, str]] | None = None
+def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
+	"""Ermittelt Python-Typ und Dataclass-Standardwert einer Felddefinition."""
+
+	field_type = definition['type']
+	if field_type == 'liste':
+		return list[str], field(default_factory=list)
+	if field_type == 'bilder':
+		return list[dict[str, str]], field(default_factory=list)
+	return str, field(default='')
+
+
+class AdresseModel:
+	"""Stellt gemeinsames Verhalten für das dynamische Adressmodell bereit."""
 
 	def __post_init__(self) -> None:
-		"""Normalisiert optionale Listenfelder zu veränderbaren Listen."""
+		"""Normalisiert Listenfelder aus älteren Dokumenten auf leere Listen."""
 
-		self.nichtWochentag = list(self.nichtWochentag or [])
-		self.bilder = list(self.bilder or [])
+		for field_name, definition in FIELD_LABELS.items():
+			if definition['type'] in {'liste', 'bilder'}:
+				setattr(self, field_name, list(getattr(self, field_name, None) or []))
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> 'Adresse':
 		"""Erstellt eine Adresse aus RavenDB-Daten und migriert alte Namensfelder."""
 
-		values = {key: value for key, value in data.items() if key != '@metadata'}
-		legacy_name = str(values.pop('name', '') or '').strip()
+		values = {
+			key: value
+			for key, value in data.items()
+			if key in FIELD_LABELS
+		}
+		legacy_name = str(data.get('name', '') or '').strip()
 		if legacy_name and not values.get('vorname') and not values.get('nachname'):
 			values['vorname'], values['nachname'] = split_legacy_name(legacy_name)
 		return cls(**values)
 
 	def to_json(self) -> dict[str, Any]:
-		"""Gibt die Adresse als serialisierbares Wörterbuch zurück."""
+		"""Gibt alle aus ``FIELD_LABELS`` erzeugten Modellfelder als Wörterbuch zurück."""
 
-		return {
-			'id': self.id,
-			'anrede': self.anrede,
-			'titel': self.titel,
-			'vorname': self.vorname,
-			'nachname': self.nachname,
-			'zusatz': self.zusatz,
-			'adresse': self.adresse,
-			'ort': self.ort,
-			'geboren': self.geboren,
-			'festnetz': self.festnetz,
-			'handy': self.handy,
-			'email': self.email,
-			'www': self.www,
-			'nichtWochentag': self.nichtWochentag,
-			'beruf': self.beruf,
-			'hobby': self.hobby,
-			'faehigkeiten': self.faehigkeiten,
-			'text': self.text,
-			'bilder': self.bilder,
-		}
+		return asdict(self)
+
+
+Adresse = make_dataclass(
+	'Adresse',
+	[
+		(field_name, *model_field_definition(definition))
+		for field_name, definition in FIELD_LABELS.items()
+	],
+	bases=(AdresseModel,),
+)
+Adresse.__module__ = __name__
+Adresse.__doc__ = 'Repräsentiert ein aus FIELD_LABELS erzeugtes Adressdokument.'
 
 
 def split_legacy_name(name: str) -> tuple[str, str]:
