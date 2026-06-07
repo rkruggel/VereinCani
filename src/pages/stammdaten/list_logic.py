@@ -6,7 +6,7 @@ import re
 import unicodedata
 from typing import Any
 
-from src.pages.adressen.constants import FIELD_LABELS, SEARCH_FIELDS, SORT_FIELDS
+from src.pages.stammdaten import StammdatenConfig
 
 
 def image_data_url(content_type: str, data: bytes) -> str:
@@ -25,7 +25,10 @@ def validate_phone(value: Any) -> str | None:
 	return 'Nur Zahlen, + und Leerzeichen erlaubt'
 
 
-def normalize_sort_criteria(sortierungen: list[str]) -> list[str]:
+def normalize_sort_criteria(
+	config: StammdatenConfig,
+	sortierungen: list[str],
+) -> list[str]:
 	"""Entfernt ungültige und doppelte Sortierkriterien."""
 
 	result: list[str] = []
@@ -34,7 +37,7 @@ def normalize_sort_criteria(sortierungen: list[str]) -> list[str]:
 		field, separator, direction = criterion.partition(':')
 		if (
 			separator
-			and field in SORT_FIELDS
+			and field in config.sort_fields
 			and direction in {'asc', 'desc'}
 			and field not in used_fields
 		):
@@ -69,16 +72,20 @@ def normalize_search_text(value: Any) -> str:
 	return ''.join(character for character in text if not unicodedata.combining(character)).casefold()
 
 
-def searchable_value(field: str, value: Any) -> str:
+def searchable_value(config: StammdatenConfig, field: str, value: Any) -> str:
 	"""Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf."""
 
-	if FIELD_LABELS[field]['steuerelement'] == 'editor':
+	if config.field_labels[field]['steuerelement'] == 'editor':
 		value = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	return normalize_search_text(value)
 
 
-def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
-	"""Filtert Adressen nach Suchbegriffen, die über mehrere Felder verteilt sein dürfen."""
+def filter_records(
+	config: StammdatenConfig,
+	records: list[dict[str, Any]],
+	query: str,
+) -> list[dict[str, Any]]:
+	"""Filtert Datensätze nach Begriffen, die über mehrere Felder verteilt sein dürfen."""
 
 	search_terms = normalize_search_text(query).split()
 	if not search_terms:
@@ -86,27 +93,27 @@ def filter_records(records: list[dict[str, Any]], query: str) -> list[dict[str, 
 	result = []
 	for record in records:
 		searchable_text = ' '.join(
-			searchable_value(field, record.get(field))
-			for field in SEARCH_FIELDS
+			searchable_value(config, field, record.get(field))
+			for field in config.search_fields
 		)
 		if all(term in searchable_text for term in search_terms):
 			result.append(record)
 	return result
 
 
-def display_value(record: dict[str, Any], field: str) -> str:
-	"""Formatiert einen Feldwert für die kompakte Anzeige in einer Adresskarte."""
+def display_value(config: StammdatenConfig, record: dict[str, Any], field: str) -> str:
+	"""Formatiert einen Feldwert für die kompakte Anzeige in einer Stammdatenkarte."""
 
 	value = record[field]
-	if FIELD_LABELS[field]['type'] == 'liste':
+	if config.field_labels[field]['type'] == 'liste':
 		return ', '.join(value) if value else '-'
 	return str(value or '-')
 
 
-def content_available(field: str, value: Any) -> bool:
+def content_available(config: StammdatenConfig, field: str, value: Any) -> bool:
 	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
 
-	if FIELD_LABELS[field]['steuerelement'] != 'editor':
+	if config.field_labels[field]['steuerelement'] != 'editor':
 		return bool(value)
 	text = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	text = text.replace('\xa0', ' ')
@@ -114,6 +121,7 @@ def content_available(field: str, value: Any) -> bool:
 
 
 def record_heading(
+	config: StammdatenConfig,
 	record: dict[str, Any],
 	visible_fields: set[str] | None = None,
 	*,
@@ -124,7 +132,7 @@ def record_heading(
 	heading_fields = sorted(
 		(
 			(definition['formHeaderPos'], field)
-			for field, definition in FIELD_LABELS.items()
+			for field, definition in config.field_labels.items()
 			if 'formHeaderPos' in definition
 			and (visible_fields is None or field in visible_fields)
 		),

@@ -3,7 +3,8 @@
 from nicegui import ui
 
 from src.auth import is_authenticated, render_login_panel
-from src.pages.adressen import render_adressen_page
+from src.pages.adressen.start import render_adressen_page
+from src.pages.mitglieder import render_mitglieder_page
 
 
 PROTECTED_PAGES = {'adressen', 'mitglieder', 'termine'}
@@ -115,6 +116,9 @@ def render_start_page() -> None:
 		page = pages[selected_page['key']]
 		if selected_page['key'] == 'adressen':
 			render_adressen_page()
+			return
+		if selected_page['key'] == 'mitglieder':
+			render_mitglieder_page()
 			return
 
 		with ui.column().classes('w-full gap-4'):

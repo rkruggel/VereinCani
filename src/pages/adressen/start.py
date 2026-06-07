@@ -1,4 +1,10 @@
-"""Zentrale Felddefinitionen für Modell, Formular und Adressliste."""
+"""Startkonfiguration und Einstiegspunkt der Adressenverwaltung."""
+
+from src.pages.stammdaten import StammdatenConfig
+from src.pages.stammdaten.models import create_stammdaten_model
+from src.pages.stammdaten.page import render_stammdaten_page
+from src.pages.stammdaten.repository import RavenStammdatenDatabase
+from src.pages.stammdaten.settings import ListeneinstellungenRepository
 
 
 """
@@ -234,51 +240,22 @@ FIELD_LABELS = {
 	},
 }
 
-FORM_FIELDS = [
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition['formular']
-]
-REQUIRED_FIELDS = [
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition.get('pflichtfeld')
-]
-SEARCH_FIELDS = [
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition.get('suchbar')
-]
-SORT_FIELDS = [
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition.get('sortierbar')
-]
-CONTENT_ACTION_FIELDS = [
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition.get('actionLabel')
-]
-EDITOR_FIELD = next(
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition['steuerelement'] == 'editor'
+CONFIG = StammdatenConfig(
+	key='adressen',
+	singular='Adresse',
+	plural='Adressen',
+	collection_name='Adressen',
+	settings_collection_name='AdresslistenEinstellungen',
+	field_labels=FIELD_LABELS,
+	model_name='Adresse',
+	legacy_name_fields=('vorname', 'nachname'),
 )
-IMAGE_FIELD = next(
-	field
-	for field, definition in FIELD_LABELS.items()
-	if definition['steuerelement'] == 'upload'
-)
+Adresse = create_stammdaten_model(CONFIG)
+ADRESSEN_DB = RavenStammdatenDatabase(CONFIG, Adresse)
+ADRESSLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
-def list_fields(section: str) -> list[str]:
-	"""Liefert die Felder eines Listenbereichs in konfigurierter Reihenfolge."""
+def render_adressen_page() -> None:
+	"""Übergibt die Adresskonfiguration an die gemeinsame Stammdaten-Seite."""
 
-	return [
-		field
-		for field, definition in sorted(
-			FIELD_LABELS.items(),
-			key=lambda item: item[1].get('listPos', 0),
-		)
-		if definition.get('listSection') == section
-	]
+	render_stammdaten_page(CONFIG, ADRESSEN_DB, ADRESSLISTEN_EINSTELLUNGEN)

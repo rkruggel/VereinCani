@@ -1,7 +1,5 @@
-"""Öffentliche Schnittstelle des Adressen-Pakets."""
+"""Öffentliche Schnittstelle der Adressenverwaltung."""
 
-from src.pages.adressen.adressen import render_adressen_page
-from src.pages.adressen.models import Adresse
+from src.pages.adressen.start import Adresse, CONFIG, FIELD_LABELS, render_adressen_page
 
-
-__all__ = ['Adresse', 'render_adressen_page']
+__all__ = ['Adresse', 'CONFIG', 'FIELD_LABELS', 'render_adressen_page']

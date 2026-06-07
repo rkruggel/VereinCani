@@ -1,17 +1,21 @@
-"""Aufbau des Eingabeformulars für eine Adresse."""
+"""Aufbau eines aus Felddefinitionen erzeugten Stammdatenformulars."""
 
 from collections.abc import Callable
 from typing import Any
 
 from nicegui import ui
 
-from src.pages.adressen.constants import FIELD_LABELS, FORM_FIELDS
+from src.pages.stammdaten import StammdatenConfig
 
 
-def create_form_control(field: str, validate_phone: Callable[[Any], str | None]) -> Any:
+def create_form_control(
+	config: StammdatenConfig,
+	field: str,
+	validate_phone: Callable[[Any], str | None],
+) -> Any:
 	"""Erzeugt das in den Feldmetadaten konfigurierte NiceGUI-Steuerelement."""
 
-	definition = FIELD_LABELS[field]
+	definition = config.field_labels[field]
 	label = definition['text']
 	control_type = definition['steuerelement']
 
@@ -47,7 +51,8 @@ def create_form_control(field: str, validate_phone: Callable[[Any], str | None])
 	return ui.input(label, validation=validation).props(input_props).classes('w-full')
 
 
-def render_address_form(
+def render_stammdaten_form(
+	config: StammdatenConfig,
 	validate_phone: Callable[[Any], str | None],
 	on_new: Callable[[], None],
 	on_save: Callable[[], None],
@@ -56,8 +61,8 @@ def render_address_form(
 
 	with ui.column().classes('w-full gap-2'):
 		controls = {
-			field: create_form_control(field, validate_phone)
-			for field in FORM_FIELDS
+			field: create_form_control(config, field, validate_phone)
+			for field in config.form_fields
 		}
 
 		with ui.row().classes('w-full justify-end gap-2'):

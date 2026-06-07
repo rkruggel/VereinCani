@@ -1,13 +1,14 @@
-"""RavenDB-Modell und Repository für persönliche Adresslisteneinstellungen."""
+"""RavenDB-Modell und Repository für persönliche Listeneinstellungen."""
 
 from dataclasses import dataclass
 from urllib.parse import quote
 
 from src.db.client import create_document_store
+from src.pages.stammdaten import StammdatenConfig
 
 
 @dataclass
-class AdresslistenEinstellung:
+class Listeneinstellung:
 	"""Speichert sichtbare Felder und Sortierung eines Benutzers."""
 
 	id: str = ''
@@ -22,32 +23,33 @@ class AdresslistenEinstellung:
 		self.sortierungen = list(self.sortierungen or [])
 
 
-class AdresslistenEinstellungenRepository:
+class ListeneinstellungenRepository:
 	"""Verwaltet benutzerspezifische Listeneinstellungen in RavenDB."""
 
-	def __init__(self) -> None:
+	def __init__(self, config: StammdatenConfig) -> None:
 		"""Initialisiert das Repository mit verzögertem Verbindungsaufbau."""
 
+		self.config = config
 		self._store = None
 
 	def get(self, benutzer_name: str) -> list[str] | None:
 		"""Lädt die sichtbaren Felder eines Benutzers."""
 
 		with self._get_store().open_session() as session:
-			einstellung = session.load(einstellung_id(benutzer_name), AdresslistenEinstellung)
+			einstellung = session.load(self.einstellung_id(benutzer_name), Listeneinstellung)
 			return list(einstellung.sichtbare_felder) if einstellung is not None else None
 
-	def get_document(self, benutzer_name: str) -> AdresslistenEinstellung | None:
+	def get_document(self, benutzer_name: str) -> Listeneinstellung | None:
 		"""Lädt das vollständige Einstellungsdokument eines Benutzers."""
 
 		with self._get_store().open_session() as session:
-			return session.load(einstellung_id(benutzer_name), AdresslistenEinstellung)
+			return session.load(self.einstellung_id(benutzer_name), Listeneinstellung)
 
 	def get_sortierungen(self, benutzer_name: str) -> list[str] | None:
 		"""Lädt nur die gespeicherten Sortierkriterien."""
 
 		with self._get_store().open_session() as session:
-			einstellung = session.load(einstellung_id(benutzer_name), AdresslistenEinstellung)
+			einstellung = session.load(self.einstellung_id(benutzer_name), Listeneinstellung)
 			if einstellung is None:
 				return None
 			return list(einstellung.sortierungen)
@@ -55,11 +57,11 @@ class AdresslistenEinstellungenRepository:
 	def save(self, benutzer_name: str, sichtbare_felder: list[str]) -> None:
 		"""Erstellt oder aktualisiert die Auswahl sichtbarer Felder."""
 
-		document_id = einstellung_id(benutzer_name)
+		document_id = self.einstellung_id(benutzer_name)
 		with self._get_store().open_session() as session:
-			einstellung = session.load(document_id, AdresslistenEinstellung)
+			einstellung = session.load(document_id, Listeneinstellung)
 			if einstellung is None:
-				einstellung = AdresslistenEinstellung(
+				einstellung = Listeneinstellung(
 					id=document_id,
 					benutzer_name=benutzer_name,
 				)
@@ -70,11 +72,11 @@ class AdresslistenEinstellungenRepository:
 	def save_sortierungen(self, benutzer_name: str, sortierungen: list[str]) -> None:
 		"""Erstellt oder aktualisiert die persönliche Sortierreihenfolge."""
 
-		document_id = einstellung_id(benutzer_name)
+		document_id = self.einstellung_id(benutzer_name)
 		with self._get_store().open_session() as session:
-			einstellung = session.load(document_id, AdresslistenEinstellung)
+			einstellung = session.load(document_id, Listeneinstellung)
 			if einstellung is None:
-				einstellung = AdresslistenEinstellung(
+				einstellung = Listeneinstellung(
 					id=document_id,
 					benutzer_name=benutzer_name,
 				)
@@ -83,13 +85,14 @@ class AdresslistenEinstellungenRepository:
 			session.save_changes()
 
 	def delete(self, benutzer_name: str) -> bool:
-		"""Löscht alle Adresslisteneinstellungen eines Benutzers."""
+		"""Löscht alle Listeneinstellungen eines Benutzers."""
 
-		document_id = einstellung_id(benutzer_name)
+		document_id = self.einstellung_id(benutzer_name)
 		with self._get_store().open_session() as session:
-			if session.load(document_id, AdresslistenEinstellung) is None:
+			einstellung = session.load(document_id, Listeneinstellung)
+			if einstellung is None:
 				return False
-			session.delete(document_id)
+			session.delete(einstellung)
 			session.save_changes()
 			return True
 
@@ -98,15 +101,11 @@ class AdresslistenEinstellungenRepository:
 
 		if self._store is None:
 			self._store = create_document_store(
-				collection_names={AdresslistenEinstellung: 'AdresslistenEinstellungen'},
+				collection_names={Listeneinstellung: self.config.settings_collection_name},
 			)
 		return self._store
 
+	def einstellung_id(self, benutzer_name: str) -> str:
+		"""Erzeugt eine URL-sichere und benutzerspezifische RavenDB-ID."""
 
-def einstellung_id(benutzer_name: str) -> str:
-	"""Erzeugt eine URL-sichere und benutzerspezifische RavenDB-ID."""
-
-	return f'adresslisten-einstellungen/{quote(benutzer_name.strip(), safe="")}'
-
-
-ADRESSLISTEN_EINSTELLUNGEN = AdresslistenEinstellungenRepository()
+		return f'{self.config.settings_id_prefix}/{quote(benutzer_name.strip(), safe="")}'
