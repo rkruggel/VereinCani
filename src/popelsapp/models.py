@@ -1,9 +1,9 @@
-"""Dynamische Modelle für konfigurierbare Stammdaten."""
+"""Dynamische Modelle für konfigurierbare Popels."""
 
 from dataclasses import asdict, field, make_dataclass
 from typing import Any, Self
 
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
 
 
 def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
@@ -17,10 +17,10 @@ def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
 	return str, field(default='')
 
 
-class StammdatenModel:
+class PopelsModel:
 	"""Stellt gemeinsames Verhalten für dynamisch erzeugte Modelle bereit."""
 
-	_config: StammdatenConfig
+	_config: PopelsConfig
 
 	def __post_init__(self) -> None:
 		"""Normalisiert Listenfelder aus älteren Dokumenten auf leere Listen."""
@@ -50,7 +50,7 @@ class StammdatenModel:
 		return asdict(self)
 
 
-def create_stammdaten_model(config: StammdatenConfig) -> type[StammdatenModel]:
+def create_popels_model(config: PopelsConfig) -> type[PopelsModel]:
 	"""Erzeugt eine Dataclass passend zu den Felddefinitionen eines Moduls."""
 
 	model = make_dataclass(
@@ -59,7 +59,7 @@ def create_stammdaten_model(config: StammdatenConfig) -> type[StammdatenModel]:
 			(field_name, *model_field_definition(definition))
 			for field_name, definition in config.field_labels.items()
 		],
-		bases=(StammdatenModel,),
+		bases=(PopelsModel,),
 	)
 	model.__module__ = __name__
 	model.__doc__ = f'Repräsentiert ein dynamisch erzeugtes {config.singular}-Dokument.'

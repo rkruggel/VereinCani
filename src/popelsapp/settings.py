@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from urllib.parse import quote
 
 from src.db.client import create_document_store
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
 
 
 @dataclass
@@ -26,7 +26,7 @@ class Listeneinstellung:
 class ListeneinstellungenRepository:
 	"""Verwaltet benutzerspezifische Listeneinstellungen in RavenDB."""
 
-	def __init__(self, config: StammdatenConfig) -> None:
+	def __init__(self, config: PopelsConfig) -> None:
 		"""Initialisiert das Repository mit verzögertem Verbindungsaufbau."""
 
 		self.config = config

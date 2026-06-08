@@ -6,7 +6,7 @@ import re
 import unicodedata
 from typing import Any
 
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
 
 
 def image_data_url(content_type: str, data: bytes) -> str:
@@ -26,7 +26,7 @@ def validate_phone(value: Any) -> str | None:
 
 
 def normalize_sort_criteria(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	sortierungen: list[str],
 ) -> list[str]:
 	"""Entfernt ungültige und doppelte Sortierkriterien."""
@@ -72,7 +72,7 @@ def normalize_search_text(value: Any) -> str:
 	return ''.join(character for character in text if not unicodedata.combining(character)).casefold()
 
 
-def searchable_value(config: StammdatenConfig, field: str, value: Any) -> str:
+def searchable_value(config: PopelsConfig, field: str, value: Any) -> str:
 	"""Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf."""
 
 	if config.field_labels[field]['steuerelement'] == 'editor':
@@ -81,7 +81,7 @@ def searchable_value(config: StammdatenConfig, field: str, value: Any) -> str:
 
 
 def filter_records(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	records: list[dict[str, Any]],
 	query: str,
 ) -> list[dict[str, Any]]:
@@ -101,8 +101,8 @@ def filter_records(
 	return result
 
 
-def display_value(config: StammdatenConfig, record: dict[str, Any], field: str) -> str:
-	"""Formatiert einen Feldwert für die kompakte Anzeige in einer Stammdatenkarte."""
+def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> str:
+	"""Formatiert einen Feldwert für die kompakte Anzeige in einer Popels-Karte."""
 
 	value = record[field]
 	if config.field_labels[field]['type'] == 'liste':
@@ -110,7 +110,7 @@ def display_value(config: StammdatenConfig, record: dict[str, Any], field: str) 
 	return str(value or '-')
 
 
-def content_available(config: StammdatenConfig, field: str, value: Any) -> bool:
+def content_available(config: PopelsConfig, field: str, value: Any) -> bool:
 	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
 
 	if config.field_labels[field]['steuerelement'] != 'editor':
@@ -121,7 +121,7 @@ def content_available(config: StammdatenConfig, field: str, value: Any) -> bool:
 
 
 def record_heading(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	record: dict[str, Any],
 	visible_fields: set[str] | None = None,
 	*,

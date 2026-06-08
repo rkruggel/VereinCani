@@ -1,14 +1,14 @@
-"""Laden und Speichern benutzerspezifischer Stammdatenlisten-Einstellungen."""
+"""Laden und Speichern benutzerspezifischer Popels-Listen-Einstellungen."""
 
 from nicegui import app
 
-from src.pages.stammdaten.list_logic import normalize_sort_criteria
-from src.pages.stammdaten.settings import ListeneinstellungenRepository
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
+from src.popelsapp.list_logic import normalize_sort_criteria
+from src.popelsapp.settings import ListeneinstellungenRepository
 
 
 def load_visible_fields(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	settings: ListeneinstellungenRepository,
 	benutzer_name: str,
 ) -> set[str]:
@@ -27,7 +27,7 @@ def load_visible_fields(
 
 
 def save_visible_fields(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	settings: ListeneinstellungenRepository,
 	benutzer_name: str,
 	visible_fields: set[str],
@@ -41,7 +41,7 @@ def save_visible_fields(
 
 
 def load_sort_criteria(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	settings: ListeneinstellungenRepository,
 	benutzer_name: str,
 ) -> list[str]:

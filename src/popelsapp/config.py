@@ -1,12 +1,14 @@
-"""Konfiguration eines aus Felddefinitionen aufgebauten Stammdatenmoduls."""
+"""Konfiguration eines aus Felddefinitionen aufgebauten Popels-Moduls."""
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 
 @dataclass(frozen=True)
-class StammdatenConfig:
-	"""Beschreibt Felder, Texte und Persistenz eines Stammdatenbereichs."""
+class PopelsConfig:
+	"""Beschreibt Felder, Texte und Persistenz eines Popels-Bereichs."""
 
 	key: str
 	singular: str
@@ -107,3 +109,20 @@ class StammdatenConfig:
 			)
 			if definition.get('listSection') == section
 		]
+
+
+def load_popels_config(file_name: str) -> PopelsConfig:
+	"""Lädt eine Popels-Konfiguration aus dem Projektordner ``popels``."""
+
+	project_root = Path(__file__).resolve().parents[2]
+	config_path = project_root / 'popels' / file_name
+	with config_path.open(encoding='utf-8') as config_file:
+		raw_config = json.load(config_file)
+	config_values = raw_config['config']
+	legacy_name_fields = config_values.get('legacy_name_fields')
+	if legacy_name_fields is not None:
+		config_values['legacy_name_fields'] = tuple(legacy_name_fields)
+	return PopelsConfig(
+		**config_values,
+		field_labels=raw_config['field_labels'],
+	)

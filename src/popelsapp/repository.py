@@ -1,4 +1,4 @@
-"""RavenDB-Zugriff für konfigurierbare Stammdaten und Bild-Attachments."""
+"""RavenDB-Zugriff für konfigurierbare Popels und Bild-Attachments."""
 
 from __future__ import annotations
 
@@ -7,13 +7,13 @@ from typing import Any
 from uuid import uuid4
 
 from src.db.client import create_document_store
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
 
 
-class RavenStammdatenDatabase:
-	"""Kapselt Datenbankoperationen für ein konfiguriertes Stammdatenmodul."""
+class RavenPopelsDatabase:
+	"""Kapselt Datenbankoperationen für ein konfiguriertes Popels-Modul."""
 
-	def __init__(self, config: StammdatenConfig, model: type) -> None:
+	def __init__(self, config: PopelsConfig, model: type) -> None:
 		"""Initialisiert das Repository mit einem verzögert erzeugten DocumentStore."""
 
 		self.config = config

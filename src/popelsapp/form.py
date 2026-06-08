@@ -1,15 +1,15 @@
-"""Aufbau eines aus Felddefinitionen erzeugten Stammdatenformulars."""
+"""Aufbau eines aus Felddefinitionen erzeugten Popels-Formulars."""
 
 from collections.abc import Callable
 from typing import Any
 
 from nicegui import ui
 
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp import PopelsConfig
 
 
 def create_form_control(
-	config: StammdatenConfig,
+	config: PopelsConfig,
 	field: str,
 	validate_phone: Callable[[Any], str | None],
 ) -> Any:
@@ -51,8 +51,8 @@ def create_form_control(
 	return ui.input(label, validation=validation).props(input_props).classes('w-full')
 
 
-def render_stammdaten_form(
-	config: StammdatenConfig,
+def render_popels_form(
+	config: PopelsConfig,
 	validate_phone: Callable[[Any], str | None],
 	on_new: Callable[[], None],
 	on_save: Callable[[], None],

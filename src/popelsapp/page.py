@@ -1,4 +1,4 @@
-"""NiceGUI-Seite zur Pflege, Suche und Anzeige konfigurierbarer Stammdaten."""
+"""NiceGUI-Seite zur Pflege, Suche und Anzeige konfigurierbarer Popels."""
 
 from functools import partial
 from typing import Any
@@ -6,8 +6,9 @@ from typing import Any
 from nicegui import events, ui
 
 from src.auth.session import get_authenticated_user
-from src.pages.stammdaten.form import render_stammdaten_form
-from src.pages.stammdaten.list_logic import (
+from src.popelsapp import PopelsConfig
+from src.popelsapp.form import render_popels_form
+from src.popelsapp.list_logic import (
 	cycle_sort_criterion,
 	content_available as configured_content_available,
 	display_value as configured_display_value,
@@ -16,31 +17,30 @@ from src.pages.stammdaten.list_logic import (
 	record_heading as configured_record_heading,
 	validate_phone,
 )
-from src.pages.stammdaten.preferences import load_sort_criteria, load_visible_fields, save_visible_fields
-from src.pages.stammdaten.repository import RavenStammdatenDatabase
-from src.pages.stammdaten.settings import ListeneinstellungenRepository
-from src.pages.stammdaten import StammdatenConfig
+from src.popelsapp.preferences import load_sort_criteria, load_visible_fields, save_visible_fields
+from src.popelsapp.repository import RavenPopelsDatabase
+from src.popelsapp.settings import ListeneinstellungenRepository
 
 
-def render_stammdaten_page(
-	config: StammdatenConfig,
-	database: RavenStammdatenDatabase,
+def render_popels_page(
+	config: PopelsConfig,
+	database: RavenPopelsDatabase,
 	settings: ListeneinstellungenRepository,
 ) -> None:
-	"""Erzeugt eine vollständige Stammdaten-Seite für den angemeldeten Benutzer."""
+	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
 	benutzer = get_authenticated_user()
 	if benutzer is None:
 		ui.notify('Bitte zuerst anmelden.', type='warning')
 		return
-	FIELD_LABELS = config.field_labels
+	POPELS_FIELDS = config.field_labels
 	FORM_FIELDS = config.form_fields
 	REQUIRED_FIELDS = config.required_fields
 	SORT_FIELDS = config.sort_fields
 	CONTENT_ACTION_FIELDS = config.content_action_fields
 	EDITOR_FIELD = config.editor_field
 	PAGE_TOP_ANCHOR_ID = f'{config.key}-page-top'
-	STAMMDATEN_DB = database
+	POPELS_DB = database
 	LISTEN_EINSTELLUNGEN = settings
 	list_fields = config.list_fields
 	filter_records = partial(configured_filter_records, config)
@@ -69,7 +69,7 @@ def render_stammdaten_page(
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
 	def collect_form_data() -> dict[str, Any]:
-		"""Liest die aktuellen Werte aller Steuerelemente des Stammdatenformulars."""
+		"""Liest die aktuellen Werte aller Steuerelemente des Popels-Formulars."""
 
 		return {field: form_controls[field].value for field in FORM_FIELDS}
 
@@ -81,7 +81,7 @@ def render_stammdaten_page(
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
 		for field in FORM_FIELDS:
-			form_controls[field].value = [] if FIELD_LABELS[field]['type'] == 'liste' else ''
+			form_controls[field].value = [] if POPELS_FIELDS[field]['type'] == 'liste' else ''
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text(f'Neue {config.singular}')
 		if text_editor['element'] is not None:
@@ -92,7 +92,7 @@ def render_stammdaten_page(
 		render_active_actions.refresh()
 
 	def scroll_to_page_top() -> None:
-		"""Scrollt den Arbeitsbereich zum Anfang des Stammdatenformulars."""
+		"""Scrollt den Arbeitsbereich zum Anfang des Popels-Formulars."""
 
 		ui.run_javascript(
 			f'document.getElementById("{PAGE_TOP_ANCHOR_ID}")'
@@ -104,7 +104,7 @@ def render_stammdaten_page(
 
 		scroll_to_page_top()
 		try:
-			record = STAMMDATEN_DB.get(record_id)
+			record = POPELS_DB.get(record_id)
 		except Exception as error:
 			ui.notify(f'RavenDB nicht erreichbar: {error}', type='negative')
 			return
@@ -118,7 +118,7 @@ def render_stammdaten_page(
 		if text_save_button['element'] is not None:
 			text_save_button['element'].set_enabled(False)
 		try:
-			images = STAMMDATEN_DB.get_images(record_id)
+			images = POPELS_DB.get_images(record_id)
 		except Exception as error:
 			ui.notify(f'Bilder konnten nicht geladen werden: {error}', type='warning')
 			images = []
@@ -142,7 +142,7 @@ def render_stammdaten_page(
 
 		data = collect_form_data()
 		missing_fields = [
-			FIELD_LABELS[field]['text']
+			POPELS_FIELDS[field]['text']
 			for field in REQUIRED_FIELDS
 			if not str(data.get(field) or '').strip()
 		]
@@ -150,25 +150,25 @@ def render_stammdaten_page(
 			ui.notify(f'Pflichtfelder ausfüllen: {", ".join(missing_fields)}', type='warning')
 			return
 		for field in FORM_FIELDS:
-			if FIELD_LABELS[field]['type'] != 'telefon':
+			if POPELS_FIELDS[field]['type'] != 'telefon':
 				continue
 			if validate_phone(data[field]) is not None:
 				ui.notify(
-					f'{FIELD_LABELS[field]["text"]} darf nur Zahlen, + und Leerzeichen enthalten',
+					f'{POPELS_FIELDS[field]["text"]} darf nur Zahlen, + und Leerzeichen enthalten',
 					type='warning',
 				)
 				return
 
 		if selected_id['value'] is None:
 			try:
-				record = STAMMDATEN_DB.create(data)
+				record = POPELS_DB.create(data)
 			except Exception as error:
 				ui.notify(f'{config.singular} konnte nicht gespeichert werden: {error}', type='negative')
 				return
 			ui.notify(f'{config.singular} #{record["id"]} angelegt')
 		else:
 			try:
-				record = STAMMDATEN_DB.update(selected_id['value'], data)
+				record = POPELS_DB.update(selected_id['value'], data)
 			except Exception as error:
 				ui.notify(f'{config.singular} konnte nicht gespeichert werden: {error}', type='negative')
 				return
@@ -196,7 +196,7 @@ def render_stammdaten_page(
 			delete_dialog.close()
 			return
 		try:
-			deleted = STAMMDATEN_DB.delete(record_id)
+			deleted = POPELS_DB.delete(record_id)
 		except Exception as error:
 			ui.notify(f'{config.singular} konnte nicht geloescht werden: {error}', type='negative')
 			return
@@ -212,7 +212,7 @@ def render_stammdaten_page(
 			ui.notify(f'{config.singular} nicht gefunden', type='warning')
 
 	def set_field_visibility(field: str, visible: bool | None) -> None:
-		"""Ändert und speichert die Sichtbarkeit eines Feldes in der Stammdatenliste."""
+		"""Ändert und speichert die Sichtbarkeit eines Feldes in der Popels-Liste."""
 
 		if visible:
 			visible_fields.add(field)
@@ -252,14 +252,14 @@ def render_stammdaten_page(
 		render_records.refresh()
 
 	def apply_search() -> None:
-		"""Übernimmt den Suchtext und aktualisiert die Stammdatenliste."""
+		"""Übernimmt den Suchtext und aktualisiert die Popels-Liste."""
 
 		search_query['value'] = str(search_input['element'].value or '').strip()
 		search_dialog.close()
 		render_records.refresh()
 
 	def clear_search() -> None:
-		"""Leert den Suchtext und zeigt wieder alle Stammdaten an."""
+		"""Leert den Suchtext und zeigt wieder alle Popels-Datensätze an."""
 
 		search_query['value'] = ''
 		if search_input['element'] is not None:
@@ -276,7 +276,7 @@ def render_stammdaten_page(
 			return
 		value = str(text_editor['element'].value or '')
 		try:
-			saved = STAMMDATEN_DB.update_text(record_id, value)
+			saved = POPELS_DB.update_text(record_id, value)
 		except Exception as error:
 			ui.notify(f'Text konnte nicht gespeichert werden: {error}', type='negative')
 			return
@@ -315,7 +315,7 @@ def render_stammdaten_page(
 			return
 		data = await event.file.read()
 		try:
-			image = STAMMDATEN_DB.add_image(record_id, event.file.name, content_type, data)
+			image = POPELS_DB.add_image(record_id, event.file.name, content_type, data)
 		except Exception as error:
 			ui.notify(f'Bild konnte nicht gespeichert werden: {error}', type='negative')
 			return
@@ -363,7 +363,7 @@ def render_stammdaten_page(
 			ui.notify('Bitte zuerst ein Bild auswaehlen.', type='warning')
 			return
 		try:
-			deleted = STAMMDATEN_DB.delete_image(record_id, attachment_name)
+			deleted = POPELS_DB.delete_image(record_id, attachment_name)
 		except Exception as error:
 			ui.notify(f'Bild konnte nicht geloescht werden: {error}', type='negative')
 			return
@@ -386,7 +386,7 @@ def render_stammdaten_page(
 		if record_id is None:
 			return
 		try:
-			cleared = STAMMDATEN_DB.clear_images(record_id)
+			cleared = POPELS_DB.clear_images(record_id)
 		except Exception as error:
 			ui.notify(f'Bilder konnten nicht entfernt werden: {error}', type='negative')
 			return
@@ -400,10 +400,10 @@ def render_stammdaten_page(
 		ui.notify('Bilder wurden entfernt.')
 
 	def render_field_value(record: dict[str, Any], field: str, value_classes: str = 'text-slate-700') -> None:
-		"""Zeigt Beschriftung und formatierten Wert eines Stammdatenfeldes an."""
+		"""Zeigt Beschriftung und formatierten Wert eines Popels-Feldes an."""
 
 		with ui.row().classes('items-baseline gap-1'):
-			ui.label(f'{FIELD_LABELS[field]["text"]}:').classes('font-medium text-green-600')
+			ui.label(f'{POPELS_FIELDS[field]["text"]}:').classes('font-medium text-green-600')
 			ui.label(display_value(record, field)).classes(value_classes)
 
 	def render_content_status(record: dict[str, Any], field: str) -> None:
@@ -413,16 +413,16 @@ def render_stammdaten_page(
 		status = 'Ja' if available else 'Nein'
 		status_classes = 'text-green-700 font-medium' if available else 'text-slate-400'
 		with ui.row().classes('items-center gap-1'):
-			ui.label(f'{FIELD_LABELS[field]["text"]}:').classes('font-medium text-green-600')
+			ui.label(f'{POPELS_FIELDS[field]["text"]}:').classes('font-medium text-green-600')
 			ui.label(status).classes(status_classes)
 
 	with ui.dialog() as field_dialog, ui.card().classes('w-[440px] max-w-full gap-3'):
 		ui.label(f'Felder der {config.singular}-Liste').classes('text-lg font-semibold text-slate-900')
 		ui.label(f'Waehle aus, welche Felder in den {config.singular}-Karten angezeigt werden.').classes('text-sm text-slate-600')
 		with ui.grid(columns=2).classes('w-full gap-x-4 gap-y-1 max-sm:grid-cols-1'):
-			for field in FIELD_LABELS:
+			for field in POPELS_FIELDS:
 				ui.checkbox(
-					FIELD_LABELS[field]['text'],
+					POPELS_FIELDS[field]['text'],
 					value=field in visible_fields,
 					on_change=lambda event, selected_field=field: set_field_visibility(selected_field, event.value),
 				).props('dense')
@@ -444,7 +444,7 @@ def render_stammdaten_page(
 					for priority, criterion in enumerate(sort_criteria['value'], start=1):
 						field, _separator, direction = criterion.partition(':')
 						direction_label = 'A-Z' if direction == 'asc' else 'Z-A'
-						ui.label(f'{priority}. {FIELD_LABELS[field]["text"]} {direction_label}').classes(
+						ui.label(f'{priority}. {POPELS_FIELDS[field]["text"]} {direction_label}').classes(
 							'text-sm font-medium text-green-700'
 						)
 			else:
@@ -460,7 +460,7 @@ def render_stammdaten_page(
 					if criterion is not None:
 						suffix = ' A-Z' if criterion.endswith(':asc') else ' Z-A'
 					ui.button(
-						f'{FIELD_LABELS[field]["text"]}{suffix}',
+						f'{POPELS_FIELDS[field]["text"]}{suffix}',
 						on_click=lambda selected_field=field: cycle_sort_field(selected_field),
 					).props('flat no-caps dense').classes('justify-start bg-slate-100 text-slate-700')
 			with ui.row().classes('w-full justify-between gap-2'):
@@ -575,7 +575,7 @@ def render_stammdaten_page(
 		}
 		with ui.row().classes('w-full gap-2'):
 			for field in CONTENT_ACTION_FIELDS:
-				definition = FIELD_LABELS[field]
+				definition = POPELS_FIELDS[field]
 				ui.button(
 					definition['actionLabel'],
 					icon=definition['actionIcon'],
@@ -584,10 +584,10 @@ def render_stammdaten_page(
 
 	@ui.refreshable
 	def render_records() -> None:
-		"""Lädt, filtert und rendert die Stammdaten als Kartenliste."""
+		"""Lädt, filtert und rendert die Popels-Datensätze als Kartenliste."""
 
 		try:
-			all_records = STAMMDATEN_DB.list(sort_criteria['value'])
+			all_records = POPELS_DB.list(sort_criteria['value'])
 			records = filter_records(all_records, search_query['value'])
 			database_error = None
 		except Exception as error:
@@ -634,7 +634,7 @@ def render_stammdaten_page(
 									render_field_value(
 										record,
 										field,
-										FIELD_LABELS[field].get('listValueClasses', 'text-slate-700'),
+										POPELS_FIELDS[field].get('listValueClasses', 'text-slate-700'),
 									)
 						with ui.row().classes('items-center gap-2'):
 							ui.button(icon='edit', on_click=lambda record_id=record['id']: load_record(record_id)).props('flat round').classes('text-primary')
@@ -653,7 +653,7 @@ def render_stammdaten_page(
 								render_field_value(
 									record,
 									field,
-									FIELD_LABELS[field].get('listValueClasses', 'text-slate-700'),
+									POPELS_FIELDS[field].get('listValueClasses', 'text-slate-700'),
 								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm text-slate-500'):
@@ -662,7 +662,7 @@ def render_stammdaten_page(
 								render_field_value(
 									record,
 									field,
-									FIELD_LABELS[field].get('listValueClasses', 'text-slate-500'),
+									POPELS_FIELDS[field].get('listValueClasses', 'text-slate-500'),
 								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm'):
@@ -678,7 +678,7 @@ def render_stammdaten_page(
 				ui.label('Daten werden in RavenDB gespeichert.').classes('text-xs text-slate-600')
 				render_active_actions()
 
-				form_controls.update(render_stammdaten_form(config, validate_phone, clear_form, save_record))
+				form_controls.update(render_popels_form(config, validate_phone, clear_form, save_record))
 
 			with ui.column().classes('flex-1 w-full gap-3'):
 				render_records()
