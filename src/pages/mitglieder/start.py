@@ -2,11 +2,6 @@
 
 from nicegui import ui
 
-from src.pages.adressen.start import (
-	ADRESSEN_DB,
-	ADRESSLISTEN_EINSTELLUNGEN,
-	CONFIG as ADRESSEN_CONFIG,
-)
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -21,18 +16,11 @@ MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_mitglieder_page() -> None:
-	"""Zeigt Mitglieder und Adressen als zusammengehörige Registerkarten."""
+	"""Zeigt die Mitgliederverwaltung in einer Registerkarte."""
 
-	popels_tabs = [
-		('Mitglieder', CONFIG, MITGLIEDER_DB, MITGLIEDERLISTEN_EINSTELLUNGEN),
-		('Adressen', ADRESSEN_CONFIG, ADRESSEN_DB, ADRESSLISTEN_EINSTELLUNGEN),
-	]
-	tab_elements = {}
-	with ui.tabs().classes('w-full') as tabs:
-		for title, _config, _database, _settings in popels_tabs:
-			tab_elements[title] = ui.tab(title)
+	with ui.tabs().props('align=left dense').classes('w-full justify-start') as tabs:
+		mitglieder_tab = ui.tab('Mitglieder').props('no-caps').classes('text-xs px-2')
 
-	with ui.tab_panels(tabs, value=tab_elements['Mitglieder']).classes('w-full bg-transparent'):
-		for title, config, database, settings in popels_tabs:
-			with ui.tab_panel(tab_elements[title]).classes('px-0'):
-				render_popels_page(config, database, settings)
+	with ui.tab_panels(tabs, value=mitglieder_tab).classes('w-full bg-transparent'):
+		with ui.tab_panel(mitglieder_tab).classes('px-0'):
+			render_popels_page(CONFIG, MITGLIEDER_DB, MITGLIEDERLISTEN_EINSTELLUNGEN)

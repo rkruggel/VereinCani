@@ -58,7 +58,7 @@ field_labels:
     sortierbar: true
     pos:
       formHeaderPos: 20
-      listSection: headerDetail
+      listSection: off
       listPos: 40
     listValueClasses: text-sm text-slate-500
 
@@ -235,16 +235,16 @@ field_labels:
       listPos: 50
     listValueClasses: text-sm text-slate-500
 
-  hossa:
+  verhalten:
     type: string
-    text: Hossa
+    text: Verhalten
     steuerelement: input
     formular: true
     suchbar: true
     sortierbar: true
     pos:
       listSection: secondary
-      listPos: 8
+      listPos: 60
     listValueClasses: text-sm text-slate-500
 
   text:
