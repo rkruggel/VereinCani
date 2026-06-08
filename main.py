@@ -34,9 +34,14 @@ def main() -> None:
 	storage_secret = config.get('allgemein', 'storage_secret', fallback='aMqMoA7')
 
 	ui.page('/')(render_start_page)
-	ui.run(title=title, host=host, port=port, storage_secret=storage_secret)
+	ui.run(
+		title=title,
+		host=host,
+		port=port,
+		storage_secret=storage_secret,
+		uvicorn_reload_includes='*.py,popels/*.yaml',
+	)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
 	main()
- 

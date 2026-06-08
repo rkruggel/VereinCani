@@ -1,0 +1,103 @@
+# Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
+config:
+  key: mitglieder
+  singular: Mitglied
+  plural: Mitglieder
+  collection_name: Mitglieder
+  settings_collection_name: MitgliederlistenEinstellungen
+  model_name: Mitglied
+  legacy_name_fields: [vorname, nachname]
+
+# Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
+field_labels:
+  id:
+    type: string
+    text: ID
+    steuerelement: label
+    formular: false
+    suchbar: true
+    sortierbar: true
+    listSection: headerDetail
+    listPos: 20
+    listValueClasses: text-xs tracking-wide text-slate-500
+
+  mitgliedsnummer:
+    type: string
+    text: Mitgliedsnummer
+    steuerelement: input
+    formular: true
+    pflichtfeld: true
+    suchbar: true
+    sortierbar: true
+    listSection: headerDetail
+    listPos: 10
+    listValueClasses: text-xs tracking-wide text-slate-500
+
+  vorname:
+    type: string
+    text: Vorname
+    steuerelement: input
+    formular: true
+    pflichtfeld: true
+    suchbar: true
+    sortierbar: true
+    formHeaderPos: 30
+    listSection: headerDetail
+    listPos: 30
+
+  nachname:
+    type: string
+    text: Nachname
+    steuerelement: input
+    formular: true
+    pflichtfeld: true
+    suchbar: true
+    sortierbar: true
+    formHeaderPos: 40
+    listSection: headerDetail
+    listPos: 40
+
+  status:
+    type: string
+    text: Mitgliedsstatus
+    steuerelement: select
+    formular: true
+    optionen: [Aktiv, Passiv, Ehemalig]
+    suchbar: true
+    sortierbar: true
+    listSection: primary
+    listPos: 5
+
+  eintritt:
+    type: datum
+    text: Eintritt
+    steuerelement: date
+    formular: true
+    suchbar: true
+    sortierbar: true
+    listSection: secondary
+    listPos: 5
+
+  hunde:
+    type: string
+    text: Hunde
+    steuerelement: input
+    formular: true
+    pflichtfeld: true
+    suchbar: true
+    sortierbar: true
+    formHeaderPos: 50
+    listSection: primary
+    listPos: 10
+
+  text:
+    type: string
+    text: Text vorhanden
+    steuerelement: editor
+    formular: false
+    suchbar: true
+    sortierbar: false
+    listSection: status
+    listPos: 10
+    actionLabel: Text
+    actionIcon: description

@@ -7,7 +7,7 @@ from src.popelsapp.repository import RavenPopelsDatabase
 from src.popelsapp.settings import ListeneinstellungenRepository
 
 
-CONFIG = load_popels_config('adressen.json')
+CONFIG = load_popels_config('adressen.yaml')
 Adresse = create_popels_model(CONFIG)
 ADRESSEN_DB = RavenPopelsDatabase(CONFIG, Adresse)
 ADRESSLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)

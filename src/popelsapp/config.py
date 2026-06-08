@@ -1,9 +1,10 @@
 """Konfiguration eines aus Felddefinitionen aufgebauten Popels-Moduls."""
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 
 @dataclass(frozen=True)
@@ -117,7 +118,7 @@ def load_popels_config(file_name: str) -> PopelsConfig:
 	project_root = Path(__file__).resolve().parents[2]
 	config_path = project_root / 'popels' / file_name
 	with config_path.open(encoding='utf-8') as config_file:
-		raw_config = json.load(config_file)
+		raw_config = yaml.safe_load(config_file)
 	config_values = raw_config['config']
 	legacy_name_fields = config_values.get('legacy_name_fields')
 	if legacy_name_fields is not None:
