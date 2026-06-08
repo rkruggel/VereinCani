@@ -22,8 +22,8 @@ def load_visible_fields(
 			app.storage.general.pop(f'{config.key}_visible_fields', None)
 			saved_fields = legacy_fields
 	if saved_fields is None:
-		return {'id', *config.form_fields}
-	return {field for field in saved_fields if field in config.field_labels}
+		return {'id', *config.form_fields} & set(config.list_display_fields)
+	return {field for field in saved_fields if field in config.list_display_fields}
 
 
 def save_visible_fields(
@@ -36,7 +36,7 @@ def save_visible_fields(
 
 	settings.save(
 		benutzer_name,
-		[field for field in config.field_labels if field in visible_fields],
+		[field for field in config.list_display_fields if field in visible_fields],
 	)
 
 

@@ -99,16 +99,33 @@ class PopelsConfig:
 			None,
 		)
 
+	def field_position(self, field: str, key: str, default: Any = None) -> Any:
+		"""Liefert eine Positionsangabe aus dem ``pos``-Block eines Feldes."""
+
+		return self.field_labels[field].get('pos', {}).get(key, default)
+
+	def is_list_field(self, field: str) -> bool:
+		"""Prüft, ob ein Feld grundsätzlich in der Kartenliste erscheinen darf."""
+
+		return self.field_position(field, 'listSection') != 'off'
+
+	@property
+	def list_display_fields(self) -> list[str]:
+		"""Liefert alle Felder, die für die Kartenliste freigegeben sind."""
+
+		return [field for field in self.field_labels if self.is_list_field(field)]
+
 	def list_fields(self, section: str) -> list[str]:
 		"""Liefert die Felder eines Listenbereichs in konfigurierter Reihenfolge."""
 
 		return [
 			field
-			for field, definition in sorted(
+			for field, _definition in sorted(
 				self.field_labels.items(),
-				key=lambda item: item[1].get('listPos', 0),
+				key=lambda item: item[1].get('pos', {}).get('listPos', 0),
 			)
-			if definition.get('listSection') == section
+			if self.is_list_field(field)
+			and self.field_position(field, 'listSection') == section
 		]
 
 

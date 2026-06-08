@@ -9,6 +9,7 @@ config:
   legacy_name_fields: [vorname, nachname]
 
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
+# listSection: off blendet ein Feld vollständig aus der Kartenliste aus.
 field_labels:
   id:
     type: string
@@ -17,9 +18,10 @@ field_labels:
     formular: false
     suchbar: true
     sortierbar: true
-    listSection: headerDetail
-    listPos: 20
-    listValueClasses: text-xs tracking-wide text-slate-500
+    pos:
+      listSection: headerDetail
+      listPos: 20
+    listValueClasses: text-xs text-slate-500
 
   mitgliedsnummer:
     type: string
@@ -29,9 +31,10 @@ field_labels:
     pflichtfeld: true
     suchbar: true
     sortierbar: true
-    listSection: headerDetail
-    listPos: 10
-    listValueClasses: text-xs tracking-wide text-slate-500
+    pos:
+      listSection: headerDetail
+      listPos: 10
+    listValueClasses: text-xs text-slate-500
 
   vorname:
     type: string
@@ -41,9 +44,11 @@ field_labels:
     pflichtfeld: true
     suchbar: true
     sortierbar: true
-    formHeaderPos: 30
-    listSection: headerDetail
-    listPos: 30
+    pos:
+      formHeaderPos: 30
+      listSection: headerDetail
+      listPos: 30
+    listValueClasses: text-sm text-slate-500
 
   nachname:
     type: string
@@ -53,9 +58,11 @@ field_labels:
     pflichtfeld: true
     suchbar: true
     sortierbar: true
-    formHeaderPos: 40
-    listSection: headerDetail
-    listPos: 40
+    pos:
+      formHeaderPos: 40
+      listSection: headerDetail
+      listPos: 40
+    listValueClasses: text-sm text-slate-500
 
   status:
     type: string
@@ -65,8 +72,10 @@ field_labels:
     optionen: [Aktiv, Passiv, Ehemalig]
     suchbar: true
     sortierbar: true
-    listSection: primary
-    listPos: 5
+    pos:
+      listSection: primary
+      listPos: 5
+      listValueClasses: text-sm text-slate-500
 
   eintritt:
     type: datum
@@ -75,8 +84,10 @@ field_labels:
     formular: true
     suchbar: true
     sortierbar: true
-    listSection: secondary
-    listPos: 5
+    pos:
+      listSection: secondary
+      listPos: 5
+    listValueClasses: text-sm text-slate-500
 
   hunde:
     type: string
@@ -86,9 +97,11 @@ field_labels:
     pflichtfeld: true
     suchbar: true
     sortierbar: true
-    formHeaderPos: 50
-    listSection: primary
-    listPos: 10
+    pos:
+      formHeaderPos: 50
+      listSection: primary
+      listPos: 10
+    listValueClasses: text-sm text-slate-500
 
   text:
     type: string
@@ -97,7 +110,8 @@ field_labels:
     formular: false
     suchbar: true
     sortierbar: false
-    listSection: status
-    listPos: 10
+    pos:
+      listSection: status
+      listPos: 10
     actionLabel: Text
     actionIcon: description

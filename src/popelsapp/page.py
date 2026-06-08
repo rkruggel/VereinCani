@@ -64,7 +64,7 @@ def render_popels_page(
 		visible_fields = load_visible_fields(config, settings, benutzer_name)
 		sort_criteria = {'value': load_sort_criteria(config, settings, benutzer_name)}
 	except Exception as error:
-		visible_fields = {'id', *FORM_FIELDS}
+		visible_fields = {'id', *FORM_FIELDS} & set(config.list_display_fields)
 		sort_criteria = {'value': []}
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
@@ -420,7 +420,7 @@ def render_popels_page(
 		ui.label(f'Felder der {config.singular}-Liste').classes('text-lg font-semibold text-slate-900')
 		ui.label(f'Waehle aus, welche Felder in den {config.singular}-Karten angezeigt werden.').classes('text-sm text-slate-600')
 		with ui.grid(columns=2).classes('w-full gap-x-4 gap-y-1 max-sm:grid-cols-1'):
-			for field in POPELS_FIELDS:
+			for field in config.list_display_fields:
 				ui.checkbox(
 					POPELS_FIELDS[field]['text'],
 					value=field in visible_fields,

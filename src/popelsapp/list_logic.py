@@ -131,9 +131,10 @@ def record_heading(
 
 	heading_fields = sorted(
 		(
-			(definition['formHeaderPos'], field)
-			for field, definition in config.field_labels.items()
-			if 'formHeaderPos' in definition
+			(config.field_position(field, 'formHeaderPos'), field)
+			for field in config.field_labels
+			if config.field_position(field, 'formHeaderPos') is not None
+			and config.is_list_field(field)
 			and (visible_fields is None or field in visible_fields)
 		),
 	)
