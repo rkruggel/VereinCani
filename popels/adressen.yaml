@@ -98,8 +98,8 @@ field_labels:
     suchbar: true
     sortierbar: true
     pos:
-      listSection: headerDetail
-      listPos: 20
+      listSection: primary
+      listPos: 10
     listValueClasses: text-sm text-slate-500
 
   adresse:
@@ -111,7 +111,7 @@ field_labels:
     sortierbar: true
     pos:
       listSection: primary
-      listPos: 10
+      listPos: 15
     listValueClasses: text-sm text-slate-500
 
   ort:
