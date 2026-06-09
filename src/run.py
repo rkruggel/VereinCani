@@ -3,7 +3,7 @@
 from nicegui import ui
 
 from src.auth import is_authenticated, render_login_panel
-from src.menu import PAGES, can_access_page, render_menu
+from src.menu import can_access_page, get_page, render_menu
 
 
 def render_start_page() -> None:
@@ -27,7 +27,9 @@ def render_start_page() -> None:
 	def render_content() -> None:
 		if not can_access_page(selected_page['key'], is_authenticated()):
 			selected_page['key'] = 'dashboard'
-		page = PAGES[selected_page['key']]
+		page = get_page(selected_page['key'])
+		if page is None:
+			return
 		page['renderer']()
 
 	@ui.refreshable
