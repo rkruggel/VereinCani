@@ -27,7 +27,14 @@ class PopelsModel:
 
 		for field_name, definition in self._config.field_labels.items():
 			if definition['type'] in {'liste', 'bilder'}:
-				setattr(self, field_name, list(getattr(self, field_name, None) or []))
+				value = getattr(self, field_name, None)
+				if value is None or value == '':
+					normalized_value = []
+				elif isinstance(value, list):
+					normalized_value = value
+				else:
+					normalized_value = [value]
+				setattr(self, field_name, normalized_value)
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> Self:
@@ -47,7 +54,11 @@ class PopelsModel:
 	def to_json(self) -> dict[str, Any]:
 		"""Gibt alle konfigurierten Modellfelder als Wörterbuch zurück."""
 
-		return asdict(self)
+		data = asdict(self)
+		for field_name, definition in self._config.field_labels.items():
+			if definition.get('berechnen'):
+				data.pop(field_name, None)
+		return data
 
 
 def create_popels_model(config: PopelsConfig) -> type[PopelsModel]:

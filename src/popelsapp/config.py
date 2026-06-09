@@ -102,7 +102,10 @@ class PopelsConfig:
 	def field_position(self, field: str, key: str, default: Any = None) -> Any:
 		"""Liefert eine Positionsangabe aus dem ``pos``-Block eines Feldes."""
 
-		return self.field_labels[field].get('pos', {}).get(key, default)
+		value = self.field_labels[field].get('pos', {}).get(key, default)
+		if key == 'listSection' and value is False:
+			return 'off'
+		return value
 
 	def is_list_field(self, field: str) -> bool:
 		"""Prüft, ob ein Feld grundsätzlich in der Kartenliste erscheinen darf."""

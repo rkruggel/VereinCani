@@ -3,11 +3,11 @@
 from nicegui import ui
 
 
-DASHBOARD_DESCRIPTION = 'Zentrale Uebersicht fuer den Einstieg in die Vereinssoftware.'
+DASHBOARD_DESCRIPTION = 'Zentrale Uebersicht über die, für die Programmierung, offen stehenden Teile der Vereinssoftware.'
 DASHBOARD_ITEMS = [
-	'Mitgliederverwaltung vorbereiten',
-	'Terminplanung als naechsten Fachbereich anbinden',
-	'RavenDB-Verbindung in die Datenkarten integrieren',
+	'Texte allgemein erfassen',
+	'Bankverbindungen erfassen',
+	'Einwilligungen erfassen',
 ]
 
 

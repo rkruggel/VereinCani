@@ -20,6 +20,8 @@ field_labels:
     # Das Steuerelement
     # z.B. input, select, textarea, label, etc.
     formular: false     
+    horizont: 1
+    gesperrt: false
     # Ob das Feld im Formular angezeigt wird (true/false).
     suchbar: true       
     # Ob das Feld in der Suche verwendet werden kann (true/false).
@@ -34,17 +36,30 @@ field_labels:
     listValueClasses: text-xs text-slate-500  
     # Zusätzliche CSS-Klassen für die Anzeige des Feldwerts in der Kartenliste.
 
+  # -- aus notion übernommen, aber noch nicht angepasst:
+  # Key, Email, Anrede, Titel, Name, Adresse, Ort, geboren, alter, gebveri,
+  # Handy, Festnetz, www, Kann nicht WT, Beruf, Hobby, Bes Fähigkeiten
+
+  # -- diese Daten sind schon anepasst
+  # Key, alter, gebveri,
+
+
+
+
+
   anrede:
     type: string
     text: Anrede
     steuerelement: select
     formular: true
+    horizont: 1
+    gesperrt: false
     optionen: [Herr, Frau, Diverse]
     suchbar: true
     sortierbar: true
     pos:
       formHeaderPos: 10
-      listSection: off
+      listSection: "off"
       listPos: 30
     listValueClasses: text-sm text-slate-500
 
@@ -53,12 +68,14 @@ field_labels:
     text: Titel
     steuerelement: select
     formular: true
+    horizont: 1
+    gesperrt: false
     optionen: [Dr., Prof., Prof. Dr.]
     suchbar: true
     sortierbar: true
     pos:
       formHeaderPos: 20
-      listSection: off
+      listSection: "off"
       listPos: 40
     listValueClasses: text-sm text-slate-500
 
@@ -67,12 +84,14 @@ field_labels:
     text: Vorname
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     pflichtfeld: true
     suchbar: true
     sortierbar: true
     pos:
       formHeaderPos: 30
-      listSection: off
+      listSection: "off"
       listPos: 50
     listValueClasses: text-sm text-slate-500
 
@@ -81,12 +100,14 @@ field_labels:
     text: Nachname
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     pflichtfeld: true
     suchbar: true
     sortierbar: true
     pos:
       formHeaderPos: 40
-      listSection: off
+      listSection: "off"
       listPos: 60
     listValueClasses: text-sm text-slate-500
 
@@ -95,6 +116,8 @@ field_labels:
     text: Zusatz
     steuerelement: textarea
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -107,6 +130,8 @@ field_labels:
     text: Adresse
     steuerelement: textarea
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -119,6 +144,8 @@ field_labels:
     text: Ort
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -131,6 +158,8 @@ field_labels:
     text: E-Mail
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -143,6 +172,8 @@ field_labels:
     text: Handy
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -155,6 +186,8 @@ field_labels:
     text: Festnetz
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -167,6 +200,8 @@ field_labels:
     text: WWW
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -179,6 +214,8 @@ field_labels:
     text: Geboren
     steuerelement: date
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -191,6 +228,8 @@ field_labels:
     text: Beruf
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -203,6 +242,8 @@ field_labels:
     text: Hobby
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -215,6 +256,8 @@ field_labels:
     text: Nicht an Wochentagen
     steuerelement: multiselect
     formular: true
+    horizont: 1
+    gesperrt: false
     optionen: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
     suchbar: true
     sortierbar: true
@@ -228,6 +271,8 @@ field_labels:
     text: Fähigkeiten
     steuerelement: textarea
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -240,6 +285,8 @@ field_labels:
     text: Verhalten
     steuerelement: input
     formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
@@ -252,6 +299,8 @@ field_labels:
     text: Text vorhanden
     steuerelement: editor
     formular: false
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: false
     pos:
@@ -265,6 +314,8 @@ field_labels:
     text: Bilder vorhanden
     steuerelement: upload
     formular: false
+    horizont: 1
+    gesperrt: false
     suchbar: false
     sortierbar: false
     pos:

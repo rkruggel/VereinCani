@@ -134,8 +134,11 @@ def record_heading(
 			(config.field_position(field, 'formHeaderPos'), field)
 			for field in config.field_labels
 			if config.field_position(field, 'formHeaderPos') is not None
-			and config.is_list_field(field)
-			and (visible_fields is None or field in visible_fields)
+			and (
+				not config.is_list_field(field)
+				or visible_fields is None
+				or field in visible_fields
+			)
 		),
 	)
 	values = [

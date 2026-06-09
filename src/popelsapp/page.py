@@ -7,7 +7,7 @@ from nicegui import events, ui
 
 from src.auth.session import get_authenticated_user
 from src.popelsapp import PopelsConfig
-from src.popelsapp.form import render_popels_form
+from src.popelsapp.form import recalculate_form, render_popels_form
 from src.popelsapp.list_logic import (
 	cycle_sort_criterion,
 	content_available as configured_content_available,
@@ -26,6 +26,8 @@ def render_popels_page(
 	config: PopelsConfig,
 	database: RavenPopelsDatabase,
 	settings: ListeneinstellungenRepository,
+	form_control_contexts: dict[str, dict[str, Any]] | None = None,
+	initial_record_id: str | None = None,
 ) -> None:
 	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
@@ -71,7 +73,11 @@ def render_popels_page(
 	def collect_form_data() -> dict[str, Any]:
 		"""Liest die aktuellen Werte aller Steuerelemente des Popels-Formulars."""
 
-		return {field: form_controls[field].value for field in FORM_FIELDS}
+		return {
+			field: form_controls[field].value
+			for field in FORM_FIELDS
+			if not POPELS_FIELDS[field].get('berechnen')
+		}
 
 	def clear_form() -> None:
 		"""Setzt Formular, Text, Bilder und aktive Datensatzauswahl zurück."""
@@ -82,6 +88,7 @@ def render_popels_page(
 		selected_image['attachment_name'] = None
 		for field in FORM_FIELDS:
 			form_controls[field].value = [] if POPELS_FIELDS[field]['type'] == 'liste' else ''
+		recalculate_form(config, form_controls)
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text(f'Neue {config.singular}')
 		if text_editor['element'] is not None:
@@ -99,10 +106,11 @@ def render_popels_page(
 			'?.scrollIntoView({behavior: "smooth", block: "start"});'
 		)
 
-	def load_record(record_id: str) -> None:
+	def load_record(record_id: str, *, scroll: bool = True) -> None:
 		"""Lädt einen Datensatz samt Text und Bildern in den Bearbeitungszustand."""
 
-		scroll_to_page_top()
+		if scroll:
+			scroll_to_page_top()
 		try:
 			record = POPELS_DB.get(record_id)
 		except Exception as error:
@@ -133,7 +141,8 @@ def render_popels_page(
 		render_uploaded_images.refresh()
 		render_active_actions.refresh()
 		for field in FORM_FIELDS:
-			form_controls[field].value = record[field]
+			form_controls[field].value = record.get(field, '')
+		recalculate_form(config, form_controls)
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text(f'{config.singular} bearbeiten: {record_heading(record)}')
 
@@ -628,7 +637,12 @@ def render_popels_page(
 						with ui.column().classes('gap-0 min-w-[180px]'):
 							heading = record_heading(record, visible_fields, fallback_to_id=False)
 							if heading:
-								ui.label(heading).classes('text-base font-semibold text-slate-900')
+								ui.label(heading).classes(
+									'text-base font-semibold text-slate-900 cursor-pointer hover:text-primary'
+								).on(
+									'click',
+									lambda record_id=record['id']: load_record(record_id),
+								).tooltip(f'{config.singular} bearbeiten')
 							for field in list_fields('headerDetail'):
 								if field in visible_fields:
 									render_field_value(
@@ -678,7 +692,16 @@ def render_popels_page(
 				ui.label('Daten werden in RavenDB gespeichert.').classes('text-xs text-slate-600')
 				render_active_actions()
 
-				form_controls.update(render_popels_form(config, validate_phone, clear_form, save_record))
+				form_controls.update(render_popels_form(
+					config,
+					validate_phone,
+					clear_form,
+					save_record,
+					form_control_contexts,
+				))
 
 			with ui.column().classes('flex-1 w-full gap-3'):
 				render_records()
+
+	if initial_record_id is not None:
+		load_record(initial_record_id, scroll=False)

@@ -1,33 +1,24 @@
 # Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
 config:
-  key: mitglieder
-  singular: Mitglied
-  plural: Mitglieder
-  collection_name: Mitglieder
-  settings_collection_name: MitgliederlistenEinstellungen
-  model_name: Mitglied
-  legacy_name_fields: [vorname, nachname]
+  key: hunde
+  singular: Hund
+  plural: Hunde
+  collection_name: Hunde
+  settings_collection_name: HundelistenEinstellungen
+  model_name: Hund
 
 # -- aus notion übernommen, aber noch nicht angepasst:
-# Hauptmitglied, ID, Anrede, Typ, ArtMitglied, Persönlich, Hunde, Kontonummer,
-# RechteVergabe, Pflichtstunden, Preis, Trainingseinheit, Erstkontakt,
-# Mitglied seit, Betrag, Monat, zu Zahlen, Sonder Preis, ist Bezahlt,
-# ist Bezahlt 2026, Unterlagen ausgehändigt, Kto-Bank, Kto-Nr, MandatRef-Nr,
-# Email, hat Sepa
-
-# -- diese Daten sind schon anepasst
-# Hauptmitglied, Anrede, Typ, ArtMitglied, Persönlich, Hunde, Kontonummer,
-# RechteVergabe, Pflichtstunden, Preis, Trainingseinheit, Erstkontakt,
-# Betrag, Monat, zu Zahlen, Sonder Preis, ist Bezahlt,
-# ist Bezahlt 2026, Unterlagen ausgehändigt, Kto-Bank, Kto-Nr, MandatRef-Nr,
-# Email, hat Sepa
-
+# Key, AlterJahre, AlterMonate, Anamnese, Angst beschreiben, Chip Nummer,
+# Erstkontakt, Foto Erstkontakt, FotoAktuell, Gewicht, GewichtOk, GewichtSoll,
+# Gruppe, Haftpflicht, Hundename, Ich versichere, Ist ein Angsthund, 
+# KastrAlter Jahr, KastrAlter Monat, Kastriert, Mix aus, Mix-Rasse, Rasse,
+# Rufname, Schulterhöhe, Ursprung, Verträglich mit Hunden, Verträglich mit Menschen,
+# diff, geboren, geimpft, geschlecht, wann kastriert
 
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
-# listSection: "off" blendet die Detailanzeige aus; formHeaderPos bleibt wirksam.
 field_labels:
   id:
-    type: string
+    type: string 
     text: ID
     steuerelement: label
     formular: false
@@ -37,27 +28,12 @@ field_labels:
     sortierbar: true
     pos:
       listSection: headerDetail
-      listPos: 20
-    listValueClasses: text-xs text-slate-500
-
-  mitgliedsnummer:
-    type: string
-    text: Mitgliedsnummer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: headerDetail
       listPos: 10
     listValueClasses: text-xs text-slate-500
 
-  vorname:
+  name:
     type: string
-    text: Vorname
+    text: Hundename
     steuerelement: input
     formular: true
     horizont: 1
@@ -66,45 +42,72 @@ field_labels:
     suchbar: true
     sortierbar: true
     pos:
-      formHeaderPos: 30
+      formHeaderPos: 10
       listSection: headerDetail
-      listPos: 30
+      listPos: 360
     listValueClasses: text-sm text-slate-500
 
-  nachname:
+  rufname:
     type: string
-    text: Nachname
+    text: Rufname
     steuerelement: input
     formular: true
-    horizont: 1
+    horizont: 2
     gesperrt: false
-    pflichtfeld: true
     suchbar: true
     sortierbar: true
     pos:
-      formHeaderPos: 40
-      listSection: headerDetail
-      listPos: 40
+      listSection: "headerDetail"
+      listPos: 450
     listValueClasses: text-sm text-slate-500
 
-  status:
+  rasseOderMix:
     type: string
-    text: Mitgliedsstatus
+    text: Rasse oder Mix
     steuerelement: select
+    optionen: [Rasse, Mix]
     formular: true
     horizont: 1
     gesperrt: false
-    optionen: [Aktiv, Passiv, Ehemalig]
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: secondary
+      listPos: 480
+    listValueClasses: text-sm text-slate-500
+
+  rasse:
+    type: string
+    text: Rasse
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
     suchbar: true
     sortierbar: true
     pos:
       listSection: primary
-      listPos: 5
+      listPos: 440
     listValueClasses: text-sm text-slate-500
 
-  MitgliedSeit:
+  ursprung:
+    type: string
+    text: Ursprung
+    steuerelement: select
+    optionen: [Züchter, Tierheim, Privat, Sonstiges]
+    formular: true
+    horizont: 2
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 470
+    listValueClasses: text-sm text-slate-500
+
+  geboren:
     type: datum
-    text: MitgliedSeit
+    text: Geboren
     steuerelement: date
     formular: true
     horizont: 1
@@ -113,177 +116,176 @@ field_labels:
     sortierbar: true
     pos:
       listSection: secondary
-      listPos: 5
+      listPos: 510
     listValueClasses: text-sm text-slate-500
 
-  hunde:
-    type: liste
-    text: Hunde
-    steuerelement: input_chips
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
-      listSection: "off"
-      listPos: 270
-
-  adressen:
-    type: liste
-    text: Adressen
-    steuerelement: input_chips
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
-      listSection: "off"
-      listPos: 20
-    listValueClasses: text-sm text-slate-500
-
-
-# ---------------------------------------------
-  hauptmitglied:
+  alter:
     type: string
-    text: Hauptmitglied
+    text: Alter Jahre
     steuerelement: input
     formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 220
-    listValueClasses: text-sm text-slate-500
-
-  anrede:
-    type: string
-    text: Anrede
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
+    berechnen: datumDiff(geboren, today)
+    horizont: 2
+    gesperrt: true
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 230
     listValueClasses: text-sm text-slate-500
 
-  typ:
-    type: string
-    text: Typ
-    steuerelement: input
+
+  beimirseit:
+    type: datum
+    text: bei mir seit
+    steuerelement: date
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: secondary
+      listPos: 510
+    listValueClasses: text-sm text-slate-500
+
+  beimirAlter:
+    type: string
+    text: Alter Jahre
+    steuerelement: input
+    formular: true
+    berechnen: datumDiff(beimirseit, today)
+    horizont: 2
+    gesperrt: true
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 240
+      listPos: 230
     listValueClasses: text-sm text-slate-500
 
-  artMitglied:
+
+
+
+
+  mixRasse:
     type: string
-    text: ArtMitglied
+    text: Mix-Rasse
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 430
+    listValueClasses: text-sm text-slate-500
+
+
+
+  kastriert:
+    type: string
+    text: Kastriert
+    steuerelement: select
+    optionen: [Ja, Nein, Unsicher]
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 410
+    listValueClasses: text-sm text-slate-500
+
+  kastrAlter:
+    type: string
+    text: Kastriert Alter
+    steuerelement: input
+    formular: true
+    horizont: 2
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 400
+    listValueClasses: text-sm text-slate-500
+
+  wannKastriert:
+    type: datum
+    text: Wann kastriert
+    steuerelement: date
+    formular: true
+    horizont: 3
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 540
+    listValueClasses: text-sm text-slate-500
+
+
+  chipNummer:
+    type: string
+    text: Chip Nummer
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 270
+    listValueClasses: text-sm text-slate-500
+
+  besitzer:
+    type: string
+    text: Besitzer
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: primary
+      listPos: 20
+    listValueClasses: text-sm text-slate-500
+
+
+
+  anamnese:
+    type: string
+    text: Anamnese
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 250
     listValueClasses: text-sm text-slate-500
 
-  persoenlich:
+  angstBeschreiben:
     type: string
-    text: Persönlich
+    text: Angst beschreiben
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 260
     listValueClasses: text-sm text-slate-500
 
-  kontonummer:
-    type: string
-    text: Kontonummer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 280
-    listValueClasses: text-sm text-slate-500
-
-  rechteVergabe:
-    type: string
-    text: RechteVergabe
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 290
-    listValueClasses: text-sm text-slate-500
-
-  pflichtstunden:
-    type: string
-    text: Pflichtstunden
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 300
-    listValueClasses: text-sm text-slate-500
-
-  preis:
-    type: string
-    text: Preis
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 310
-    listValueClasses: text-sm text-slate-500
-
-  trainingseinheit:
-    type: string
-    text: Trainingseinheit
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 320
-    listValueClasses: text-sm text-slate-500
 
   erstkontakt:
     type: string
@@ -292,179 +294,195 @@ field_labels:
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 280
+    listValueClasses: text-sm text-slate-500
+
+  gewicht:
+    type: string
+    text: Gewicht
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 310
+    listValueClasses: text-sm text-slate-500
+
+  gewichtOk:
+    type: string
+    text: Gewicht Ok
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
+    sortierbar: true
+    pos:
+      listSection: "off"
+      listPos: 320
+    listValueClasses: text-sm text-slate-500
+
+  gewichtSoll:
+    type: string
+    text: Gewicht Soll
+    steuerelement: input
+    formular: true
+    horizont: 1
+    gesperrt: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 330
     listValueClasses: text-sm text-slate-500
 
-  betrag:
+  gruppe:
     type: string
-    text: Betrag
+    text: Gruppe
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 340
     listValueClasses: text-sm text-slate-500
 
-  monat:
+  haftpflicht:
     type: string
-    text: Monat
+    text: Haftpflicht
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 350
     listValueClasses: text-sm text-slate-500
 
-  zuZahlen:
+  ichVersichere:
     type: string
-    text: Zu Zahlen
+    text: Ich versichere
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 360
-    listValueClasses: text-sm text-slate-500
-
-  sonderPreis:
-    type: string
-    text: Sonder Preis
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 370
     listValueClasses: text-sm text-slate-500
 
-  istBezahlt:
+  istEinAngsthund:
     type: string
-    text: Ist Bezahlt
+    text: Ist ein Angsthund
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
       listPos: 380
     listValueClasses: text-sm text-slate-500
 
-  istBezahlt2026:
+  schulterhoehe:
     type: string
-    text: Ist Bezahlt 2026
+    text: Schulterhöhe
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 390
+      listPos: 460
     listValueClasses: text-sm text-slate-500
 
-  unterlagenAusgehaendigt:
+  vertraeglichMitHunden:
     type: string
-    text: Unterlagen ausgehändigt
-    steuerelement: input
+    text: Verträglich mit Hunden
+    steuerelement: select
+    optionen: [Ja, Nein, Unsicher]
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 400
+      listPos: 480
     listValueClasses: text-sm text-slate-500
 
-  ktoBank:
+  vertraeglichMitMenschen:
     type: string
-    text: Kto-Bank
-    steuerelement: input
+    text: Verträglich mit Menschen
+    steuerelement: select
+    optionen: [Ja, Nein, Unsicher]
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
-      listSection: "off"
-      listPos: 410
+      listSection: "secondary"
+      listPos: 490
     listValueClasses: text-sm text-slate-500
 
-  ktoNr:
+  diff:
     type: string
-    text: Kto-Nr
+    text: Diff
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 420
+      listPos: 500
     listValueClasses: text-sm text-slate-500
 
-  mandatRefNr:
+  geimpft:
     type: string
-    text: MandatRef-Nr
+    text: Geimpft
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 430
+      listPos: 520
     listValueClasses: text-sm text-slate-500
 
-  email:
+  geschlecht:
     type: string
-    text: Email
+    text: Geschlecht
     steuerelement: input
     formular: true
     horizont: 1
     gesperrt: false
-    suchbar: false
+    suchbar: true
     sortierbar: true
     pos:
       listSection: "off"
-      listPos: 440
-    listValueClasses: text-sm text-slate-500
-
-  hatSepa:
-    type: string
-    text: Hat Sepa
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 450
+      listPos: 530
     listValueClasses: text-sm text-slate-500
 
   text:
@@ -482,9 +500,9 @@ field_labels:
     actionLabel: Text
     actionIcon: description
 
-  bilder:
+  bilder1:
     type: bilder
-    text: Bilder vorhanden
+    text: Bilder anfang
     steuerelement: upload
     formular: false
     horizont: 1
@@ -494,5 +512,20 @@ field_labels:
     pos:
       listSection: status
       listPos: 20
-    actionLabel: Pic
+    actionLabel: Pic anfang
+    actionIcon: image
+
+  bilder2:
+    type: bilder
+    text: Bilder aktuell
+    steuerelement: upload
+    formular: false
+    horizont: 1
+    gesperrt: false
+    suchbar: false
+    sortierbar: false
+    pos:
+      listSection: status
+      listPos: 30
+    actionLabel: Pic aktuell
     actionIcon: image

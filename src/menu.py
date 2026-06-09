@@ -9,6 +9,7 @@ from src.auth import is_authenticated
 from src.pages.adressen.start import render_adressen_page
 from src.pages.beitraege.start import render_beitraege_page
 from src.pages.dashboard.start import render_dashboard_page
+from src.pages.hunde.start import render_hunde_page
 from src.pages.mitglieder.start import render_mitglieder_page
 from src.pages.termine.start import render_termine_page
 
@@ -16,26 +17,37 @@ from src.pages.termine.start import render_termine_page
 PAGES: dict[str, dict[str, Any]] = {
 	'dashboard': {
 		'title': 'Dashboard',
+		'tooltip': 'Zur zentralen Übersicht wechseln',
 		'protected': False,
 		'renderer': render_dashboard_page,
 	},
 	'mitglieder': {
 		'title': 'Mitglieder',
+		'tooltip': 'Mitglieder verwalten',
 		'protected': True,
 		'renderer': render_mitglieder_page,
 	},
 	'adressen': {
 		'title': 'Adressen',
+		'tooltip': 'Adressen verwalten',
 		'protected': True,
 		'renderer': render_adressen_page,
 	},
+	'hunde': {
+		'title': 'Hunde',
+		'tooltip': 'Hunde verwalten',
+		'protected': True,
+		'renderer': render_hunde_page,
+	},
 	'termine': {
 		'title': 'Termine',
+		'tooltip': 'Termine und Veranstaltungen verwalten',
 		'protected': True,
 		'renderer': render_termine_page,
 	},
 	'beitraege': {
 		'title': 'Beitraege',
+		'tooltip': 'Beiträge und Zahlungen verwalten',
 		'protected': False,
 		'renderer': render_beitraege_page,
 	},
@@ -70,5 +82,7 @@ def render_menu(selected_page: dict[str, str], on_select: Callable[[str], None])
 				on_click=lambda key=page_key: on_select(key),
 			).props('flat no-caps').classes(button_classes)
 			button.set_enabled(is_enabled)
+			tooltip = page['tooltip']
 			if not is_enabled:
-				button.tooltip('Anmeldung erforderlich')
+				tooltip = f'{tooltip} – Anmeldung erforderlich'
+			button.tooltip(tooltip)
