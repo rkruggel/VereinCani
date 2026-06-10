@@ -1,6 +1,6 @@
 # VereinCani
 
-Vereinssoftware. Erstellt mit niceGUI und ravenbDB
+Vereinssoftware. Erstellt mit NiceGUI und CouchDB.
 
 Datum: 05.06.2026
 Author: Roland Kruggel

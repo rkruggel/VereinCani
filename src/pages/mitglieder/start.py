@@ -17,13 +17,13 @@ from src.pages.persoenlich.start import (
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
-from src.popelsapp.repository import RavenPopelsDatabase
+from src.popelsapp.repository import CouchPopelsDatabase
 from src.popelsapp.settings import ListeneinstellungenRepository
 
 
 CONFIG = load_popels_config('mitglieder.yaml')
 Mitglied = create_popels_model(CONFIG)
-MITGLIEDER_DB = RavenPopelsDatabase(CONFIG, Mitglied)
+MITGLIEDER_DB = CouchPopelsDatabase(CONFIG, Mitglied)
 MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 

@@ -97,8 +97,9 @@ def create_form_control(
 	"""Erzeugt das in den Feldmetadaten konfigurierte NiceGUI-Steuerelement."""
 
 	definition = config.field_labels[field]
+	page_definition = config.page(field)
 	label = definition['text']
-	control_type = definition['steuerelement']
+	control_type = page_definition['steuerelement']
 
 	if control_type == 'input_chips':
 		context = context or {}
@@ -109,22 +110,22 @@ def create_form_control(
 		)
 	elif control_type == 'select':
 		props = 'dense options-dense'
-		if definition.get('pflichtfeld'):
+		if page_definition.get('pflichtfeld'):
 			props += ' required'
-		control = ui.select(definition['optionen'], label=label).props(props).classes('w-full')
+		control = ui.select(page_definition['optionen'], label=label).props(props).classes('w-full')
 	elif control_type == 'multiselect':
 		props = 'dense options-dense use-chips'
-		if definition.get('pflichtfeld'):
+		if page_definition.get('pflichtfeld'):
 			props += ' required'
 		control = ui.select(
-			definition['optionen'],
+			page_definition['optionen'],
 			label=label,
 			multiple=True,
 			clearable=True,
 		).props(props).classes('w-full')
 	elif control_type == 'textarea':
 		props = 'autogrow dense'
-		if definition.get('pflichtfeld'):
+		if page_definition.get('pflichtfeld'):
 			props += ' required'
 		control = ui.textarea(label).props(props).classes('w-full')
 	else:
@@ -134,11 +135,11 @@ def create_form_control(
 			input_props = 'type=date dense'
 		elif definition['type'] == 'email':
 			input_props = 'type=email dense'
-		if definition.get('pflichtfeld'):
+		if page_definition.get('pflichtfeld'):
 			input_props += ' required'
 		control = ui.input(label, validation=validation).props(input_props).classes('w-full')
 
-	if definition.get('gesperrt', False):
+	if page_definition.get('gesperrt', False):
 		control.set_enabled(False)
 	return control
 
@@ -195,8 +196,8 @@ def recalculate_form(config: PopelsConfig, controls: dict[str, Any]) -> None:
 		field: getattr(control, 'value', None)
 		for field, control in controls.items()
 	}
-	for field, definition in config.field_labels.items():
-		formel = definition.get('berechnen')
+	for field in config.field_labels:
+		formel = config.page(field).get('berechnen')
 		control = controls.get(field)
 		if not formel or control is None:
 			continue
@@ -216,8 +217,8 @@ def bind_calculated_fields(config: PopelsConfig, controls: dict[str, Any]) -> No
 
 	berechnete_felder = {
 		field
-		for field, definition in config.field_labels.items()
-		if definition.get('berechnen')
+		for field in config.field_labels
+		if config.page(field).get('berechnen')
 	}
 	for field, control in controls.items():
 		if field in berechnete_felder:
@@ -235,7 +236,7 @@ def group_form_fields(config: PopelsConfig) -> list[list[str]]:
 	current_group: list[str] = []
 	expected_position = 1
 	for field in config.form_fields:
-		position = config.field_labels[field].get('horizont', 1)
+		position = config.page(field).get('horizont', 1)
 		if not isinstance(position, int) or isinstance(position, bool) or position < 1:
 			position = 1
 		if position == 1 or position != expected_position:

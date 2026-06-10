@@ -1,4 +1,4 @@
-# Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
 config:
   key: persoenlich
   singular: Persönlich
@@ -11,315 +11,312 @@ config:
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
 field_labels:
   id:
-    type: string          
-    # Der Feldtyp, 
-    # z.B. string, email, datum, etc.
-    text: ID              
-    # Die Bezeichnung, die im Formular und in der Liste angezeigt wird.
-    steuerelement: label  
-    # Das Steuerelement
-    # z.B. input, select, textarea, label, etc.
-    formular: false     
-    horizont: 1
-    gesperrt: false
-    # Ob das Feld im Formular angezeigt wird (true/false).
-    suchbar: true       
-    # Ob das Feld in der Suche verwendet werden kann (true/false).
-    sortierbar: true    
-    # Ob das Feld sortierbar ist (true/false).
-    pos:
-      listSection: headerDetail 
-      # Kartenbereich: headerDetail, primary, secondary, status oder off.
-      listPos: 10         
-      # Die Position innerhalb der Sektion in der Kartenliste 
-      # (niedrigere Zahlen erscheinen zuerst).
-    listValueClasses: text-xs text-slate-500  
-    # Zusätzliche CSS-Klassen für die Anzeige des Feldwerts in der Kartenliste.
-
-  # -- aus notion übernommen, aber noch nicht angepasst:
-  # Key, Email, Anrede, Titel, Name, Adresse, Ort, geboren, alter, gebveri,
-  # Handy, Festnetz, www, Kann nicht WT, Beruf, Hobby, Bes Fähigkeiten
-
-  # -- diese Daten sind schon anepasst
-  # Key, alter, gebveri,
-
-
-
-
+    type: string
+    text: ID
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
+      listPos: 10
+      listValueClasses: text-xs text-slate-500
 
   anrede:
     type: string
     text: Anrede
-    steuerelement: select
-    formular: true
-    horizont: 1
-    gesperrt: false
-    optionen: [Herr, Frau, Diverse]
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: select
+      optionen: [Herr, Frau, Diverse]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 10
-      listSection: "off"
+      listSection: 'off'
       listPos: 30
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   titel:
     type: string
     text: Titel
-    steuerelement: select
-    formular: true
-    horizont: 1
-    gesperrt: false
-    optionen: [Dr., Prof., Prof. Dr.]
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: select
+      optionen: [Dr., Prof., Prof. Dr.]
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 20
-      listSection: "off"
+      listSection: 'off'
       listPos: 40
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   vorname:
     type: string
     text: Vorname
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 30
-      listSection: "off"
+      listSection: 'off'
       listPos: 50
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   nachname:
     type: string
     text: Nachname
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 40
-      listSection: "off"
+      listSection: 'off'
       listPos: 60
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   zusatz:
     type: string
     text: Zusatz
-    steuerelement: textarea
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: textarea
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 10
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   adresse:
     type: string
     text: Adresse
-    steuerelement: textarea
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: textarea
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 15
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   ort:
     type: string
     text: Ort
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 20
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   email:
     type: email
     text: E-Mail
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 30
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   handy:
     type: telefon
     text: Handy
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 40
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   festnetz:
     type: telefon
     text: Festnetz
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 50
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   www:
     type: url
     text: WWW
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 60
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   geboren:
     type: datum
     text: Geboren
-    steuerelement: date
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 10
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   beruf:
     type: string
     text: Beruf
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 20
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   hobby:
     type: string
     text: Hobby
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 30
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   nichtWochentag:
     type: liste
     text: Nicht an Wochentagen
-    steuerelement: multiselect
-    formular: true
-    horizont: 1
-    gesperrt: false
-    optionen: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: multiselect
+      optionen: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 40
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   faehigkeiten:
     type: string
     text: Fähigkeiten
-    steuerelement: textarea
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: textarea
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 50
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   verhalten:
     type: string
     text: Verhalten
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 60
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   text:
     type: string
     text: Text vorhanden
-    steuerelement: editor
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: editor
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Text
+      actionIcon: description
+    liste:
+      suchbar: true
+      sortierbar: false
       listSection: status
       listPos: 10
-    actionLabel: Text
-    actionIcon: description
 
   bilder:
     type: bilder
     text: Bilder vorhanden
-    steuerelement: upload
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: upload
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Pic
+      actionIcon: image
+    liste:
+      suchbar: false
+      sortierbar: false
       listSection: status
       listPos: 20
-    actionLabel: Pic
-    actionIcon: image

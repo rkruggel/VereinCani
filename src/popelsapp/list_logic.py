@@ -75,7 +75,7 @@ def normalize_search_text(value: Any) -> str:
 def searchable_value(config: PopelsConfig, field: str, value: Any) -> str:
 	"""Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf."""
 
-	if config.field_labels[field]['steuerelement'] == 'editor':
+	if config.page(field).get('steuerelement') == 'editor':
 		value = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	return normalize_search_text(value)
 
@@ -113,7 +113,7 @@ def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> s
 def content_available(config: PopelsConfig, field: str, value: Any) -> bool:
 	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
 
-	if config.field_labels[field]['steuerelement'] != 'editor':
+	if config.page(field).get('steuerelement') != 'editor':
 		return bool(value)
 	text = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	text = text.replace('\xa0', ' ')

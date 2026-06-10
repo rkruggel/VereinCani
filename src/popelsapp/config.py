@@ -22,13 +22,13 @@ class PopelsConfig:
 
 	@property
 	def id_prefix(self) -> str:
-		"""Liefert das RavenDB-ID-Präfix der Fachdokumente."""
+		"""Liefert das CouchDB-ID-Präfix der Fachdokumente."""
 
 		return self.key
 
 	@property
 	def settings_id_prefix(self) -> str:
-		"""Liefert das RavenDB-ID-Präfix der Benutzereinstellungen."""
+		"""Liefert das CouchDB-ID-Präfix der Benutzereinstellungen."""
 
 		return f'{self.key}-listen-einstellungen'
 
@@ -36,25 +36,25 @@ class PopelsConfig:
 	def form_fields(self) -> list[str]:
 		"""Liefert alle im Eingabeformular verwendeten Felder."""
 
-		return self.fields_with('formular')
+		return self.page_fields_with('formular')
 
 	@property
 	def required_fields(self) -> list[str]:
 		"""Liefert alle als Pflichtfeld markierten Felder."""
 
-		return self.fields_with('pflichtfeld')
+		return self.page_fields_with('pflichtfeld')
 
 	@property
 	def search_fields(self) -> list[str]:
 		"""Liefert alle Felder der Volltextsuche."""
 
-		return self.fields_with('suchbar')
+		return self.list_fields_with('suchbar')
 
 	@property
 	def sort_fields(self) -> list[str]:
 		"""Liefert alle für die Sortierung freigegebenen Felder."""
 
-		return self.fields_with('sortierbar')
+		return self.list_fields_with('sortierbar')
 
 	@property
 	def content_action_fields(self) -> list[str]:
@@ -62,8 +62,8 @@ class PopelsConfig:
 
 		return [
 			field
-			for field, definition in self.field_labels.items()
-			if definition.get('actionLabel')
+			for field in self.field_labels
+			if self.page(field).get('actionLabel')
 		]
 
 	@property
@@ -78,13 +78,32 @@ class PopelsConfig:
 
 		return self.field_for_control('upload')
 
-	def fields_with(self, marker: str) -> list[str]:
-		"""Liefert Felder, deren Definition einen gesetzten Marker enthält."""
+	def page(self, field: str) -> dict[str, Any]:
+		"""Liefert die Seitenkonfiguration eines Feldes."""
+
+		return self.field_labels[field].get('page', {})
+
+	def liste(self, field: str) -> dict[str, Any]:
+		"""Liefert die Listenkonfiguration eines Feldes."""
+
+		return self.field_labels[field].get('liste', {})
+
+	def page_fields_with(self, marker: str) -> list[str]:
+		"""Liefert Felder mit einem gesetzten Marker im ``page``-Block."""
 
 		return [
 			field
-			for field, definition in self.field_labels.items()
-			if definition.get(marker)
+			for field in self.field_labels
+			if self.page(field).get(marker)
+		]
+
+	def list_fields_with(self, marker: str) -> list[str]:
+		"""Liefert Felder mit einem gesetzten Marker im ``liste``-Block."""
+
+		return [
+			field
+			for field in self.field_labels
+			if self.liste(field).get(marker)
 		]
 
 	def field_for_control(self, control: str) -> str | None:
@@ -93,16 +112,16 @@ class PopelsConfig:
 		return next(
 			(
 				field
-				for field, definition in self.field_labels.items()
-				if definition.get('steuerelement') == control
+				for field in self.field_labels
+				if self.page(field).get('steuerelement') == control
 			),
 			None,
 		)
 
 	def field_position(self, field: str, key: str, default: Any = None) -> Any:
-		"""Liefert eine Positionsangabe aus dem ``pos``-Block eines Feldes."""
+		"""Liefert eine Positionsangabe aus dem ``liste``-Block eines Feldes."""
 
-		value = self.field_labels[field].get('pos', {}).get(key, default)
+		value = self.liste(field).get(key, default)
 		if key == 'listSection' and value is False:
 			return 'off'
 		return value
@@ -123,9 +142,9 @@ class PopelsConfig:
 
 		return [
 			field
-			for field, _definition in sorted(
-				self.field_labels.items(),
-				key=lambda item: item[1].get('pos', {}).get('listPos', 0),
+			for field in sorted(
+				self.field_labels,
+				key=lambda item: self.liste(item).get('listPos', 0),
 			)
 			if self.is_list_field(field)
 			and self.field_position(field, 'listSection') == section

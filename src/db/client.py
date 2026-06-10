@@ -1,58 +1,254 @@
-"""Konfiguration und Aufbau der gemeinsamen RavenDB-Verbindung."""
+"""Konfiguration und HTTP-Zugriff für die gemeinsame CouchDB-Datenbank."""
 
 import configparser
 import os
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Optional
+from typing import Any, Callable
+from urllib.parse import quote
 
-from ravendb import DocumentStore
+import requests
 
 
 CONFIG_PATH = Path(__file__).resolve().parents[2] / 'config.ini'
+COLLECTION_FIELD = 'vereincani_collection'
+COUCH_INTERNAL_FIELDS = {'_id', '_rev', '_attachments', COLLECTION_FIELD}
 
 
-@dataclass
-class RavenConfig:
-    urls: list[str]
-    database: str
-    certificate_path: Optional[str] = None
+class CouchDatabaseError(RuntimeError):
+	"""Meldet fehlgeschlagene CouchDB-Anfragen."""
 
 
-def load_raven_config(config_path: Path = CONFIG_PATH) -> RavenConfig:
-    parser = configparser.ConfigParser()
-    parser.read(config_path)
-
-    server_urls = os.getenv(
-        'RAVENDB_URLS',
-        parser.get('ravendb', 'server_url', fallback='http://127.0.0.1:8080'),
-    )
-    urls = [url.strip() for url in server_urls.split(',') if url.strip()]
-    database = os.getenv(
-        'RAVENDB_DATABASE',
-        parser.get('ravendb', 'database', fallback='VereinCani'),
-    )
-    certificate_path = os.getenv('RAVENDB_CERT_PATH')
-    return RavenConfig(urls=urls, database=database, certificate_path=certificate_path)
+class CouchConflictError(CouchDatabaseError):
+	"""Meldet einen nicht auflösbaren Revisionskonflikt."""
 
 
-def create_document_store(
-    config: Optional[RavenConfig] = None,
-    collection_names: Optional[Mapping[type, str]] = None,
-) -> DocumentStore:
-    cfg = config or load_raven_config()
-    store = DocumentStore(cfg.urls, cfg.database)
-    store.conventions.find_identity_property_name = lambda _object_type: 'id'
-    if collection_names:
-        default_collection_name = store.conventions.find_collection_name
+@dataclass(frozen=True)
+class CouchConfig:
+	"""Verbindungsdaten der CouchDB-Instanz."""
 
-        def find_collection_name(object_type: type) -> str:
-            if object_type in collection_names:
-                return collection_names[object_type]
-            return default_collection_name(object_type)
+	server_url: str
+	database: str
+	username: str = ''
+	password: str = ''
 
-        store.conventions.find_collection_name = find_collection_name
-    if cfg.certificate_path:
-        store.certificate_pem_path = cfg.certificate_path
-    store.initialize()
-    return store
+
+def load_couch_config(config_path: Path = CONFIG_PATH) -> CouchConfig:
+	"""Lädt die CouchDB-Zugangsdaten aus Umgebung oder ``config.ini``."""
+
+	parser = configparser.ConfigParser()
+	parser.read(config_path)
+	return CouchConfig(
+		server_url=os.getenv(
+			'COUCHDB_URL',
+			parser.get('couchdb', 'server_url', fallback='http://127.0.0.1:5984'),
+		).rstrip('/'),
+		database=os.getenv(
+			'COUCHDB_DATABASE',
+			parser.get('couchdb', 'database', fallback='vereincani'),
+		),
+		username=os.getenv(
+			'COUCHDB_USERNAME',
+			parser.get('couchdb', 'username', fallback=''),
+		),
+		password=os.getenv(
+			'COUCHDB_PASSWORD',
+			parser.get('couchdb', 'password', fallback=''),
+		),
+	)
+
+
+class CouchDatabase:
+	"""Kapselt dokumentorientierte CouchDB-Operationen für die Anwendung."""
+
+	MAX_RETRIES = 5
+
+	def __init__(self, config: CouchConfig | None = None) -> None:
+		self.config = config or load_couch_config()
+		self._session = requests.Session()
+		if self.config.username:
+			self._session.auth = (self.config.username, self.config.password)
+		self._session.headers.update({'Accept': 'application/json'})
+		self._database_url = (
+			f'{self.config.server_url}/{quote(self.config.database, safe="")}'
+		)
+		self.ensure_database()
+
+	def ensure_database(self) -> None:
+		"""Legt die konfigurierte Datenbank an, falls sie noch nicht existiert."""
+
+		response = self._session.get(self._database_url, timeout=15)
+		if response.status_code == 404:
+			response = self._session.put(self._database_url, timeout=15)
+		self._raise_for_status(response, 'CouchDB-Datenbank konnte nicht geöffnet werden')
+
+	def list_documents(self, collection: str) -> list[dict[str, Any]]:
+		"""Lädt alle Dokumente einer logischen Collection."""
+
+		response = self._session.get(
+			f'{self._database_url}/_all_docs',
+			params={'include_docs': 'true'},
+			timeout=30,
+		)
+		self._raise_for_status(response, 'CouchDB-Dokumente konnten nicht geladen werden')
+		return [
+			deepcopy(row['doc'])
+			for row in response.json().get('rows', [])
+			if row.get('doc', {}).get(COLLECTION_FIELD) == collection
+		]
+
+	def get_document(self, document_id: str) -> dict[str, Any] | None:
+		"""Lädt ein Dokument anhand seiner stabilen ID."""
+
+		response = self._session.get(self._document_url(document_id), timeout=15)
+		if response.status_code == 404:
+			return None
+		self._raise_for_status(response, f'CouchDB-Dokument {document_id} konnte nicht geladen werden')
+		return response.json()
+
+	def create_document(
+		self,
+		document_id: str,
+		data: dict[str, Any],
+		collection: str,
+	) -> dict[str, Any]:
+		"""Erstellt ein neues Dokument und lehnt vorhandene IDs ab."""
+
+		document = self._prepare_document(document_id, data, collection)
+		response = self._session.put(
+			self._document_url(document_id),
+			json=document,
+			timeout=30,
+		)
+		if response.status_code == 409:
+			raise CouchConflictError(f'CouchDB-Dokument existiert bereits: {document_id}')
+		self._raise_for_status(response, f'CouchDB-Dokument {document_id} konnte nicht erstellt werden')
+		document['_rev'] = response.json()['rev']
+		return document
+
+	def put_document(
+		self,
+		document_id: str,
+		data: dict[str, Any],
+		collection: str,
+	) -> dict[str, Any]:
+		"""Erstellt oder ersetzt ein Dokument revisionssicher."""
+
+		for _attempt in range(self.MAX_RETRIES):
+			existing = self.get_document(document_id)
+			document = self._prepare_document(document_id, data, collection)
+			if existing is not None:
+				document['_rev'] = existing['_rev']
+				if '_attachments' in existing and '_attachments' not in document:
+					document['_attachments'] = existing['_attachments']
+			response = self._session.put(
+				self._document_url(document_id),
+				json=document,
+				timeout=60,
+			)
+			if response.status_code == 409:
+				continue
+			self._raise_for_status(response, f'CouchDB-Dokument {document_id} konnte nicht gespeichert werden')
+			document['_rev'] = response.json()['rev']
+			return document
+		raise CouchConflictError(f'CouchDB-Dokument {document_id} wurde gleichzeitig geändert')
+
+	def mutate_document(
+		self,
+		document_id: str,
+		mutator: Callable[[dict[str, Any]], None],
+	) -> dict[str, Any] | None:
+		"""Ändert ein vorhandenes Dokument mit Konfliktwiederholung."""
+
+		for _attempt in range(self.MAX_RETRIES):
+			document = self.get_document(document_id)
+			if document is None:
+				return None
+			mutator(document)
+			response = self._session.put(
+				self._document_url(document_id),
+				json=document,
+				timeout=60,
+			)
+			if response.status_code == 409:
+				continue
+			self._raise_for_status(response, f'CouchDB-Dokument {document_id} konnte nicht geändert werden')
+			document['_rev'] = response.json()['rev']
+			return document
+		raise CouchConflictError(f'CouchDB-Dokument {document_id} wurde gleichzeitig geändert')
+
+	def delete_document(self, document_id: str) -> bool:
+		"""Löscht ein Dokument einschließlich seiner Anhänge."""
+
+		for _attempt in range(self.MAX_RETRIES):
+			document = self.get_document(document_id)
+			if document is None:
+				return False
+			response = self._session.delete(
+				self._document_url(document_id),
+				params={'rev': document['_rev']},
+				timeout=30,
+			)
+			if response.status_code == 409:
+				continue
+			self._raise_for_status(response, f'CouchDB-Dokument {document_id} konnte nicht gelöscht werden')
+			return True
+		raise CouchConflictError(f'CouchDB-Dokument {document_id} wurde gleichzeitig geändert')
+
+	def get_attachment(self, document_id: str, attachment_name: str) -> bytes | None:
+		"""Lädt die Binärdaten eines CouchDB-Anhangs."""
+
+		response = self._session.get(
+			f'{self._document_url(document_id)}/{quote(attachment_name, safe="")}',
+			timeout=60,
+		)
+		if response.status_code == 404:
+			return None
+		self._raise_for_status(
+			response,
+			f'CouchDB-Anhang {attachment_name} konnte nicht geladen werden',
+		)
+		return response.content
+
+	def plain_document(self, document: dict[str, Any]) -> dict[str, Any]:
+		"""Entfernt CouchDB-interne Felder aus einem Anwendungsdokument."""
+
+		return {
+			key: deepcopy(value)
+			for key, value in document.items()
+			if key not in COUCH_INTERNAL_FIELDS
+		}
+
+	def close(self) -> None:
+		self._session.close()
+
+	def _prepare_document(
+		self,
+		document_id: str,
+		data: dict[str, Any],
+		collection: str,
+	) -> dict[str, Any]:
+		document = deepcopy(data)
+		document['_id'] = document_id
+		document[COLLECTION_FIELD] = collection
+		return document
+
+	def _document_url(self, document_id: str) -> str:
+		return f'{self._database_url}/{quote(document_id, safe="")}'
+
+	@staticmethod
+	def _raise_for_status(response: requests.Response, message: str) -> None:
+		if response.ok:
+			return
+		try:
+			detail = response.json()
+		except requests.JSONDecodeError:
+			detail = response.text
+		raise CouchDatabaseError(f'{message}: HTTP {response.status_code} {detail}')
+
+
+def create_couch_database(config: CouchConfig | None = None) -> CouchDatabase:
+	"""Erzeugt einen CouchDB-Client für die konfigurierte Datenbank."""
+
+	return CouchDatabase(config)

@@ -1,80 +1,75 @@
-"""RavenDB-Zugriff für konfigurierbare Popels und Bild-Attachments."""
+"""CouchDB-Zugriff für konfigurierbare Popels und Bild-Anhänge."""
 
 from __future__ import annotations
 
+import base64
 from dataclasses import asdict
 from typing import Any
 from uuid import uuid4
 
-from src.db.client import create_document_store
+from src.db.client import create_couch_database
 from src.popelsapp import PopelsConfig
 
 
-class RavenPopelsDatabase:
+class CouchPopelsDatabase:
 	"""Kapselt Datenbankoperationen für ein konfiguriertes Popels-Modul."""
 
 	def __init__(self, config: PopelsConfig, model: type) -> None:
-		"""Initialisiert das Repository mit einem verzögert erzeugten DocumentStore."""
-
 		self.config = config
 		self.model = model
-		self._store = None
+		self._database = None
 
 	def list(self, sortierungen: list[str] | None = None) -> list[dict[str, Any]]:
 		"""Lädt alle Datensätze und sortiert sie nach den übergebenen Kriterien."""
 
-		with self._get_store().open_session() as session:
-			documents = list(session.query_collection(self.config.collection_name, dict))
-			criteria = [] if sortierungen is None else sortierungen
-			records = [self._normalize_document(document) for document in documents]
-			return sort_records(records, criteria, self.config.sort_fields)
+		documents = self._get_database().list_documents(self.config.collection_name)
+		criteria = [] if sortierungen is None else sortierungen
+		records = [self._normalize_document(document) for document in documents]
+		return sort_records(records, criteria, self.config.sort_fields)
 
 	def get(self, record_id: str) -> dict[str, Any] | None:
-		"""Lädt einen Datensatz anhand seiner RavenDB-ID."""
+		"""Lädt einen Datensatz anhand seiner CouchDB-ID."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			return self._normalize_document(document) if document is not None else None
+		document = self._get_database().get_document(record_id)
+		return self._normalize_document(document) if document is not None else None
 
 	def create(self, data: dict[str, Any]) -> dict[str, Any]:
 		"""Erstellt und speichert einen neuen Datensatz mit eindeutiger ID."""
 
 		record = self._create_record(data, f'{self.config.id_prefix}/{uuid4()}')
-		with self._get_store().open_session() as session:
-			session.store(record, record.id)
-			session.save_changes()
+		self._get_database().create_document(
+			record.id,
+			asdict(record),
+			self.config.collection_name,
+		)
 		return asdict(record)
 
 	def update(self, record_id: str, data: dict[str, Any]) -> dict[str, Any] | None:
 		"""Aktualisiert die Formularfelder eines vorhandenen Datensatzes."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None:
-				return None
+		def mutate(document: dict[str, Any]) -> None:
 			for field in self.config.form_fields:
-				if self.config.field_labels[field].get('berechnen'):
+				if self.config.page(field).get('berechnen'):
 					document.pop(field, None)
 					continue
 				value = data.get(field, '')
 				if self.config.field_labels[field]['type'] == 'liste':
 					value = list(value or [])
 				document[field] = value
-			session.save_changes()
-			return self._normalize_document(document)
+
+		document = self._get_database().mutate_document(record_id, mutate)
+		return self._normalize_document(document) if document is not None else None
 
 	def update_text(self, record_id: str, text: str) -> bool:
 		"""Speichert den freien Text eines Datensatzes."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None:
-				return False
-			if self.config.editor_field is None:
-				return False
+		if self.config.editor_field is None:
+			return False
+
+		def mutate(document: dict[str, Any]) -> None:
 			document[self.config.editor_field] = text
-			session.save_changes()
-			return True
+
+		return self._get_database().mutate_document(record_id, mutate) is not None
 
 	def add_image(
 		self,
@@ -83,100 +78,108 @@ class RavenPopelsDatabase:
 		content_type: str,
 		data: bytes,
 	) -> dict[str, str] | None:
-		"""Speichert ein Bild als RavenDB-Attachment und ergänzt dessen Metadaten."""
+		"""Speichert ein Bild als CouchDB-Anhang und ergänzt dessen Metadaten."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None:
-				return None
-			if self.config.image_field is None:
-				return None
-			attachment_name = f'{uuid4()}-{file_name}'
-			image = {
-				'attachment_name': attachment_name,
-				'name': file_name,
-				'content_type': content_type,
-			}
+		if self.config.image_field is None:
+			return None
+		attachment_name = f'{uuid4()}-{file_name}'
+		image = {
+			'attachment_name': attachment_name,
+			'name': file_name,
+			'content_type': content_type,
+		}
+
+		def mutate(document: dict[str, Any]) -> None:
 			images = list(document.get(self.config.image_field) or [])
 			images.append(image)
 			document[self.config.image_field] = images
-			session.advanced.attachments.store(record_id, attachment_name, data, content_type)
-			session.save_changes()
-			return image
+			attachments = dict(document.get('_attachments') or {})
+			attachments[attachment_name] = {
+				'content_type': content_type,
+				'data': base64.b64encode(data).decode('ascii'),
+			}
+			document['_attachments'] = attachments
+
+		document = self._get_database().mutate_document(record_id, mutate)
+		return image if document is not None else None
 
 	def get_images(self, record_id: str) -> list[dict[str, Any]]:
-		"""Lädt Bildmetadaten und Binärdaten aller Attachments."""
+		"""Lädt Bildmetadaten und Binärdaten aller konfigurierten Anhänge."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None or self.config.image_field is None:
-				return []
-			images = []
-			for image in document.get(self.config.image_field) or []:
-				with session.advanced.attachments.get(record_id, image['attachment_name']) as attachment:
-					images.append({
-						**image,
-						'data': attachment.data,
-					})
-			return images
+		document = self._get_database().get_document(record_id)
+		if document is None or self.config.image_field is None:
+			return []
+		images = []
+		for image in document.get(self.config.image_field) or []:
+			data = self._get_database().get_attachment(
+				record_id,
+				image['attachment_name'],
+			)
+			if data is not None:
+				images.append({**image, 'data': data})
+		return images
 
 	def clear_images(self, record_id: str) -> bool:
-		"""Löscht sämtliche Bild-Attachments eines Datensatzes."""
+		"""Löscht sämtliche konfigurierten Bild-Anhänge eines Datensatzes."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None or self.config.image_field is None:
-				return False
+		if self.config.image_field is None:
+			return False
+
+		def mutate(document: dict[str, Any]) -> None:
+			attachments = dict(document.get('_attachments') or {})
 			for image in document.get(self.config.image_field) or []:
-				session.advanced.attachments.delete(record_id, image['attachment_name'])
+				attachments.pop(image.get('attachment_name'), None)
 			document[self.config.image_field] = []
-			session.save_changes()
-			return True
+			if attachments:
+				document['_attachments'] = attachments
+			else:
+				document.pop('_attachments', None)
+
+		return self._get_database().mutate_document(record_id, mutate) is not None
 
 	def delete_image(self, record_id: str, attachment_name: str) -> bool:
 		"""Löscht ein einzelnes Bild anhand seines internen Attachment-Namens."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None or self.config.image_field is None:
-				return False
+		if self.config.image_field is None:
+			return False
+		deleted = {'value': False}
+
+		def mutate(document: dict[str, Any]) -> None:
 			images = list(document.get(self.config.image_field) or [])
 			if not any(image.get('attachment_name') == attachment_name for image in images):
-				return False
-			session.advanced.attachments.delete(record_id, attachment_name)
+				return
 			document[self.config.image_field] = [
-				image for image in images
+				image
+				for image in images
 				if image.get('attachment_name') != attachment_name
 			]
-			session.save_changes()
-			return True
+			attachments = dict(document.get('_attachments') or {})
+			attachments.pop(attachment_name, None)
+			if attachments:
+				document['_attachments'] = attachments
+			else:
+				document.pop('_attachments', None)
+			deleted['value'] = True
+
+		document = self._get_database().mutate_document(record_id, mutate)
+		return document is not None and deleted['value']
 
 	def delete(self, record_id: str) -> bool:
-		"""Löscht einen Datensatz samt seiner Attachments."""
+		"""Löscht einen Datensatz samt seiner Anhänge."""
 
-		with self._get_store().open_session() as session:
-			document = session.load(record_id, dict)
-			if document is None:
-				return False
-			session.delete(document)
-			session.save_changes()
-			return True
+		return self._get_database().delete_document(record_id)
 
-	def _get_store(self):
-		"""Erzeugt den RavenDB-DocumentStore bei der ersten Verwendung."""
-
-		if self._store is None:
-			self._store = create_document_store(
-				collection_names={self.model: self.config.collection_name},
-			)
-		return self._store
+	def _get_database(self):
+		if self._database is None:
+			self._database = create_couch_database()
+		return self._database
 
 	def _create_record(self, data: dict[str, Any], record_id: str):
 		"""Erstellt ein normalisiertes Modell aus Formularwerten."""
 
 		values = {}
 		for field in self.config.form_fields:
-			if self.config.field_labels[field].get('berechnen'):
+			if self.config.page(field).get('berechnen'):
 				continue
 			value = data.get(field, '')
 			if self.config.field_labels[field]['type'] == 'liste':
@@ -185,7 +188,7 @@ class RavenPopelsDatabase:
 		return self.model(id=record_id, **values)
 
 	def _normalize_document(self, document: dict[str, Any]) -> dict[str, Any]:
-		"""Übernimmt RavenDB-Dokumente mit exakt den konfigurierten Feldnamen."""
+		"""Übernimmt ein CouchDB-Dokument mit den konfigurierten Feldnamen."""
 
 		values = {
 			field: document.get(
@@ -194,8 +197,7 @@ class RavenPopelsDatabase:
 			)
 			for field, definition in self.config.field_labels.items()
 		}
-		metadata = document.get('@metadata') or {}
-		values['id'] = document.get('id') or metadata.get('@id') or values.get('id', '')
+		values['id'] = document.get('_id') or document.get('id') or values.get('id', '')
 		return values
 
 

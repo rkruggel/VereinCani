@@ -18,13 +18,13 @@ from src.popelsapp.list_logic import (
 	validate_phone,
 )
 from src.popelsapp.preferences import load_sort_criteria, load_visible_fields, save_visible_fields
-from src.popelsapp.repository import RavenPopelsDatabase
+from src.popelsapp.repository import CouchPopelsDatabase
 from src.popelsapp.settings import ListeneinstellungenRepository
 
 
 def render_popels_page(
 	config: PopelsConfig,
-	database: RavenPopelsDatabase,
+	database: CouchPopelsDatabase,
 	settings: ListeneinstellungenRepository,
 	form_control_contexts: dict[str, dict[str, Any]] | None = None,
 	initial_record_id: str | None = None,
@@ -76,7 +76,7 @@ def render_popels_page(
 		return {
 			field: form_controls[field].value
 			for field in FORM_FIELDS
-			if not POPELS_FIELDS[field].get('berechnen')
+			if not config.page(field).get('berechnen')
 		}
 
 	def clear_form() -> None:
@@ -114,7 +114,7 @@ def render_popels_page(
 		try:
 			record = POPELS_DB.get(record_id)
 		except Exception as error:
-			ui.notify(f'RavenDB nicht erreichbar: {error}', type='negative')
+			ui.notify(f'CouchDB nicht erreichbar: {error}', type='negative')
 			return
 		if record is None:
 			ui.notify(f'{config.singular} nicht gefunden', type='warning')
@@ -364,7 +364,7 @@ def render_popels_page(
 		render_uploaded_images.refresh()
 
 	def delete_selected_image() -> None:
-		"""Löscht das ausgewählte Bild aus RavenDB und der lokalen Vorschau."""
+		"""Löscht das ausgewählte Bild aus CouchDB und der lokalen Vorschau."""
 
 		record_id = selected_id['value']
 		attachment_name = selected_image['attachment_name']
@@ -584,7 +584,7 @@ def render_popels_page(
 		}
 		with ui.row().classes('w-full gap-2'):
 			for field in CONTENT_ACTION_FIELDS:
-				definition = POPELS_FIELDS[field]
+				definition = config.page(field)
 				ui.button(
 					definition['actionLabel'],
 					icon=definition['actionIcon'],
@@ -622,7 +622,7 @@ def render_popels_page(
 
 			if database_error is not None:
 				with ui.card().classes('w-full p-3 rounded-lg shadow-sm border border-red-200 bg-red-50'):
-					ui.label('RavenDB konnte nicht geladen werden.').classes('text-sm font-semibold text-red-700')
+					ui.label('CouchDB konnte nicht geladen werden.').classes('text-sm font-semibold text-red-700')
 					ui.label(database_error).classes('text-xs text-red-600')
 				return
 
@@ -648,7 +648,7 @@ def render_popels_page(
 									render_field_value(
 										record,
 										field,
-										POPELS_FIELDS[field].get('listValueClasses', 'text-slate-700'),
+										config.liste(field).get('listValueClasses', 'text-slate-700'),
 									)
 						with ui.row().classes('items-center gap-2'):
 							ui.button(icon='edit', on_click=lambda record_id=record['id']: load_record(record_id)).props('flat round').classes('text-primary')
@@ -667,7 +667,7 @@ def render_popels_page(
 								render_field_value(
 									record,
 									field,
-									POPELS_FIELDS[field].get('listValueClasses', 'text-slate-700'),
+									config.liste(field).get('listValueClasses', 'text-slate-700'),
 								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm text-slate-500'):
@@ -676,7 +676,7 @@ def render_popels_page(
 								render_field_value(
 									record,
 									field,
-									POPELS_FIELDS[field].get('listValueClasses', 'text-slate-500'),
+									config.liste(field).get('listValueClasses', 'text-slate-500'),
 								)
 
 					with ui.row().classes('w-full gap-x-3 gap-y-1 flex-wrap text-sm'):
@@ -686,22 +686,24 @@ def render_popels_page(
 
 	with ui.column().classes('w-full gap-3'):
 		ui.element('div').props(f'id={PAGE_TOP_ANCHOR_ID}').classes('h-0')
-		with ui.row().classes('w-full gap-3 items-start max-lg:flex-col'):
-			with ui.card().classes('w-[420px] max-lg:w-full p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
-				mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
-				ui.label('Daten werden in RavenDB gespeichert.').classes('text-xs text-slate-600')
-				render_active_actions()
+		with ui.splitter(value=50, limits=(25, 60)).classes('w-full') as page_splitter:
+			with page_splitter.before:
+				with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
+					mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
+					ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
+					render_active_actions()
 
-				form_controls.update(render_popels_form(
-					config,
-					validate_phone,
-					clear_form,
-					save_record,
-					form_control_contexts,
-				))
+					form_controls.update(render_popels_form(
+						config,
+						validate_phone,
+						clear_form,
+						save_record,
+						form_control_contexts,
+					))
 
-			with ui.column().classes('flex-1 w-full gap-3'):
-				render_records()
+			with page_splitter.after:
+				with ui.column().classes('w-full min-w-0 gap-3 pl-3'):
+					render_records()
 
 	if initial_record_id is not None:
 		load_record(initial_record_id, scroll=False)

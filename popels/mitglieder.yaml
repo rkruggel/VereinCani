@@ -1,4 +1,4 @@
-# Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
 config:
   key: mitglieder
   singular: Mitglied
@@ -29,276 +29,290 @@ field_labels:
   id:
     type: string
     text: ID
-    steuerelement: label
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: headerDetail
       listPos: 20
-    listValueClasses: text-xs text-slate-500
+      listValueClasses: text-xs text-slate-500
 
   vorname:
     type: string
     text: Vorname
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 30
       listSection: headerDetail
       listPos: 30
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   nachname:
     type: string
     text: Nachname
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 40
       listSection: headerDetail
       listPos: 40
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   status:
     type: string
     text: Mitgliedsstatus
-    steuerelement: select
-    formular: true
-    horizont: 1
-    gesperrt: false
-    optionen: [Aktiv, Passiv, Ehemalig]
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: select
+      optionen: [Aktiv, Passiv, Ehemalig]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 5
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   MitgliedSeit:
     type: datum
     text: MitgliedSeit
-    steuerelement: date
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 5
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   hunde:
     type: liste
     text: Hunde
-    steuerelement: input_chips
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input_chips
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: false
+      listSection: 'off'
       listPos: 270
+      listValueClasses: text-sm text-slate-500
 
   persoenlich:
     type: liste
     text: Persönlich
-    steuerelement: input_chips
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input_chips
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: false
+      listSection: 'off'
       listPos: 20
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
-
-# ---------------------------------------------
   hauptmitglied:
     type: string
     text: Hauptmitglied
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 220
-    listValueClasses: text-sm text-slate-500
-
-
+      listValueClasses: text-sm text-slate-500
   typ:
     type: string
     text: Typ
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 240
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   artMitglied:
     type: string
     text: ArtMitglied
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 250
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   trainingseinheit:
     type: string
     text: Trainingseinheit
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 320
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   erstkontakt:
     type: string
     text: Erstkontakt
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 330
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   betrag:
     type: string
     text: Betrag
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 340
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   monat:
     type: string
     text: Monat
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 350
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   zuZahlen:
     type: string
     text: Zu Zahlen
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 360
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   sonderPreis:
     type: string
     text: Sonder Preis
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 370
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   unterlagenAusgehaendigt:
     type: string
     text: Unterlagen ausgehändigt
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
       listPos: 400
-    listValueClasses: text-sm text-slate-500
-
-
+      listValueClasses: text-sm text-slate-500
 
   text:
     type: string
     text: Text vorhanden
-    steuerelement: editor
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: editor
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Text
+      actionIcon: description
+    liste:
+      suchbar: true
+      sortierbar: false
       listSection: status
       listPos: 10
-    actionLabel: Text
-    actionIcon: description
 
   bilder:
     type: bilder
     text: Bilder vorhanden
-    steuerelement: upload
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: upload
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Pic
+      actionIcon: image
+    liste:
+      suchbar: false
+      sortierbar: false
       listSection: status
       listPos: 20
-    actionLabel: Pic
-    actionIcon: image

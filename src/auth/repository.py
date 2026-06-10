@@ -1,57 +1,59 @@
-"""RavenDB-Zugriff für Benutzerkonten und Anmeldedaten."""
+"""CouchDB-Zugriff für Benutzerkonten und Anmeldedaten."""
 
 import hashlib
+from dataclasses import asdict
 
 from src.auth.models import Benutzer
 from src.auth.security import hash_kennung, verify_kennung
-from src.db.client import create_document_store
+from src.db.client import CouchConflictError, create_couch_database
 
 
 class BenutzerRepository:
 	def __init__(self) -> None:
-		self._store = None
+		self._database = None
 
 	def register(self, email: str, name: str, kennung: str) -> Benutzer:
 		normalized_email = normalize_email(email)
 		document_id = benutzer_id(normalized_email)
-		with self._get_store().open_session() as session:
-			if session.load(document_id, Benutzer) is not None:
-				raise ValueError('Fuer diese E-Mail-Adresse besteht bereits ein Zugang.')
-			kennung_hash, kennung_salt = hash_kennung(kennung)
-			benutzer = Benutzer(
-				id=document_id,
-				email=normalized_email,
-				name=name.strip(),
-				kennung_hash=kennung_hash,
-				kennung_salt=kennung_salt,
+		if self._get_database().get_document(document_id) is not None:
+			raise ValueError('Fuer diese E-Mail-Adresse besteht bereits ein Zugang.')
+		kennung_hash, kennung_salt = hash_kennung(kennung)
+		benutzer = Benutzer(
+			id=document_id,
+			email=normalized_email,
+			name=name.strip(),
+			kennung_hash=kennung_hash,
+			kennung_salt=kennung_salt,
+		)
+		try:
+			self._get_database().create_document(
+				document_id,
+				asdict(benutzer),
+				'Benutzer',
 			)
-			session.store(benutzer, benutzer.id)
-			session.save_changes()
-			return benutzer
+		except CouchConflictError as error:
+			raise ValueError('Fuer diese E-Mail-Adresse besteht bereits ein Zugang.') from error
+		return benutzer
 
 	def authenticate(self, email: str, kennung: str) -> Benutzer | None:
-		normalized_email = normalize_email(email)
-		with self._get_store().open_session() as session:
-			benutzer = session.load(benutzer_id(normalized_email), Benutzer)
-			if benutzer is None:
-				return None
-			if not verify_kennung(kennung, benutzer.kennung_hash, benutzer.kennung_salt):
-				return None
-			return benutzer
+		document = self._get_database().get_document(benutzer_id(normalize_email(email)))
+		if document is None:
+			return None
+		benutzer = Benutzer(**{
+			field: document.get(field, '')
+			for field in Benutzer.__dataclass_fields__
+		})
+		if not verify_kennung(kennung, benutzer.kennung_hash, benutzer.kennung_salt):
+			return None
+		return benutzer
 
 	def delete(self, email: str) -> bool:
-		document_id = benutzer_id(normalize_email(email))
-		with self._get_store().open_session() as session:
-			if session.load(document_id, Benutzer) is None:
-				return False
-			session.delete(document_id)
-			session.save_changes()
-			return True
+		return self._get_database().delete_document(benutzer_id(normalize_email(email)))
 
-	def _get_store(self):
-		if self._store is None:
-			self._store = create_document_store(collection_names={Benutzer: 'Benutzer'})
-		return self._store
+	def _get_database(self):
+		if self._database is None:
+			self._database = create_couch_database()
+		return self._database
 
 
 def normalize_email(email: str) -> str:

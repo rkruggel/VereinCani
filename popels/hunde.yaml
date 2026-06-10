@@ -1,4 +1,4 @@
-# Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
 config:
   key: hunde
   singular: Hund
@@ -18,514 +18,533 @@ config:
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
 field_labels:
   id:
-    type: string 
+    type: string
     text: ID
-    steuerelement: label
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: headerDetail
       listPos: 10
-    listValueClasses: text-xs text-slate-500
-
+      listValueClasses: text-xs text-slate-500
   name:
     type: string
     text: Hundename
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
       formHeaderPos: 10
       listSection: headerDetail
       listPos: 360
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
   rufname:
     type: string
     text: Rufname
-    steuerelement: input
-    formular: true
-    horizont: 2
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "headerDetail"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
       listPos: 450
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
   rasseOderMix:
     type: string
     text: Rasse oder Mix
-    steuerelement: select
-    optionen: [Rasse, Mix]
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: select
+      optionen: [Rasse, Mix]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 480
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
   rasse:
     type: string
     text: Rasse
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 440
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
   ursprung:
     type: string
     text: Ursprung
-    steuerelement: select
-    optionen: [Züchter, Tierheim, Privat, Sonstiges]
-    formular: true
-    horizont: 2
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: select
+      optionen: [Züchter, Tierheim, Privat, Sonstiges]
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 470
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   geboren:
     type: datum
     text: Geboren
-    steuerelement: date
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 510
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   alter:
     type: string
     text: Alter Jahre
-    steuerelement: input
-    formular: true
-    berechnen: datumDiff(geboren, today)
-    horizont: 2
-    gesperrt: true
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: true
+      berechnen: datumDiff(geboren, today)
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 230
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
 
   beimirseit:
     type: datum
     text: bei mir seit
-    steuerelement: date
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: secondary
       listPos: 510
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   beimirAlter:
     type: string
     text: Alter Jahre
-    steuerelement: input
-    formular: true
-    berechnen: datumDiff(beimirseit, today)
-    horizont: 2
-    gesperrt: true
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: true
+      berechnen: datumDiff(beimirseit, today)
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 230
-    listValueClasses: text-sm text-slate-500
-
-
-
-
+      listValueClasses: text-sm text-slate-500
 
   mixRasse:
     type: string
     text: Mix-Rasse
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 430
-    listValueClasses: text-sm text-slate-500
-
-
+      listValueClasses: text-sm text-slate-500
 
   kastriert:
     type: string
     text: Kastriert
-    steuerelement: select
-    optionen: [Ja, Nein, Unsicher]
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: select
+      optionen: [Ja, Nein, Unsicher]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 410
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   kastrAlter:
     type: string
     text: Kastriert Alter
-    steuerelement: input
-    formular: true
-    horizont: 2
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 400
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   wannKastriert:
     type: datum
     text: Wann kastriert
-    steuerelement: date
-    formular: true
-    horizont: 3
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 3
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 540
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
 
   chipNummer:
     type: string
     text: Chip Nummer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 270
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   besitzer:
     type: string
     text: Besitzer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
       listSection: primary
       listPos: 20
-    listValueClasses: text-sm text-slate-500
-
-
+      listValueClasses: text-sm text-slate-500
 
   anamnese:
     type: string
     text: Anamnese
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 250
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   angstBeschreiben:
     type: string
     text: Angst beschreiben
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 260
-    listValueClasses: text-sm text-slate-500
-
+      listValueClasses: text-sm text-slate-500
 
   erstkontakt:
     type: string
     text: Erstkontakt
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 280
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   gewicht:
     type: string
     text: Gewicht
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 310
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   gewichtOk:
     type: string
     text: Gewicht Ok
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 320
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   gewichtSoll:
     type: string
     text: Gewicht Soll
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 330
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   gruppe:
     type: string
     text: Gruppe
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 340
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   haftpflicht:
     type: string
     text: Haftpflicht
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 350
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   ichVersichere:
     type: string
     text: Ich versichere
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 370
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   istEinAngsthund:
     type: string
     text: Ist ein Angsthund
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 380
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   schulterhoehe:
     type: string
     text: Schulterhöhe
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 460
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   vertraeglichMitHunden:
     type: string
     text: Verträglich mit Hunden
-    steuerelement: select
-    optionen: [Ja, Nein, Unsicher]
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: select
+      optionen: [Ja, Nein, Unsicher]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 480
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   vertraeglichMitMenschen:
     type: string
     text: Verträglich mit Menschen
-    steuerelement: select
-    optionen: [Ja, Nein, Unsicher]
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "secondary"
+    page:
+      steuerelement: select
+      optionen: [Ja, Nein, Unsicher]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
       listPos: 490
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   diff:
     type: string
     text: Diff
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 500
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   geimpft:
     type: string
     text: Geimpft
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 520
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   geschlecht:
     type: string
     text: Geschlecht
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: "off"
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
       listPos: 530
-    listValueClasses: text-sm text-slate-500
+      listValueClasses: text-sm text-slate-500
 
   text:
     type: string
     text: Text vorhanden
-    steuerelement: editor
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: true
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: editor
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Text
+      actionIcon: description
+    liste:
+      suchbar: true
+      sortierbar: false
       listSection: status
       listPos: 10
-    actionLabel: Text
-    actionIcon: description
 
   bilder1:
     type: bilder
     text: Bilder anfang
-    steuerelement: upload
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: upload
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Pic anfang
+      actionIcon: image
+    liste:
+      suchbar: false
+      sortierbar: false
       listSection: status
       listPos: 20
-    actionLabel: Pic anfang
-    actionIcon: image
-
+      
   bilder2:
     type: bilder
     text: Bilder aktuell
-    steuerelement: upload
-    formular: false
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: false
-    pos:
+    page:
+      steuerelement: upload
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Pic aktuell
+      actionIcon: image
+    liste:
+      suchbar: false
+      sortierbar: false
       listSection: status
       listPos: 30
-    actionLabel: Pic aktuell
-    actionIcon: image

@@ -38,7 +38,7 @@ class PopelsModel:
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> Self:
-		"""Erstellt ein Modell aus RavenDB-Daten und übernimmt optionale Altdaten."""
+		"""Erstellt ein Modell aus CouchDB-Daten und übernimmt optionale Altdaten."""
 
 		values = {
 			key: value
@@ -55,8 +55,8 @@ class PopelsModel:
 		"""Gibt alle konfigurierten Modellfelder als Wörterbuch zurück."""
 
 		data = asdict(self)
-		for field_name, definition in self._config.field_labels.items():
-			if definition.get('berechnen'):
+		for field_name in self._config.field_labels:
+			if self._config.page(field_name).get('berechnen'):
 				data.pop(field_name, None)
 		return data
 
