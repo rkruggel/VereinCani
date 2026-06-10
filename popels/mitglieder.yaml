@@ -40,21 +40,6 @@ field_labels:
       listPos: 20
     listValueClasses: text-xs text-slate-500
 
-  mitgliedsnummer:
-    type: string
-    text: Mitgliedsnummer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    pflichtfeld: true
-    suchbar: true
-    sortierbar: true
-    pos:
-      listSection: headerDetail
-      listPos: 10
-    listValueClasses: text-xs text-slate-500
-
   vorname:
     type: string
     text: Vorname
@@ -129,9 +114,9 @@ field_labels:
       listSection: "off"
       listPos: 270
 
-  adressen:
+  persoenlich:
     type: liste
-    text: Adressen
+    text: Persönlich
     steuerelement: input_chips
     formular: true
     horizont: 1
@@ -159,19 +144,6 @@ field_labels:
       listPos: 220
     listValueClasses: text-sm text-slate-500
 
-  anrede:
-    type: string
-    text: Anrede
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 230
-    listValueClasses: text-sm text-slate-500
 
   typ:
     type: string
@@ -199,76 +171,6 @@ field_labels:
     pos:
       listSection: "off"
       listPos: 250
-    listValueClasses: text-sm text-slate-500
-
-  persoenlich:
-    type: string
-    text: Persönlich
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 260
-    listValueClasses: text-sm text-slate-500
-
-  kontonummer:
-    type: string
-    text: Kontonummer
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 280
-    listValueClasses: text-sm text-slate-500
-
-  rechteVergabe:
-    type: string
-    text: RechteVergabe
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 290
-    listValueClasses: text-sm text-slate-500
-
-  pflichtstunden:
-    type: string
-    text: Pflichtstunden
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 300
-    listValueClasses: text-sm text-slate-500
-
-  preis:
-    type: string
-    text: Preis
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 310
     listValueClasses: text-sm text-slate-500
 
   trainingseinheit:
@@ -355,34 +257,6 @@ field_labels:
       listPos: 370
     listValueClasses: text-sm text-slate-500
 
-  istBezahlt:
-    type: string
-    text: Ist Bezahlt
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 380
-    listValueClasses: text-sm text-slate-500
-
-  istBezahlt2026:
-    type: string
-    text: Ist Bezahlt 2026
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 390
-    listValueClasses: text-sm text-slate-500
-
   unterlagenAusgehaendigt:
     type: string
     text: Unterlagen ausgehändigt
@@ -397,75 +271,7 @@ field_labels:
       listPos: 400
     listValueClasses: text-sm text-slate-500
 
-  ktoBank:
-    type: string
-    text: Kto-Bank
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 410
-    listValueClasses: text-sm text-slate-500
 
-  ktoNr:
-    type: string
-    text: Kto-Nr
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 420
-    listValueClasses: text-sm text-slate-500
-
-  mandatRefNr:
-    type: string
-    text: MandatRef-Nr
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 430
-    listValueClasses: text-sm text-slate-500
-
-  email:
-    type: string
-    text: Email
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 440
-    listValueClasses: text-sm text-slate-500
-
-  hatSepa:
-    type: string
-    text: Hat Sepa
-    steuerelement: input
-    formular: true
-    horizont: 1
-    gesperrt: false
-    suchbar: false
-    sortierbar: true
-    pos:
-      listSection: "off"
-      listPos: 450
-    listValueClasses: text-sm text-slate-500
 
   text:
     type: string

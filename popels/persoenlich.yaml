@@ -1,11 +1,11 @@
 # Allgemeine Bezeichnungen und RavenDB-Sammlungen dieses Bereichs.
 config:
-  key: adressen
-  singular: Adresse
-  plural: Adressen
-  collection_name: Adressen
-  settings_collection_name: AdresslistenEinstellungen
-  model_name: Adresse
+  key: persoenlich
+  singular: Persönlich
+  plural: Persönlich
+  collection_name: Persoenlich
+  settings_collection_name: PersoenlichlistenEinstellungen
+  model_name: Persoenlich
   legacy_name_fields: [vorname, nachname]
 
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.

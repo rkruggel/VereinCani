@@ -6,11 +6,11 @@ from typing import Any
 from nicegui import ui
 
 from src.auth import is_authenticated
-from src.pages.adressen.start import render_adressen_page
 from src.pages.beitraege.start import render_beitraege_page
 from src.pages.dashboard.start import render_dashboard_page
 from src.pages.hunde.start import render_hunde_page
 from src.pages.mitglieder.start import render_mitglieder_page
+from src.pages.persoenlich.start import render_persoenlich_page
 from src.pages.termine.start import render_termine_page
 
 
@@ -29,13 +29,13 @@ PAGES: dict[str, dict[str, Any]] = {
 	},
 	'stammdaten': {
 		'title': 'Stammdaten',
-		'tooltip': 'Adressen und Hunde verwalten',
+		'tooltip': 'Persönlich und Hunde verwalten',
 		'submenu': {
-			'adressen': {
-				'title': 'Adressen',
-				'tooltip': 'Adressen verwalten',
+			'persoenlich': {
+				'title': 'Persönlich',
+				'tooltip': 'Persönlich verwalten',
 				'protected': True,
-				'renderer': render_adressen_page,
+				'renderer': render_persoenlich_page,
 			},
 			'hunde': {
 				'title': 'Hunde',
