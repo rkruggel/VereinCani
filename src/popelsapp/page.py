@@ -28,6 +28,7 @@ def render_popels_page(
 	settings: ListeneinstellungenRepository,
 	form_control_contexts: dict[str, dict[str, Any]] | None = None,
 	initial_record_id: str | None = None,
+	clear_form_after_save: bool = True,
 ) -> None:
 	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
@@ -59,7 +60,8 @@ def render_popels_page(
 	text_editor = {'element': None}
 	text_save_button = {'element': None}
 	image_upload = {'element': None}
-	uploaded_images: list[dict[str, str]] = []
+	image_caption_draft = {'value': ''}
+	uploaded_images: list[dict[str, Any]] = []
 	selected_image = {'attachment_name': None}
 	pending_delete = {'record_id': None, 'name': ''}
 	try:
@@ -135,6 +137,7 @@ def render_popels_page(
 			'attachment_name': image['attachment_name'],
 			'name': image['name'],
 			'content_type': image['content_type'],
+			'caption': image.get('caption', ''),
 			'source': image_data_url(image['content_type'], image['data']),
 		} for image in images)
 		selected_image['attachment_name'] = None
@@ -185,7 +188,8 @@ def render_popels_page(
 				ui.notify(f'{config.singular} nicht gefunden', type='warning')
 				return
 			ui.notify(f'{config.singular} #{selected_id["value"]} gespeichert')
-		clear_form()
+		if clear_form_after_save:
+			clear_form()
 		render_records.refresh()
 
 	def request_delete_record(record_id: str, name: str) -> None:
@@ -324,7 +328,13 @@ def render_popels_page(
 			return
 		data = await event.file.read()
 		try:
-			image = POPELS_DB.add_image(record_id, event.file.name, content_type, data)
+			image = POPELS_DB.add_image(
+				record_id,
+				event.file.name,
+				content_type,
+				data,
+				image_caption_draft['value'],
+			)
 		except Exception as error:
 			ui.notify(f'Bild konnte nicht gespeichert werden: {error}', type='negative')
 			return
@@ -333,11 +343,34 @@ def render_popels_page(
 			return
 		uploaded_images.append({
 			**image,
+			'caption': image.get('caption', ''),
 			'source': image_data_url(content_type, data),
 		})
 		render_uploaded_images.refresh()
 		render_records.refresh()
 		ui.notify(f'{event.file.name} wurde gespeichert.')
+		image_caption_draft['value'] = ''
+		render_records.refresh()
+
+	def update_image_caption(attachment_name: str, caption: str | None) -> None:
+		"""Speichert den Kurztext zu einem Bild dauerhaft."""
+
+		record_id = selected_id['value']
+		if record_id is None:
+			ui.notify(f'Bitte zuerst {config.singular} auswaehlen.', type='warning')
+			return
+		try:
+			saved = POPELS_DB.update_image_caption(record_id, attachment_name, caption or '')
+		except Exception as error:
+			ui.notify(f'Bildtext konnte nicht gespeichert werden: {error}', type='negative')
+			return
+		if not saved:
+			ui.notify('Bild nicht gefunden.', type='warning')
+			return
+		for image in uploaded_images:
+			if image['attachment_name'] == attachment_name:
+				image['caption'] = caption or ''
+				break
 
 	def handle_rejected_images() -> None:
 		"""Informiert über abgelehnte Bilddateien oder überschrittene Uploadgrenzen."""
@@ -533,6 +566,11 @@ def render_popels_page(
 			on_rejected=handle_rejected_images,
 			auto_upload=False,
 		).props('accept="image/*" color="primary" bordered').classes('w-full')
+		image_caption = ui.textarea(
+			'Bildtext',
+			placeholder='z. B. Gruppenfoto, Auktionsbild ...',
+		).props('dense autogrow').classes('w-full')
+		image_caption.bind_value(image_caption_draft, 'value')
 		ui.button(
 			'Ausgewaehlte Bilder hochladen',
 			icon='cloud_upload',
@@ -560,6 +598,14 @@ def render_popels_page(
 								),
 							).props('dense')
 							ui.label(image['name']).classes('text-xs text-slate-600 break-all flex-1')
+						ui.textarea(
+							'Text zum Bild',
+							value=image.get('caption', ''),
+							on_change=lambda event, attachment_name=image['attachment_name']: update_image_caption(
+								attachment_name,
+								event.value,
+							),
+						).props('dense autogrow').classes('w-full')
 
 		render_uploaded_images()
 		with ui.row().classes('w-full justify-between gap-2'):

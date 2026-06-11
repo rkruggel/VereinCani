@@ -7,7 +7,7 @@ from dataclasses import asdict
 from typing import Any
 from uuid import uuid4
 
-from src.db.client import create_couch_database
+from src.db.client import COUCH_INTERNAL_FIELDS, create_couch_database
 from src.popelsapp import PopelsConfig
 
 
@@ -32,6 +32,33 @@ class CouchPopelsDatabase:
 
 		document = self._get_database().get_document(record_id)
 		return self._normalize_document(document) if document is not None else None
+
+	def cleanup_unknown_fields(self) -> tuple[int, int]:
+		"""Entfernt alle Dokumentfelder, die nicht in der Feldkonfiguration stehen."""
+
+		allowed_fields = set(self.config.field_labels) | set(COUCH_INTERNAL_FIELDS)
+		checked = 0
+		updated = 0
+		for document in self._get_database().list_documents(self.config.collection_name):
+			record_id = document.get('_id')
+			if record_id is None:
+				continue
+			checked += 1
+			extra_fields = [
+				field_name
+				for field_name in document
+				if field_name not in allowed_fields
+			]
+			if not extra_fields:
+				continue
+			updated += 1
+
+			def mutate(stored_document: dict[str, Any]) -> None:
+				for field_name in extra_fields:
+					stored_document.pop(field_name, None)
+
+			self._get_database().mutate_document(record_id, mutate)
+		return checked, updated
 
 	def create(self, data: dict[str, Any]) -> dict[str, Any]:
 		"""Erstellt und speichert einen neuen Datensatz mit eindeutiger ID."""
@@ -77,6 +104,7 @@ class CouchPopelsDatabase:
 		file_name: str,
 		content_type: str,
 		data: bytes,
+		caption: str | None = None,
 	) -> dict[str, str] | None:
 		"""Speichert ein Bild als CouchDB-Anhang und ergänzt dessen Metadaten."""
 
@@ -87,6 +115,7 @@ class CouchPopelsDatabase:
 			'attachment_name': attachment_name,
 			'name': file_name,
 			'content_type': content_type,
+			'caption': (caption or '').strip(),
 		}
 
 		def mutate(document: dict[str, Any]) -> None:
@@ -102,6 +131,26 @@ class CouchPopelsDatabase:
 
 		document = self._get_database().mutate_document(record_id, mutate)
 		return image if document is not None else None
+
+	def update_image_caption(self, record_id: str, attachment_name: str, caption: str) -> bool:
+		"""Aktualisiert den Kurztext (caption) eines vorhandenen Bildes."""
+
+		if self.config.image_field is None:
+			return False
+
+		updated = {'value': False}
+
+		def mutate(document: dict[str, Any]) -> None:
+			images = list(document.get(self.config.image_field) or [])
+			for image in images:
+				if image.get('attachment_name') == attachment_name:
+					image['caption'] = caption.strip()
+					updated['value'] = True
+					break
+			document[self.config.image_field] = images
+
+		document = self._get_database().mutate_document(record_id, mutate)
+		return document is not None and updated['value']
 
 	def get_images(self, record_id: str) -> list[dict[str, Any]]:
 		"""Lädt Bildmetadaten und Binärdaten aller konfigurierten Anhänge."""

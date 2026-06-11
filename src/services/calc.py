@@ -4,6 +4,8 @@ from typing import Any, TypedDict
 
 from dateutil.relativedelta import relativedelta
 
+from src.pages.preise.preisstamm import PREISSTAMM
+
 
 class Datumsdifferenz(TypedDict):
     jahre: int
@@ -92,7 +94,10 @@ def berechne(formel: str, werte: dict[str, Any], heute: date | None = None) -> A
     """Wertet eine eingeschränkte Formel aus der YAML-Konfiguration aus."""
 
     namen = {**werte, "today": heute or date.today()}
-    funktionen = {"datumDiff": datumDiff}
+    funktionen = {
+        "datumDiff": datumDiff,
+        "preisNachHunden": preisNachHunden,
+    }
 
     try:
         ausdruck = ast.parse(formel, mode="eval").body
@@ -107,3 +112,13 @@ def datumDiff(von, bis):
         return ""
 
     return _datumsdifferenz(von, bis)["text"]
+
+
+def preisNachHunden(hunde):
+    if not hunde:
+        return ""
+
+    try:
+        return PREISSTAMM.get_price(len(hunde))
+    except Exception:
+        return ""

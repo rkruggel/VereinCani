@@ -135,6 +135,8 @@ def create_form_control(
 			input_props = 'type=date dense'
 		elif definition['type'] == 'email':
 			input_props = 'type=email dense'
+		elif config.key == 'mitglieder' and field == 'preis':
+			input_props = f'{input_props} suffix="€"'
 		if page_definition.get('pflichtfeld'):
 			input_props += ' required'
 		control = ui.input(label, validation=validation).props(input_props).classes('w-full')

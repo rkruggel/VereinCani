@@ -37,7 +37,7 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: headerDetail
-      listPos: 20
+      listPos: 10
       listValueClasses: text-xs text-slate-500
 
   name:
@@ -54,7 +54,7 @@ field_labels:
       sortierbar: true
       formHeaderPos: 30
       listSection: off
-      listPos: 30
+      listPos: 20
       listValueClasses: text-sm text-slate-500
 
   status:
@@ -70,12 +70,27 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: primary
-      listPos: 5
+      listPos: 30
       listValueClasses: text-sm text-slate-500
 
-  MitgliedSeit:
+  erstkontakt:
     type: datum
-    text: MitgliedSeit
+    text: Erstkontakt
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'off'
+      listPos: 40
+      listValueClasses: text-sm text-slate-500
+
+  mitgliedSeit:
+    type: datum
+    text: Mitglied seit
     page:
       steuerelement: date
       formular: true
@@ -85,22 +100,39 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: secondary
-      listPos: 5
+      listPos: 50
       listValueClasses: text-sm text-slate-500
 
-  hunde:
-    type: liste
-    text: Hunde
+  artMitglied:
+    type: string
+    text: Art des Mitglieds
     page:
-      steuerelement: input_chips
+      steuerelement: select
+      optionen: [Mitglied, Interessent, Gast, Vorstand, Lieferant, Presse, Öffentlichkeit, Einzelarbeit, Fördermitglied, Sponsor, Ausgetreten ]
       formular: true
       horizont: 1
       gesperrt: false
     liste:
       suchbar: false
-      sortierbar: false
-      listSection: 'off'
-      listPos: 270
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 60
+      listValueClasses: text-sm text-slate-500
+
+  typ:
+    type: string
+    text: Typ
+    page:
+      steuerelement: select
+      optionen: [Haushalt, Person, Fördermitglied, Sponsor]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 70
       listValueClasses: text-sm text-slate-500
 
   persoenlich:
@@ -115,12 +147,12 @@ field_labels:
       suchbar: false
       sortierbar: false
       listSection: 'off'
-      listPos: 20
+      listPos: 80
       listValueClasses: text-sm text-slate-500
 
-  Preise:
+  hunde:
     type: liste
-    text: Preise
+    text: Hunde
     page:
       steuerelement: input_chips
       formular: true
@@ -130,88 +162,68 @@ field_labels:
       suchbar: false
       sortierbar: false
       listSection: 'off'
-      listPos: 21
+      listPos: 90
       listValueClasses: text-sm text-slate-500
 
-  typ:
+  preis:
     type: string
-    text: Typ
+    text: Preis
     page:
       steuerelement: input
       formular: true
       horizont: 1
-      gesperrt: false
+      gesperrt: true
+      berechnen: preisNachHunden(hunde)
     liste:
       suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 240
+      sortierbar: false
+      listSection: 'secondary'
+      listPos: 100
       listValueClasses: text-sm text-slate-500
-
-  artMitglied:
-    type: string
-    text: Art des Mitglieds
-    page:
-      steuerelement: input
-      optionen: [Mitglied, Interessent, Gast, Lieferant, Presse, Öffentlichkeit, Einzelarbeit, Fördermitglied, Sponsor, Ausgetreten ]
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 250
-      listValueClasses: text-sm text-slate-500
-
-  trainingseinheit:
-    type: string
-    text: Trainingseinheit
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 320
-      listValueClasses: text-sm text-slate-500
-
-  erstkontakt:
-    type: string
-    text: Erstkontakt
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 330
-      listValueClasses: text-sm text-slate-500
-
-
-
-
-
 
   unterlagenAusgehaendigt:
-    type: string
+    type: datum
     text: Unterlagen ausgehändigt
     page:
-      steuerelement: input
+      steuerelement: date
       formular: true
       horizont: 1
       gesperrt: false
     liste:
       suchbar: false
       sortierbar: true
-      listSection: 'off'
-      listPos: 400
+      listSection: 'secondary'
+      listPos: 110
+      listValueClasses: text-sm text-slate-500
+
+  unterlagenZurueck:
+    type: datum
+    text: Unterlagen zurück
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 120
+      listValueClasses: text-sm text-slate-500
+
+  sepaZurueck:
+    type: datum
+    text: SEPA zurück
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 3
+      gesperrt: false
+    liste:
+      suchbar: false
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 130
       listValueClasses: text-sm text-slate-500
 
   text:
@@ -228,7 +240,7 @@ field_labels:
       suchbar: true
       sortierbar: false
       listSection: status
-      listPos: 10
+      listPos: 140
 
   bilder:
     type: bilder
@@ -244,4 +256,4 @@ field_labels:
       suchbar: false
       sortierbar: false
       listSection: status
-      listPos: 20
+      listPos: 150

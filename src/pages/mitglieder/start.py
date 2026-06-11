@@ -112,6 +112,7 @@ def render_mitglieder_page() -> None:
 					PERSOENLICH_DB,
 					PERSOENLICHLISTEN_EINSTELLUNGEN,
 					initial_record_id=record_id,
+					clear_form_after_save=False,
 				)
 
 			render_selected_personal()
@@ -129,6 +130,7 @@ def render_mitglieder_page() -> None:
 					HUNDE_DB,
 					HUNDELISTEN_EINSTELLUNGEN,
 					initial_record_id=record_id,
+					clear_form_after_save=False,
 				)
 
 			render_selected_dog()
