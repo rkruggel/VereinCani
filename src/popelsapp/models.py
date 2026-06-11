@@ -45,10 +45,6 @@ class PopelsModel:
 			for key, value in data.items()
 			if key in cls._config.field_labels
 		}
-		legacy_name = str(data.get('name', '') or '').strip()
-		name_fields = cls._config.legacy_name_fields
-		if name_fields and legacy_name and not any(values.get(field) for field in name_fields):
-			values[name_fields[0]], values[name_fields[1]] = split_legacy_name(legacy_name)
 		return cls(**values)
 
 	def to_json(self) -> dict[str, Any]:
@@ -76,12 +72,3 @@ def create_popels_model(config: PopelsConfig) -> type[PopelsModel]:
 	model.__doc__ = f'Repräsentiert ein dynamisch erzeugtes {config.singular}-Dokument.'
 	model._config = config
 	return model
-
-
-def split_legacy_name(name: str) -> tuple[str, str]:
-	"""Teilt einen alten vollständigen Namen in Vorname und Nachname auf."""
-
-	parts = name.split()
-	if len(parts) < 2:
-		return '', name
-	return ' '.join(parts[:-1]), parts[-1]

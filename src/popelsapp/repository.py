@@ -218,10 +218,30 @@ def sort_records(
 		):
 			continue
 		result.sort(
-			key=lambda record, selected_field=field: sortable_value(record.get(selected_field)),
+			key=lambda record, selected_field=field: sortable_field_value(
+				selected_field,
+				record.get(selected_field),
+			),
 			reverse=direction == 'desc',
 		)
 	return result
+
+
+def sortable_field_value(field: str, value: Any) -> str | tuple[str, str]:
+	"""Bereitet ein Feld entsprechend seiner fachlichen Sortierung auf."""
+
+	if field == 'name':
+		return sortable_name(value)
+	return sortable_value(value)
+
+
+def sortable_name(value: Any) -> tuple[str, str]:
+	"""Sortiert vollständige Namen nach dem letzten und danach den übrigen Teilen."""
+
+	parts = str(value or '').split()
+	if not parts:
+		return '', ''
+	return parts[-1].casefold(), ' '.join(parts[:-1]).casefold()
 
 
 def sortable_value(value: Any) -> str:

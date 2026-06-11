@@ -6,7 +6,6 @@ config:
   collection_name: Persoenlich
   settings_collection_name: PersoenlichlistenEinstellungen
   model_name: Persoenlich
-  legacy_name_fields: [vorname, nachname]
 
 # Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
 field_labels:
@@ -59,9 +58,9 @@ field_labels:
       listPos: 40
       listValueClasses: text-sm text-slate-500
 
-  vorname:
+  name:
     type: string
-    text: Vorname
+    text: Name
     page:
       steuerelement: input
       formular: true
@@ -74,23 +73,6 @@ field_labels:
       formHeaderPos: 30
       listSection: 'off'
       listPos: 50
-      listValueClasses: text-sm text-slate-500
-
-  nachname:
-    type: string
-    text: Nachname
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-      pflichtfeld: true
-    liste:
-      suchbar: true
-      sortierbar: true
-      formHeaderPos: 40
-      listSection: 'off'
-      listPos: 60
       listValueClasses: text-sm text-slate-500
 
   zusatz:

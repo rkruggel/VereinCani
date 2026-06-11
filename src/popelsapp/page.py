@@ -635,7 +635,16 @@ def render_popels_page(
 				with ui.card().classes('w-full p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
 					with ui.row().classes('w-full items-start justify-between gap-2 max-md:flex-col'):
 						with ui.column().classes('gap-0 min-w-[180px]'):
-							heading = record_heading(record, visible_fields, fallback_to_id=False)
+							name_sort_active = any(
+								criterion.partition(':')[0] == 'name'
+								for criterion in sort_criteria['value']
+							)
+							heading = record_heading(
+								record,
+								visible_fields,
+								fallback_to_id=False,
+								name_last_first=name_sort_active,
+							)
 							if heading:
 								ui.label(heading).classes(
 									'text-base font-semibold text-slate-900 cursor-pointer hover:text-primary'

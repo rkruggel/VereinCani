@@ -126,6 +126,7 @@ def record_heading(
 	visible_fields: set[str] | None = None,
 	*,
 	fallback_to_id: bool = True,
+	name_last_first: bool = False,
 ) -> str:
 	"""Erzeugt die Überschrift aus numerisch markierten Feldern."""
 
@@ -142,7 +143,7 @@ def record_heading(
 		),
 	)
 	values = [
-		str(record.get(field) or '').strip()
+		format_heading_value(field, record.get(field), name_last_first)
 		for _position, field in heading_fields
 		if str(record.get(field) or '').strip()
 	]
@@ -150,3 +151,15 @@ def record_heading(
 	if heading or not fallback_to_id:
 		return heading
 	return str(record.get('id') or '')
+
+
+def format_heading_value(field: str, value: Any, name_last_first: bool) -> str:
+	"""Formatiert den Namen in sortierten Listen passend zur Nachnamensreihenfolge."""
+
+	text = str(value or '').strip()
+	if field != 'name' or not name_last_first:
+		return text
+	parts = text.split()
+	if len(parts) < 2:
+		return text
+	return f'{parts[-1]}, {" ".join(parts[:-1])}'

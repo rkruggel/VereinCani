@@ -18,7 +18,6 @@ class PopelsConfig:
 	settings_collection_name: str
 	field_labels: dict[str, dict[str, Any]]
 	model_name: str
-	legacy_name_fields: tuple[str, str] | None = None
 
 	@property
 	def id_prefix(self) -> str:
@@ -159,9 +158,6 @@ def load_popels_config(file_name: str) -> PopelsConfig:
 	with config_path.open(encoding='utf-8') as config_file:
 		raw_config = yaml.safe_load(config_file)
 	config_values = raw_config['config']
-	legacy_name_fields = config_values.get('legacy_name_fields')
-	if legacy_name_fields is not None:
-		config_values['legacy_name_fields'] = tuple(legacy_name_fields)
 	return PopelsConfig(
 		**config_values,
 		field_labels=raw_config['field_labels'],

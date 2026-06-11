@@ -6,7 +6,6 @@ config:
   collection_name: Mitglieder
   settings_collection_name: MitgliederlistenEinstellungen
   model_name: Mitglied
-  legacy_name_fields: [vorname, nachname]
 
 # -- aus notion übernommen, aber noch nicht angepasst:
 # Hauptmitglied, ID, Anrede, Typ, ArtMitglied, Persönlich, Hunde, Kontonummer,
@@ -41,9 +40,9 @@ field_labels:
       listPos: 20
       listValueClasses: text-xs text-slate-500
 
-  vorname:
+  name:
     type: string
-    text: Vorname
+    text: Name
     page:
       steuerelement: input
       formular: true
@@ -54,25 +53,8 @@ field_labels:
       suchbar: true
       sortierbar: true
       formHeaderPos: 30
-      listSection: headerDetail
+      listSection: off
       listPos: 30
-      listValueClasses: text-sm text-slate-500
-
-  nachname:
-    type: string
-    text: Nachname
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-      pflichtfeld: true
-    liste:
-      suchbar: true
-      sortierbar: true
-      formHeaderPos: 40
-      listSection: headerDetail
-      listPos: 40
       listValueClasses: text-sm text-slate-500
 
   status:
@@ -136,20 +118,21 @@ field_labels:
       listPos: 20
       listValueClasses: text-sm text-slate-500
 
-  hauptmitglied:
-    type: string
-    text: Hauptmitglied
+  Preise:
+    type: liste
+    text: Preise
     page:
-      steuerelement: input
+      steuerelement: input_chips
       formular: true
       horizont: 1
       gesperrt: false
     liste:
       suchbar: false
-      sortierbar: true
+      sortierbar: false
       listSection: 'off'
-      listPos: 220
+      listPos: 21
       listValueClasses: text-sm text-slate-500
+
   typ:
     type: string
     text: Typ
@@ -167,9 +150,10 @@ field_labels:
 
   artMitglied:
     type: string
-    text: ArtMitglied
+    text: Art des Mitglieds
     page:
       steuerelement: input
+      optionen: [Mitglied, Interessent, Gast, Lieferant, Presse, Öffentlichkeit, Einzelarbeit, Fördermitglied, Sponsor, Ausgetreten ]
       formular: true
       horizont: 1
       gesperrt: false
@@ -210,65 +194,10 @@ field_labels:
       listPos: 330
       listValueClasses: text-sm text-slate-500
 
-  betrag:
-    type: string
-    text: Betrag
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 340
-      listValueClasses: text-sm text-slate-500
 
-  monat:
-    type: string
-    text: Monat
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 350
-      listValueClasses: text-sm text-slate-500
 
-  zuZahlen:
-    type: string
-    text: Zu Zahlen
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 360
-      listValueClasses: text-sm text-slate-500
 
-  sonderPreis:
-    type: string
-    text: Sonder Preis
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: false
-      sortierbar: true
-      listSection: 'off'
-      listPos: 370
-      listValueClasses: text-sm text-slate-500
+
 
   unterlagenAusgehaendigt:
     type: string

@@ -31,7 +31,7 @@ field_labels:
       listSection: headerDetail
       listPos: 10
       listValueClasses: text-xs text-slate-500
-  name:
+  hundename:
     type: string
     text: Hundename
     page:

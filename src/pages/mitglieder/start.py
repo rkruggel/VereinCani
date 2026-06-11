@@ -14,6 +14,11 @@ from src.pages.persoenlich.start import (
 	PERSOENLICH_DB,
 	PERSOENLICHLISTEN_EINSTELLUNGEN,
 )
+from src.pages.preise.start import (
+	CONFIG as PREISE_CONFIG,
+	PREISE_DB,
+	PREISLISTEN_EINSTELLUNGEN,
+)
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -28,7 +33,7 @@ MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_mitglieder_page() -> None:
-	"""Zeigt Mitglieder sowie ausgewählte zugeordnete persönliche Daten und Hunde."""
+	"""Zeigt Mitglieder, persönliche Daten, Hunde und Preise in Registerkarten."""
 
 	selected_personal = {'id': None}
 	selected_dog = {'id': None}
@@ -56,6 +61,7 @@ def render_mitglieder_page() -> None:
 		mitglieder_tab = ui.tab('Mitglieder').props('no-caps').classes('text-xs px-2')
 		personal_tab = ui.tab('Persönlich').props('no-caps').classes('text-xs px-2')
 		dog_tab = ui.tab('Hund').props('no-caps').classes('text-xs px-2')
+		preise_tab = ui.tab('Preise').props('no-caps').classes('text-xs px-2')
 		personal_tab.set_enabled(False)
 		dog_tab.set_enabled(False)
 
@@ -126,17 +132,21 @@ def render_mitglieder_page() -> None:
 				)
 
 			render_selected_dog()
+		with ui.tab_panel(preise_tab).classes('px-0'):
+			render_popels_page(
+				PREISE_CONFIG,
+				PREISE_DB,
+				PREISLISTEN_EINSTELLUNGEN,
+			)
 
 
 def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict[str, str]:
-	"""Erzeugt eindeutige Chip-Beschriftungen im Format ``Vorname Nachname``."""
+	"""Erzeugt eindeutige Chip-Beschriftungen aus den Namen."""
 
 	options = {}
 	used_labels: set[str] = set()
 	for record_id, record in personal_records.items():
-		name = str(record.get('nachname') or '').strip()
-		first_name = str(record.get('vorname') or '').strip()
-		label = ' '.join(part for part in (first_name, name) if part) or record_id
+		label = str(record.get('name') or '').strip() or record_id
 		if label in used_labels:
 			label = f'{label} ({record_id})'
 		used_labels.add(label)
@@ -150,7 +160,7 @@ def create_dog_options(dog_records: dict[str, dict[str, Any]]) -> dict[str, str]
 	options = {}
 	used_labels: set[str] = set()
 	for record_id, record in dog_records.items():
-		label = str(record.get('name') or '').strip() or record_id
+		label = str(record.get('hundename') or '').strip() or record_id
 		if label in used_labels:
 			label = f'{label} ({record_id})'
 		used_labels.add(label)
