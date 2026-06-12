@@ -14,12 +14,6 @@ from src.pages.persoenlich.start import (
 	PERSOENLICH_DB,
 	PERSOENLICHLISTEN_EINSTELLUNGEN,
 )
-from src.pages.preise.start import (
-	CONFIG as PREISE_CONFIG,
-	PREISE_DB,
-	PREISLISTEN_EINSTELLUNGEN,
-	load_member_options,
-)
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -34,11 +28,10 @@ MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_mitglieder_page() -> None:
-	"""Zeigt Mitglieder, persönliche Daten, Hunde und Preise in Registerkarten."""
+	"""Zeigt Mitglieder, persönliche Daten und Hunde in Registerkarten."""
 
 	selected_personal = {'id': None}
 	selected_dog = {'id': None}
-	selected_member = {'id': None}
 	try:
 		personal_records = {
 			record['id']: record
@@ -63,17 +56,8 @@ def render_mitglieder_page() -> None:
 		mitglieder_tab = ui.tab('Mitglieder').props('no-caps').classes('text-xs px-2')
 		personal_tab = ui.tab('Persönlich').props('no-caps').classes('text-xs px-2')
 		dog_tab = ui.tab('Hund').props('no-caps').classes('text-xs px-2')
-		preise_tab = ui.tab('Preise').props('no-caps').classes('text-xs px-2')
 		personal_tab.set_enabled(False)
 		dog_tab.set_enabled(False)
-		preise_tab.set_enabled(False)
-
-	def update_member_selection(record_id: str | None) -> None:
-		"""Aktiviert Preise nur, wenn gerade ein Mitglied angezeigt wird."""
-
-		selected_member['id'] = record_id
-		preise_tab.set_enabled(record_id is not None)
-		render_selected_prices.refresh()
 
 	def select_personal(record_id: str) -> None:
 		"""Wählt zugeordnete persönliche Daten und öffnet deren Registerkarte."""
@@ -107,7 +91,6 @@ def render_mitglieder_page() -> None:
 						'on_select': select_dog,
 					},
 				},
-				on_selection_change=update_member_selection,
 			)
 		with ui.tab_panel(personal_tab).classes('px-0'):
 			@ui.refreshable
@@ -150,29 +133,6 @@ def render_mitglieder_page() -> None:
 				)
 
 			render_selected_dog()
-		with ui.tab_panel(preise_tab).classes('px-0'):
-			@ui.refreshable
-			def render_selected_prices() -> None:
-				"""Zeigt Preisdatensätze für das aktuell ausgewählte Mitglied ohne Kartenliste."""
-
-				record_id = selected_member['id']
-				if record_id is None:
-					ui.label('Kein Mitglied ausgewählt.').classes('text-sm text-slate-500')
-					return
-				render_popels_page(
-					PREISE_CONFIG,
-					PREISE_DB,
-					PREISLISTEN_EINSTELLUNGEN,
-					{
-						'mitglied': {
-							'options': load_member_options(),
-						},
-					},
-					initial_form_values={'mitglied': record_id},
-					show_records_list=False,
-				)
-
-			render_selected_prices()
 
 
 def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict[str, str]:

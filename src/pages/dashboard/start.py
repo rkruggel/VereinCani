@@ -4,7 +4,7 @@ from nicegui import ui
 
 
 DASHBOARD_DESCRIPTION = (
-	'Zentrale Arbeitsoberflaeche fuer Mitglieder, Hunde, Preise, Termine und Beitraege.'
+	'Zentrale Arbeitsoberflaeche fuer Mitglieder, Hunde, Termine und Beitraege.'
 )
 DASHBOARD_AREAS = [
 	{
@@ -16,7 +16,7 @@ DASHBOARD_AREAS = [
 	{
 		'icon': 'badge',
 		'title': 'Stammdaten',
-		'text': 'Persoenliche Daten, Hunde, Preispositionen und den Preisstamm strukturiert pflegen.',
+		'text': 'Persoenliche Daten, Hunde und den Preisstamm strukturiert pflegen.',
 		'status': 'Angemeldet',
 	},
 	{
@@ -36,7 +36,7 @@ DASHBOARD_STEPS = [
 	'Zuerst persoenliche Stammdaten erfassen.',
 	'Dann Hunde mit den passenden Besitzern verknuepfen.',
 	'Anschliessend Mitgliederdatensaetze zusammenstellen.',
-	'Preise und Preisstamm fuer die Beitragsberechnung pflegen.',
+	'Preisstamm fuer die Beitragsberechnung pflegen.',
 ]
 
 

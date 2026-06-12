@@ -108,8 +108,6 @@ def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> s
 	if config.field_labels[field]['type'] == 'liste':
 		return ', '.join(value) if value else '-'
 	text = str(value or '-')
-	if config.key == 'mitglieder' and field == 'preis' and text not in {'-', ''}:
-		return text if text.rstrip().endswith('€') else f'{text} €'
 	return text
 
 

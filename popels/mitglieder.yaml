@@ -173,23 +173,6 @@ field_labels:
       listPos: 90
       listValueClasses: text-sm text-slate-500
 
-  preis:
-    type: string
-    text: Preis
-    beschreibung: Automatisch berechneter Mitgliedspreis anhand der zugeordneten Hunde und des Preisstamms. Das Feld wird nicht manuell bearbeitet.
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: true
-      berechnen: preisNachHunden(hunde)
-    liste:
-      suchbar: false
-      sortierbar: false
-      listSection: 'secondary'
-      listPos: 100
-      listValueClasses: text-sm text-slate-500
-
   unterlagenAusgehaendigt:
     type: datum
     text: Unterlagen ausgehändigt

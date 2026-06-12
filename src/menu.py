@@ -12,7 +12,6 @@ from src.pages.hunde.start import render_hunde_page
 from src.pages.mitglieder.start import render_mitglieder_page
 from src.pages.persoenlich.start import render_persoenlich_page
 from src.pages.preise.preisstamm import render_preisstamm_page
-from src.pages.preise.start import render_preise_page
 from src.pages.termine.start import render_termine_page
 
 
@@ -31,7 +30,7 @@ PAGES: dict[str, dict[str, Any]] = {
 	},
 	'stammdaten': {
 		'title': 'Stammdaten',
-		'tooltip': 'Persönlich, Hunde, Preise und Preisstamm verwalten',
+		'tooltip': 'Persönlich, Hunde und Preisstamm verwalten',
 		'submenu': {
 			'persoenlich': {
 				'title': 'Persönlich',
@@ -44,12 +43,6 @@ PAGES: dict[str, dict[str, Any]] = {
 				'tooltip': 'Hunde verwalten',
 				'protected': True,
 				'renderer': render_hunde_page,
-			},
-			'preise': {
-				'title': 'Preise',
-				'tooltip': 'Preise verwalten',
-				'protected': True,
-				'renderer': render_preise_page,
 			},
 			'preisstamm': {
 				'title': 'Preisstamm',
