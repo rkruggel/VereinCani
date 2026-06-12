@@ -111,73 +111,13 @@ field_labels:
     page:
       steuerelement: input
       formular: true
-      horizont: 1
+      horizont: 2
       gesperrt: false
     liste:
       suchbar: true
       sortierbar: true
       listSection: primary
       listPos: 20
-      listValueClasses: text-sm text-slate-500
-
-  email:
-    type: email
-    text: E-Mail
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: primary
-      listPos: 30
-      listValueClasses: text-sm text-slate-500
-
-  handy:
-    type: telefon
-    text: Handy
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: primary
-      listPos: 40
-      listValueClasses: text-sm text-slate-500
-
-  festnetz:
-    type: telefon
-    text: Festnetz
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: primary
-      listPos: 50
-      listValueClasses: text-sm text-slate-500
-
-  www:
-    type: url
-    text: WWW
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: primary
-      listPos: 60
       listValueClasses: text-sm text-slate-500
 
   geboren:
@@ -193,6 +133,66 @@ field_labels:
       sortierbar: true
       listSection: secondary
       listPos: 10
+      listValueClasses: text-sm text-slate-500
+
+  email:
+    type: liste
+    text: E-Mail
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 30
+      listValueClasses: text-sm text-slate-500
+
+  www:
+    type: liste
+    text: www
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 60
+      listValueClasses: text-sm text-slate-500
+
+  handy:
+    type: liste
+    text: Handy
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 40
+      listValueClasses: text-sm text-slate-500
+
+  festnetz:
+    type: liste
+    text: Festnetz
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 50
       listValueClasses: text-sm text-slate-500
 
   beruf:
@@ -216,13 +216,28 @@ field_labels:
     page:
       steuerelement: input
       formular: true
-      horizont: 1
+      horizont: 2
       gesperrt: false
     liste:
       suchbar: true
       sortierbar: true
       listSection: secondary
       listPos: 30
+      listValueClasses: text-sm text-slate-500
+
+  faehigkeiten:
+    type: string
+    text: Fähigkeiten
+    page:
+      steuerelement: textarea
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 50
       listValueClasses: text-sm text-slate-500
 
   nichtWochentag:
@@ -239,21 +254,6 @@ field_labels:
       sortierbar: true
       listSection: secondary
       listPos: 40
-      listValueClasses: text-sm text-slate-500
-
-  faehigkeiten:
-    type: string
-    text: Fähigkeiten
-    page:
-      steuerelement: textarea
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: secondary
-      listPos: 50
       listValueClasses: text-sm text-slate-500
 
   verhalten:

@@ -129,6 +129,11 @@ def render_mitglieder_page() -> None:
 					HUNDE_CONFIG,
 					HUNDE_DB,
 					HUNDELISTEN_EINSTELLUNGEN,
+					{
+						'besitzer': {
+							'options': personal_options,
+						},
+					},
 					initial_record_id=record_id,
 					clear_form_after_save=False,
 				)

@@ -88,6 +88,178 @@ class RelatedRecordChips:
 			on_select(record_id)
 
 
+class FreeInputChips:
+	"""Zeigt frei eingebbare Mehrfachwerte als Chips."""
+
+	def __init__(self, label: str) -> None:
+		self._values: list[str] = []
+		self._enabled = True
+		autofill_key = ''.join(character for character in label.lower() if character.isalnum()) or 'wert'
+		with ui.column().classes('w-full gap-1'):
+			with ui.row().classes('w-full gap-1 items-start'):
+				self._input = ui.input(label).props(
+					f'dense autocomplete="new-password" name="vereincani_{autofill_key}_frei" '
+					'autocorrect="off" autocapitalize="off" spellcheck="false"'
+				).classes('flex-1')
+				self._add_button = ui.button(
+					icon='add',
+					on_click=self._add_current_value,
+				).props('flat round dense').classes('text-primary')
+			self._input.on('keydown.enter', self._add_current_value)
+
+			@ui.refreshable
+			def render_values() -> None:
+				if not self._values:
+					return
+				with ui.row().classes('w-full gap-1 flex-wrap'):
+					for index, value in enumerate(self._values):
+						with ui.row().classes('items-center gap-1 rounded-full bg-slate-100 px-2 py-1'):
+							ui.label(value).classes('text-sm text-slate-700')
+							delete_button = ui.button(
+								icon='close',
+								on_click=lambda selected_index=index: self._remove_value(selected_index),
+							).props('flat round dense size=xs').classes('text-slate-500')
+							delete_button.set_enabled(self._enabled)
+
+			self._render_values = render_values
+			self._render_values()
+
+	@property
+	def value(self) -> list[str]:
+		"""Liefert die eingegebenen Chip-Werte ohne leere Einträge."""
+
+		current_value = str(self._input.value or '').strip()
+		if current_value and current_value not in self._values:
+			return [*self._values, current_value]
+		return list(self._values)
+
+	@value.setter
+	def value(self, values: list[str] | str | None) -> None:
+		if values in (None, ''):
+			self._values = []
+			self._render_values.refresh()
+			return
+		raw_values = values if isinstance(values, list) else [values]
+		self._values = [
+			str(item).strip()
+			for item in raw_values
+			if str(item).strip()
+		]
+		self._render_values.refresh()
+
+	def set_enabled(self, value: bool) -> None:
+		"""Aktiviert oder deaktiviert das zugrunde liegende Mehrfachfeld."""
+
+		self._enabled = value
+		self._input.set_enabled(value)
+		self._add_button.set_enabled(value)
+		self._render_values.refresh()
+
+	def _add_current_value(self, *_args: Any) -> None:
+		text = str(self._input.value or '').strip()
+		if not text:
+			return
+		self._values.append(text)
+		self._input.value = ''
+		self._render_values.refresh()
+
+	def _remove_value(self, index: int) -> None:
+		if 0 <= index < len(self._values):
+			self._values.pop(index)
+		self._render_values.refresh()
+
+
+class RelatedRecordSelect:
+	"""Zeigt genau einen verknüpften Datensatz als Select und liefert dessen stabile ID."""
+
+	def __init__(
+		self,
+		label: str,
+		options: dict[str, str],
+		on_select: Callable[[str], None] | None = None,
+	) -> None:
+		self._id_to_label = dict(options)
+		self._label_to_id = {option_label: record_id for record_id, option_label in options.items()}
+		self._element = ui.select(list(self._label_to_id), label=label, clearable=True).props(
+			'dense options-dense'
+		).classes('w-full')
+		if on_select is not None:
+			self._element.on_value_change(lambda _event: self._notify_selection(on_select))
+
+	@property
+	def value(self) -> str:
+		"""Liefert die ID des aktuell ausgewählten Datensatzes."""
+
+		label = self._element.value
+		return self._label_to_id.get(label, label or '')
+
+	@value.setter
+	def value(self, record_id: str | None) -> None:
+		if record_id in (None, ''):
+			self._element.value = None
+			return
+		if record_id in self._id_to_label:
+			self._element.value = self._id_to_label[record_id]
+			return
+		if record_id in self._label_to_id:
+			self._element.value = record_id
+			return
+		text = str(record_id)
+		self._id_to_label[text] = text
+		self._label_to_id[text] = text
+		self._element._props['options'] = list(self._label_to_id)  # pylint: disable=protected-access
+		self._element.value = text
+
+	def set_enabled(self, value: bool) -> None:
+		"""Aktiviert oder deaktiviert das zugrunde liegende Select-Feld."""
+
+		self._element.set_enabled(value)
+
+	def _notify_selection(self, on_select: Callable[[str], None]) -> None:
+		record_id = self.value
+		if record_id:
+			on_select(record_id)
+
+
+class CommaSeparatedListInput:
+	"""Bearbeitet Listenwerte als kommagetrennte Eingabezeile."""
+
+	def __init__(self, label: str) -> None:
+		self._element = ui.input(label).props(
+			'dense autocomplete="off"'
+		).classes('w-full')
+
+	@property
+	def value(self) -> list[str]:
+		"""Liefert die kommagetrennten Eingaben als Liste."""
+
+		return [
+			item.strip()
+			for item in str(self._element.value or '').split(',')
+			if item.strip()
+		]
+
+	@value.setter
+	def value(self, values: list[str] | str | None) -> None:
+		if values in (None, ''):
+			self._element.value = ''
+			return
+		if isinstance(values, list):
+			self._element.value = ', '.join(str(item) for item in values if str(item).strip())
+			return
+		self._element.value = str(values)
+
+	def set_enabled(self, value: bool) -> None:
+		"""Aktiviert oder deaktiviert das zugrunde liegende Eingabefeld."""
+
+		self._element.set_enabled(value)
+
+	def on_value_change(self, handler: Callable[[Any], None]) -> None:
+		"""Leitet Value-Change-Events an das Eingabefeld weiter."""
+
+		self._element.on_value_change(handler)
+
+
 def create_form_control(
 	config: PopelsConfig,
 	field: str,
@@ -103,16 +275,27 @@ def create_form_control(
 
 	if control_type == 'input_chips':
 		context = context or {}
-		control = RelatedRecordChips(
-			label,
-			context.get('options', {}),
-			context.get('on_select'),
-		)
+		if 'options' in context:
+			control = RelatedRecordChips(
+				label,
+				context.get('options', {}),
+				context.get('on_select'),
+			)
+		else:
+			control = FreeInputChips(label)
 	elif control_type == 'select':
-		props = 'dense options-dense'
-		if page_definition.get('pflichtfeld'):
-			props += ' required'
-		control = ui.select(page_definition['optionen'], label=label).props(props).classes('w-full')
+		context = context or {}
+		if 'options' in context:
+			control = RelatedRecordSelect(
+				label,
+				context.get('options', {}),
+				context.get('on_select'),
+			)
+		else:
+			props = 'dense options-dense'
+			if page_definition.get('pflichtfeld'):
+				props += ' required'
+			control = ui.select(page_definition['optionen'], label=label).props(props).classes('w-full')
 	elif control_type == 'multiselect':
 		props = 'dense options-dense use-chips'
 		if page_definition.get('pflichtfeld'):
@@ -124,17 +307,19 @@ def create_form_control(
 			clearable=True,
 		).props(props).classes('w-full')
 	elif control_type == 'textarea':
-		props = 'autogrow dense'
+		props = 'autogrow dense autocomplete="off"'
 		if page_definition.get('pflichtfeld'):
 			props += ' required'
 		control = ui.textarea(label).props(props).classes('w-full')
+	elif definition['type'] == 'liste':
+		control = CommaSeparatedListInput(label)
 	else:
 		validation = validate_phone if definition['type'] == 'telefon' else None
-		input_props = 'dense'
+		input_props = 'dense autocomplete="off"'
 		if definition['type'] == 'datum':
-			input_props = 'type=date dense'
+			input_props = 'type=date dense autocomplete="off"'
 		elif definition['type'] == 'email':
-			input_props = 'type=email dense'
+			input_props = 'type=email dense autocomplete="off"'
 		elif config.key == 'mitglieder' and field == 'preis':
 			input_props = f'{input_props} suffix="€"'
 		if page_definition.get('pflichtfeld'):

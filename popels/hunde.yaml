@@ -31,6 +31,7 @@ field_labels:
       listSection: headerDetail
       listPos: 10
       listValueClasses: text-xs text-slate-500
+
   hundename:
     type: string
     text: Hundename
@@ -47,6 +48,7 @@ field_labels:
       listSection: headerDetail
       listPos: 360
       listValueClasses: text-sm text-slate-500
+
   rufname:
     type: string
     text: Rufname
@@ -61,6 +63,9 @@ field_labels:
       listSection: headerDetail
       listPos: 450
       listValueClasses: text-sm text-slate-500
+
+# 
+
   rasseOderMix:
     type: string
     text: Rasse oder Mix
@@ -76,13 +81,14 @@ field_labels:
       listSection: secondary
       listPos: 480
       listValueClasses: text-sm text-slate-500
+
   rasse:
     type: string
     text: Rasse
     page:
       steuerelement: input
       formular: true
-      horizont: 1
+      horizont: 2
       gesperrt: false
     liste:
       suchbar: true
@@ -90,6 +96,22 @@ field_labels:
       listSection: primary
       listPos: 440
       listValueClasses: text-sm text-slate-500
+
+  mixRasse:
+    type: string
+    text: Mix-Rasse
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 3
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 430
+      listValueClasses: text-sm text-slate-500
+      
   ursprung:
     type: string
     text: Ursprung
@@ -97,13 +119,29 @@ field_labels:
       steuerelement: select
       optionen: [Züchter, Tierheim, Privat, Sonstiges]
       formular: true
-      horizont: 2
+      horizont: 1
       gesperrt: false
     liste:
       suchbar: true
       sortierbar: true
       listSection: 'off'
       listPos: 470
+      listValueClasses: text-sm text-slate-500
+
+  geschlecht:
+    type: select
+    text: Geschlecht
+    page:
+      steuerelement: select
+      optionen: [Rüde, Hündin, Unbekannt]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'secondary'
+      listPos: 530
       listValueClasses: text-sm text-slate-500
 
   geboren:
@@ -168,21 +206,6 @@ field_labels:
       listPos: 230
       listValueClasses: text-sm text-slate-500
 
-  mixRasse:
-    type: string
-    text: Mix-Rasse
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: 'off'
-      listPos: 430
-      listValueClasses: text-sm text-slate-500
-
   kastriert:
     type: string
     text: Kastriert
@@ -244,11 +267,28 @@ field_labels:
       listPos: 270
       listValueClasses: text-sm text-slate-500
 
+  geimpft:
+    type: string
+    text: Geimpft
+    page:
+      steuerelement: select
+      optionen: [Ja, Nein]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
+      listPos: 520
+      listValueClasses: text-sm text-slate-500
+
   besitzer:
     type: string
     text: Besitzer
     page:
-      steuerelement: input
+      steuerelement: select
+      optionen: []
       formular: true
       horizont: 1
       gesperrt: false
@@ -274,26 +314,11 @@ field_labels:
       listPos: 250
       listValueClasses: text-sm text-slate-500
 
-  angstBeschreiben:
-    type: string
-    text: Angst beschreiben
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: 'off'
-      listPos: 260
-      listValueClasses: text-sm text-slate-500
-
   erstkontakt:
-    type: string
+    type: datum
     text: Erstkontakt
     page:
-      steuerelement: input
+      steuerelement: date
       formular: true
       horizont: 1
       gesperrt: false
@@ -305,7 +330,7 @@ field_labels:
       listValueClasses: text-sm text-slate-500
 
   gewicht:
-    type: string
+    type: int
     text: Gewicht
     page:
       steuerelement: input
@@ -319,28 +344,13 @@ field_labels:
       listPos: 310
       listValueClasses: text-sm text-slate-500
 
-  gewichtOk:
-    type: string
-    text: Gewicht Ok
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: 'off'
-      listPos: 320
-      listValueClasses: text-sm text-slate-500
-
   gewichtSoll:
     type: string
     text: Gewicht Soll
     page:
       steuerelement: input
       formular: true
-      horizont: 1
+      horizont: 2
       gesperrt: false
     liste:
       suchbar: true
@@ -349,69 +359,41 @@ field_labels:
       listPos: 330
       listValueClasses: text-sm text-slate-500
 
-  gruppe:
-    type: string
-    text: Gruppe
+  diff:
+    type: int
+    text: Diff
     page:
       steuerelement: input
       formular: true
-      horizont: 1
-      gesperrt: false
+      horizont: 3
+      gesperrt: true
+      berechnen: intDiff(gewichtSoll, gewicht)
     liste:
       suchbar: true
       sortierbar: true
       listSection: 'off'
-      listPos: 340
+      listPos: 500
       listValueClasses: text-sm text-slate-500
 
-  haftpflicht:
+  gewichtOk:
     type: string
-    text: Haftpflicht
+    text: Gewicht Ok
     page:
       steuerelement: input
       formular: true
-      horizont: 1
-      gesperrt: false
+      horizont: 4
+      gesperrt: true
+      berechnen: gewichtOk(gewichtSoll, gewicht)
     liste:
       suchbar: true
       sortierbar: true
       listSection: 'off'
-      listPos: 350
-      listValueClasses: text-sm text-slate-500
-
-  ichVersichere:
-    type: string
-    text: Ich versichere
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: 'off'
-      listPos: 370
-      listValueClasses: text-sm text-slate-500
-
-  istEinAngsthund:
-    type: string
-    text: Ist ein Angsthund
-    page:
-      steuerelement: input
-      formular: true
-      horizont: 1
-      gesperrt: false
-    liste:
-      suchbar: true
-      sortierbar: true
-      listSection: 'off'
-      listPos: 380
+      listPos: 320
       listValueClasses: text-sm text-slate-500
 
   schulterhoehe:
-    type: string
-    text: Schulterhöhe
+    type: int
+    text: Schulterhöhe in cm
     page:
       steuerelement: input
       formular: true
@@ -429,7 +411,7 @@ field_labels:
     text: Verträglich mit Hunden
     page:
       steuerelement: select
-      optionen: [Ja, Nein, Unsicher]
+      optionen: [Ja, Nein, Nach Eingewöhnung, Unsicher]
       formular: true
       horizont: 1
       gesperrt: false
@@ -445,7 +427,7 @@ field_labels:
     text: Verträglich mit Menschen
     page:
       steuerelement: select
-      optionen: [Ja, Nein, Unsicher]
+      optionen: [Ja, Nein, Nach Eingewöhnung, Unsicher]
       formular: true
       horizont: 1
       gesperrt: false
@@ -456,11 +438,12 @@ field_labels:
       listPos: 490
       listValueClasses: text-sm text-slate-500
 
-  diff:
+  istEinAngsthund:
     type: string
-    text: Diff
+    text: Ist ein Angsthund
     page:
-      steuerelement: input
+      steuerelement: select
+      optionen: [Ja, Nein, Unsicher]
       formular: true
       horizont: 1
       gesperrt: false
@@ -468,12 +451,12 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: 'off'
-      listPos: 500
+      listPos: 380
       listValueClasses: text-sm text-slate-500
 
-  geimpft:
+  angstBeschreiben:
     type: string
-    text: Geimpft
+    text: Angst beschreiben
     page:
       steuerelement: input
       formular: true
@@ -483,14 +466,15 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: 'off'
-      listPos: 520
+      listPos: 260
       listValueClasses: text-sm text-slate-500
 
-  geschlecht:
+  istVersichert:
     type: string
-    text: Geschlecht
+    text: Ist versichert
     page:
-      steuerelement: input
+      steuerelement: select
+      optionen: [Ja, Nein]
       formular: true
       horizont: 1
       gesperrt: false
@@ -498,7 +482,37 @@ field_labels:
       suchbar: true
       sortierbar: true
       listSection: 'off'
-      listPos: 530
+      listPos: 350
+      listValueClasses: text-sm text-slate-500
+
+  derVersicherer:
+    type: string
+    text: Der Versicherer
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
+      listPos: 350
+      listValueClasses: text-sm text-slate-500
+
+  haftpflichtSeit:
+    type: datum
+    text: Haftpflicht seit
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 3
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: 'off'
+      listPos: 350
       listValueClasses: text-sm text-slate-500
 
   text:

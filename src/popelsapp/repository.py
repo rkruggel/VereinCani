@@ -81,7 +81,7 @@ class CouchPopelsDatabase:
 					continue
 				value = data.get(field, '')
 				if self.config.field_labels[field]['type'] == 'liste':
-					value = list(value or [])
+					value = normalize_list_value(value)
 				document[field] = value
 
 		document = self._get_database().mutate_document(record_id, mutate)
@@ -232,22 +232,32 @@ class CouchPopelsDatabase:
 				continue
 			value = data.get(field, '')
 			if self.config.field_labels[field]['type'] == 'liste':
-				value = list(value or [])
+				value = normalize_list_value(value)
 			values[field] = value
 		return self.model(id=record_id, **values)
 
 	def _normalize_document(self, document: dict[str, Any]) -> dict[str, Any]:
 		"""Übernimmt ein CouchDB-Dokument mit den konfigurierten Feldnamen."""
 
-		values = {
-			field: document.get(
-				field,
-				[] if definition['type'] in {'liste', 'bilder'} else '',
-			)
-			for field, definition in self.config.field_labels.items()
-		}
+		values = {}
+		for field, definition in self.config.field_labels.items():
+			default = [] if definition['type'] in {'liste', 'bilder'} else ''
+			value = document.get(field, default)
+			if definition['type'] == 'liste':
+				value = normalize_list_value(value)
+			values[field] = value
 		values['id'] = document.get('_id') or document.get('id') or values.get('id', '')
 		return values
+
+
+def normalize_list_value(value: Any) -> list[Any]:
+	"""Normalisiert alte Einzelwerte und neue Listenwerte auf eine Liste."""
+
+	if value in (None, ''):
+		return []
+	if isinstance(value, list):
+		return value
+	return [value]
 
 
 def sort_records(

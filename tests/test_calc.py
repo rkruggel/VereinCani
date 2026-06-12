@@ -24,6 +24,22 @@ class CalcTest(unittest.TestCase):
 				'10.00',
 			)
 
+	def test_berechne_supports_int_diff_formula(self) -> None:
+		self.assertEqual(
+			berechne('intDiff(gewichtSoll, gewicht)', {'gewichtSoll': '28', 'gewicht': '25'}),
+			3,
+		)
+
+	def test_berechne_supports_gewicht_ok_formula(self) -> None:
+		self.assertEqual(
+			berechne('gewichtOk(gewichtSoll, gewicht)', {'gewichtSoll': '28', 'gewicht': '28'}),
+			'Ja',
+		)
+		self.assertEqual(
+			berechne('gewichtOk(gewichtSoll, gewicht)', {'gewichtSoll': '28', 'gewicht': '25'}),
+			'Nein',
+		)
+
 
 if __name__ == '__main__':
 	unittest.main()

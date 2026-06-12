@@ -93,23 +93,27 @@ def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> 
 		with ui.card().classes('w-full p-4 gap-3 rounded-xl shadow-sm border border-slate-200'):
 			ui.label('Anmeldung').classes('text-base font-semibold text-slate-900')
 			ui.label('Die Anmeldung erfolgt ueber deine E-Mail-Adresse.').classes('text-xs text-slate-600')
-			login_controls['email'] = ui.input('E-Mail-Adresse').props('type=email dense').classes('w-full')
+			login_controls['email'] = ui.input('E-Mail-Adresse').props(
+				'type=email dense autocomplete="off"'
+			).classes('w-full')
 			login_controls['kennung'] = ui.input(
 				'Kennung',
 				password=True,
 				password_toggle_button=True,
-			).props('dense').classes('w-full')
+			).props('dense autocomplete="off"').classes('w-full')
 			ui.button('Anmelden', icon='login', on_click=login).props('no-caps dense').classes('w-full')
 
 			with ui.expansion('Zugang erstellen', icon='person_add').classes('w-full'):
 				with ui.column().classes('w-full gap-2 pt-2'):
-					register_name = ui.input('Name').props('dense').classes('w-full')
-					register_email = ui.input('E-Mail-Adresse').props('type=email dense').classes('w-full')
+					register_name = ui.input('Name').props('dense autocomplete="off"').classes('w-full')
+					register_email = ui.input('E-Mail-Adresse').props(
+						'type=email dense autocomplete="off"'
+					).classes('w-full')
 					register_kennung = ui.input(
 						'Kennung',
 						password=True,
 						password_toggle_button=True,
-					).props('dense').classes('w-full')
+					).props('dense autocomplete="off"').classes('w-full')
 					ui.button(
 						'Registrieren',
 						on_click=lambda: register(register_name, register_email, register_kennung),

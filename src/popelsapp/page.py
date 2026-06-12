@@ -519,7 +519,7 @@ def render_popels_page(
 		search_input['element'] = ui.input(
 			'Suchbegriffe',
 			value=search_query['value'],
-		).props('clearable autofocus').classes('w-full')
+		).props('clearable autofocus autocomplete="off"').classes('w-full')
 		search_input['element'].on('keydown.enter', apply_search)
 		with ui.row().classes('w-full justify-between gap-2'):
 			ui.button('Suche loeschen', on_click=clear_search).props('flat no-caps')
@@ -569,7 +569,7 @@ def render_popels_page(
 		image_caption = ui.textarea(
 			'Bildtext',
 			placeholder='z. B. Gruppenfoto, Auktionsbild ...',
-		).props('dense autogrow').classes('w-full')
+		).props('dense autogrow autocomplete="off"').classes('w-full')
 		image_caption.bind_value(image_caption_draft, 'value')
 		ui.button(
 			'Ausgewaehlte Bilder hochladen',
@@ -605,7 +605,7 @@ def render_popels_page(
 								attachment_name,
 								event.value,
 							),
-						).props('dense autogrow').classes('w-full')
+						).props('dense autogrow autocomplete="off"').classes('w-full')
 
 		render_uploaded_images()
 		with ui.row().classes('w-full justify-between gap-2'):

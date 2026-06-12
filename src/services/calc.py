@@ -96,6 +96,8 @@ def berechne(formel: str, werte: dict[str, Any], heute: date | None = None) -> A
     namen = {**werte, "today": heute or date.today()}
     funktionen = {
         "datumDiff": datumDiff,
+        "intDiff": intDiff,
+        "gewichtOk": gewichtOk,
         "preisNachHunden": preisNachHunden,
     }
 
@@ -113,6 +115,21 @@ def datumDiff(von, bis):
 
     return _datumsdifferenz(von, bis)["text"]
 
+
+def intDiff(von, bis):
+    if von in (None, "") or bis in (None, ""):
+        return ""
+
+    return int(von) - int(bis)
+
+
+def gewichtOk(gewicht_soll, gewicht):
+    diff = intDiff(gewicht_soll, gewicht)
+    if diff == "":
+        return ""
+
+    erg = "OK" if diff == 0 else ("zu leicht" if diff > 0 else "zu schwer")
+    return erg
 
 def preisNachHunden(hunde):
     if not hunde:

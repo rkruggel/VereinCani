@@ -224,7 +224,7 @@ def render_preisstamm_page() -> None:
 		if load_error is not None:
 			ui.label(load_error).classes('text-sm text-red-600')
 		valid_from_input = ui.input('Gültig ab', value=valid_from).props(
-			'type=date dense required'
+			'type=date dense required autocomplete="off"'
 		).classes('w-full')
 		with ui.grid(columns=2).classes('w-full gap-2 max-sm:grid-cols-1'):
 			for count in HUNDE_ANZAHLEN:
@@ -238,7 +238,7 @@ def render_preisstamm_page() -> None:
 					precision=2,
 					suffix='€',
 					format='%.2f',
-				).props('dense inputmode=decimal').classes('w-full')
+				).props('dense inputmode=decimal autocomplete="off"').classes('w-full')
 
 		ui.separator().classes('w-full')
 
@@ -275,7 +275,7 @@ def render_preisstamm_page() -> None:
 			for index, row in enumerate(course_rows['value']):
 				with ui.row().classes('w-full items-start gap-2 max-sm:flex-col'):
 					course_control = ui.input('Kurs', value=row.get('kurs', '')).props(
-						'dense'
+						'dense autocomplete="off"'
 					).classes('flex-1 min-w-[10rem] max-sm:w-full')
 					price = row.get('preis')
 					price_control = ui.number(
@@ -286,9 +286,9 @@ def render_preisstamm_page() -> None:
 						precision=2,
 						suffix='€',
 						format='%.2f',
-					).props('dense inputmode=decimal').classes('w-36 max-sm:w-full')
+					).props('dense inputmode=decimal autocomplete="off"').classes('w-36 max-sm:w-full')
 					duration_control = ui.input('Dauer', value=row.get('dauer', '')).props(
-						'dense'
+						'dense autocomplete="off"'
 					).classes('w-36 max-sm:w-full')
 					interval_control = ui.select(
 						COURSE_INTERVAL_OPTIONS,
