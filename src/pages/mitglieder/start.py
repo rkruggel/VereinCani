@@ -64,6 +64,12 @@ def render_mitglieder_page() -> None:
 		preise_tab = ui.tab('Preise').props('no-caps').classes('text-xs px-2')
 		personal_tab.set_enabled(False)
 		dog_tab.set_enabled(False)
+		preise_tab.set_enabled(False)
+
+	def update_member_selection(record_id: str | None) -> None:
+		"""Aktiviert Preise nur, wenn gerade ein Mitglied angezeigt wird."""
+
+		preise_tab.set_enabled(record_id is not None)
 
 	def select_personal(record_id: str) -> None:
 		"""Wählt zugeordnete persönliche Daten und öffnet deren Registerkarte."""
@@ -97,6 +103,7 @@ def render_mitglieder_page() -> None:
 						'on_select': select_dog,
 					},
 				},
+				on_selection_change=update_member_selection,
 			)
 		with ui.tab_panel(personal_tab).classes('px-0'):
 			@ui.refreshable

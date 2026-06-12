@@ -12,8 +12,15 @@ import requests
 
 
 CONFIG_PATH = Path(__file__).resolve().parents[2] / 'config.ini'
-COLLECTION_FIELD = 'vereincani_collection'
-COUCH_INTERNAL_FIELDS = {'_id', '_rev', '_attachments', COLLECTION_FIELD}
+COLLECTION_FIELD = 'vereingui_collection'
+LEGACY_COLLECTION_FIELDS = {'vereincani_collection'}
+COUCH_INTERNAL_FIELDS = {
+	'_id',
+	'_rev',
+	'_attachments',
+	COLLECTION_FIELD,
+	*LEGACY_COLLECTION_FIELDS,
+}
 
 
 class CouchDatabaseError(RuntimeError):
@@ -46,7 +53,7 @@ def load_couch_config(config_path: Path = CONFIG_PATH) -> CouchConfig:
 		).rstrip('/'),
 		database=os.getenv(
 			'COUCHDB_DATABASE',
-			parser.get('couchdb', 'database', fallback='vereincani'),
+			parser.get('couchdb', 'database', fallback='vereingui'),
 		),
 		username=os.getenv(
 			'COUCHDB_USERNAME',
@@ -95,7 +102,7 @@ class CouchDatabase:
 		return [
 			deepcopy(row['doc'])
 			for row in response.json().get('rows', [])
-			if row.get('doc', {}).get(COLLECTION_FIELD) == collection
+			if self._document_collection(row.get('doc', {})) == collection
 		]
 
 	def get_document(self, document_id: str) -> dict[str, Any] | None:
@@ -233,6 +240,15 @@ class CouchDatabase:
 		document['_id'] = document_id
 		document[COLLECTION_FIELD] = collection
 		return document
+
+	@staticmethod
+	def _document_collection(document: dict[str, Any]) -> str | None:
+		if document.get(COLLECTION_FIELD) is not None:
+			return document[COLLECTION_FIELD]
+		for legacy_field in LEGACY_COLLECTION_FIELDS:
+			if document.get(legacy_field) is not None:
+				return document[legacy_field]
+		return None
 
 	def _document_url(self, document_id: str) -> str:
 		return f'{self._database_url}/{quote(document_id, safe="")}'

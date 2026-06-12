@@ -1,6 +1,7 @@
 """NiceGUI-Seite zur Pflege, Suche und Anzeige konfigurierbarer Popels."""
 
 from functools import partial
+from collections.abc import Callable
 from typing import Any
 
 from nicegui import events, ui
@@ -29,6 +30,7 @@ def render_popels_page(
 	form_control_contexts: dict[str, dict[str, Any]] | None = None,
 	initial_record_id: str | None = None,
 	clear_form_after_save: bool = True,
+	on_selection_change: Callable[[str | None], None] | None = None,
 ) -> None:
 	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
@@ -85,6 +87,8 @@ def render_popels_page(
 		"""Setzt Formular, Text, Bilder und aktive Datensatzauswahl zurück."""
 
 		selected_id['value'] = None
+		if on_selection_change is not None:
+			on_selection_change(None)
 		text_value['value'] = ''
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
@@ -122,6 +126,8 @@ def render_popels_page(
 			ui.notify(f'{config.singular} nicht gefunden', type='warning')
 			return
 		selected_id['value'] = record_id
+		if on_selection_change is not None:
+			on_selection_change(record_id)
 		text_value['value'] = str(record.get(EDITOR_FIELD) or '')
 		if text_editor['element'] is not None:
 			text_editor['element'].value = text_value['value']
