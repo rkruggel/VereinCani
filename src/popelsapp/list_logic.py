@@ -107,8 +107,32 @@ def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> s
 	value = record[field]
 	if config.field_labels[field]['type'] == 'liste':
 		return ', '.join(value) if value else '-'
+	if config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
+		return display_course_bookings(value)
 	text = str(value or '-')
 	return text
+
+
+def display_course_bookings(value: Any) -> str:
+	"""Formatiert Kursbesuche für die Kartenliste."""
+
+	if not isinstance(value, list) or not value:
+		return '-'
+	parts = []
+	for row in value:
+		if not isinstance(row, dict):
+			continue
+		course = str(row.get('kurs') or '').strip()
+		date_from = str(row.get('datumVon') or row.get('datum') or '').strip()
+		date_to = str(row.get('datumBis') or '').strip()
+		paid = ''
+		if row.get('bezahlt') is not None:
+			paid = 'bezahlt' if row.get('bezahlt') else 'offen'
+		date_text = ' bis '.join(item for item in [date_from, date_to] if item)
+		text = ' / '.join(item for item in [course, date_text, paid] if item)
+		if text:
+			parts.append(text)
+	return '; '.join(parts) if parts else '-'
 
 
 def content_available(config: PopelsConfig, field: str, value: Any) -> bool:

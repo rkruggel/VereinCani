@@ -12,6 +12,8 @@ def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
 	field_type = definition['type']
 	if field_type == 'liste':
 		return list[str], field(default_factory=list)
+	if field_type in {'kursbuchungen', 'kursbesuche'}:
+		return list[dict[str, Any]], field(default_factory=list)
 	if field_type == 'bilder':
 		return list[dict[str, str]], field(default_factory=list)
 	return str, field(default='')
@@ -26,7 +28,7 @@ class PopelsModel:
 		"""Normalisiert Listenfelder aus älteren Dokumenten auf leere Listen."""
 
 		for field_name, definition in self._config.field_labels.items():
-			if definition['type'] in {'liste', 'bilder'}:
+			if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'}:
 				value = getattr(self, field_name, None)
 				if value is None or value == '':
 					normalized_value = []

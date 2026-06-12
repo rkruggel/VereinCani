@@ -104,7 +104,11 @@ def render_popels_page(
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
 		for field in FORM_FIELDS:
-			form_controls[field].value = [] if POPELS_FIELDS[field]['type'] == 'liste' else ''
+			clear_control = getattr(form_controls[field], 'clear', None)
+			if POPELS_FIELDS[field]['type'] in {'kursbuchungen', 'kursbesuche'} and callable(clear_control):
+				clear_control()
+			else:
+				form_controls[field].value = [] if POPELS_FIELDS[field]['type'] == 'liste' else ''
 		apply_default_form_values()
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text(f'Neue {config.singular}')

@@ -1,6 +1,7 @@
 """Aufbau eines aus Felddefinitionen erzeugten Popels-Formulars."""
 
 from collections.abc import Callable
+from datetime import date, timedelta
 from typing import Any
 
 from nicegui import events, ui
@@ -260,6 +261,257 @@ class CommaSeparatedListInput:
 		self._element.on_value_change(handler)
 
 
+class CourseBookingsInput:
+	"""Bearbeitet gebuchte Kurse als Zeilen mit Kurs, Datum und Bezahlstatus."""
+
+	EMPTY_ROW = {'kurs': '', 'datumVon': '', 'bezahlt': None}
+
+	def __init__(self, label: str, options: list[Any] | None = None) -> None:
+		self._label = label
+		self._course_definitions = self._course_definitions_from_options(options or [])
+		self._options = list(self._course_definitions)
+		self._rows = [self.EMPTY_ROW.copy()]
+		self._controls: list[dict[str, Any]] = []
+		self._enabled = True
+		with ui.column().classes('w-full gap-1'):
+			ui.label(label).classes('text-sm font-medium text-slate-700')
+
+			@ui.refreshable
+			def render_rows() -> None:
+				self._controls.clear()
+				for index, row in enumerate(self._rows):
+					with ui.row().classes('w-full items-start gap-1 flex-nowrap'):
+						course_options = self._course_options(row.get('kurs'))
+						if course_options:
+							course_control = ui.select(
+								course_options,
+								label='Kursname',
+								value=row.get('kurs') or None,
+								clearable=True,
+							).props('dense options-dense').classes('flex-1 min-w-[10rem]')
+						else:
+							course_control = ui.input('Kursname', value=row.get('kurs', '')).props(
+								'dense autocomplete="off"'
+							).classes('flex-1 min-w-[10rem]')
+						date_from_control = ui.input('Datum von', value=row.get('datumVon', '')).props(
+							'type=date dense autocomplete="off"'
+						).classes('w-28 shrink-0')
+						date_to_control = ui.input(
+							'Datum bis',
+							value=self._calculate_date_to(row.get('kurs'), row.get('datumVon')),
+						).props('type=date dense autocomplete="off" readonly').classes('w-28 shrink-0')
+						paid_control = ui.select(
+							['Ja', 'Nein'],
+							label='Bezahlt',
+							value=paid_select_value(row.get('bezahlt')),
+							clearable=True,
+						).props('dense options-dense').classes('w-20 shrink-0')
+						for control in (course_control, date_from_control, paid_control):
+							control.set_enabled(self._enabled)
+						if not self._enabled:
+							date_to_control.set_enabled(False)
+						self._controls.append({
+							'kurs': course_control,
+							'datumVon': date_from_control,
+							'datumBis': date_to_control,
+							'bezahlt': paid_control,
+						})
+						def update_date_to(
+							_event: Any,
+							course: Any = course_control,
+							date_from: Any = date_from_control,
+							date_to: Any = date_to_control,
+						) -> None:
+							date_to.value = self._calculate_date_to(course.value, date_from.value)
+
+						course_control.on_value_change(update_date_to)
+						date_from_control.on_value_change(update_date_to)
+						with ui.row().classes('ml-auto gap-0 pt-1 shrink-0'):
+							delete_button = ui.button(
+								icon='delete',
+								on_click=lambda row_index=index: self._delete_row(row_index),
+							).props('flat round dense size=sm color=negative').tooltip('Zeile löschen')
+							add_button = ui.button(
+								icon='add',
+								on_click=lambda row_index=index: self._add_row(row_index),
+							).props('flat round dense size=sm').tooltip('Neue Zeile hinzufügen')
+							delete_button.set_enabled(self._enabled)
+							add_button.set_enabled(self._enabled)
+
+			self._render_rows = render_rows
+			self._render_rows()
+
+	@property
+	def value(self) -> list[dict[str, Any]]:
+		"""Liefert nur ausgefüllte Kursbesuchszeilen."""
+
+		self._sync_rows()
+		return [
+			row
+			for row in self._rows
+			if row['kurs'] or row['datumVon'] or row['bezahlt'] is not None
+		]
+
+	@value.setter
+	def value(self, rows: list[dict[str, Any]] | None) -> None:
+		normalized_rows = self._normalize_rows(rows)
+		if not normalized_rows:
+			self.clear()
+			return
+		self._rows = normalized_rows
+		self._controls.clear()
+		self._render_rows.refresh()
+
+	def clear(self) -> None:
+		"""Leert Kursbesuche und vorhandene Steuerelementwerte sichtbar."""
+
+		self._rows = [self.EMPTY_ROW.copy()]
+		for controls in self._controls:
+			controls['kurs'].value = None
+			controls['datumVon'].value = ''
+			controls['datumBis'].value = ''
+			controls['bezahlt'].value = None
+		self._render_rows.refresh()
+
+	def set_enabled(self, value: bool) -> None:
+		"""Aktiviert oder deaktiviert die Kursbesuchszeilen."""
+
+		self._enabled = value
+		self._render_rows.refresh()
+
+	def _sync_rows(self) -> None:
+		if not self._controls:
+			return
+		self._rows = [
+			{
+				'kurs': str(controls['kurs'].value or '').strip(),
+				'datumVon': str(controls['datumVon'].value or '').strip(),
+				'bezahlt': paid_bool_value(controls['bezahlt'].value),
+			}
+			for controls in self._controls
+		]
+
+	def _add_row(self, after_index: int) -> None:
+		self._sync_rows()
+		self._rows.insert(after_index + 1, self.EMPTY_ROW.copy())
+		self._render_rows.refresh()
+
+	def _delete_row(self, index: int) -> None:
+		self._sync_rows()
+		if 0 <= index < len(self._rows):
+			self._rows.pop(index)
+		if not self._rows:
+			self._rows.append(self.EMPTY_ROW.copy())
+		self._render_rows.refresh()
+
+	def _course_options(self, current_value: Any) -> list[str]:
+		options = list(self._options)
+		current_text = str(current_value or '').strip()
+		if current_text and current_text not in options:
+			options.append(current_text)
+		return options
+
+	def _calculate_date_to(self, course_name: Any, date_from: Any) -> str:
+		course = self._course_definitions.get(str(course_name or '').strip())
+		if course is None:
+			return ''
+		try:
+			start = date.fromisoformat(str(date_from or '').strip())
+		except ValueError:
+			return ''
+		duration = parse_positive_int(course.get('dauer'))
+		unit = str(course.get('einheit') or 'einmalig').strip().casefold()
+		if duration is None or unit == 'einmalig':
+			return start.isoformat()
+		if unit == 'tag':
+			return (start + timedelta(days=duration)).isoformat()
+		if unit == 'woche':
+			return (start + timedelta(weeks=duration)).isoformat()
+		if unit == 'monat':
+			return add_months(start, duration).isoformat()
+		if unit == 'jahr':
+			return add_months(start, duration * 12).isoformat()
+		return ''
+
+	@staticmethod
+	def _course_definitions_from_options(options: list[Any]) -> dict[str, dict[str, Any]]:
+		definitions: dict[str, dict[str, Any]] = {}
+		for option in options:
+			if isinstance(option, dict):
+				name = str(option.get('kurs') or '').strip()
+				if name:
+					definitions[name] = dict(option)
+				continue
+			name = str(option or '').strip()
+			if name:
+				definitions[name] = {'kurs': name}
+		return definitions
+
+	@classmethod
+	def _normalize_rows(cls, rows: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+		if not isinstance(rows, list):
+			return []
+		normalized_rows = []
+		for row in rows:
+			if not isinstance(row, dict):
+				continue
+			date_from = str(row.get('datumVon') or row.get('datum') or '').strip()
+			normalized_rows.append({
+				'kurs': str(row.get('kurs') or '').strip(),
+				'datumVon': date_from,
+				'bezahlt': paid_bool_value(row.get('bezahlt')),
+			})
+		return normalized_rows
+
+
+def paid_select_value(value: Any) -> str | None:
+	"""Bereitet den gespeicherten Bezahlstatus für das Ja/Nein-Select vor."""
+
+	if value is None or value == '':
+		return None
+	return 'Ja' if paid_bool_value(value) else 'Nein'
+
+
+def paid_bool_value(value: Any) -> bool | None:
+	"""Normalisiert Bezahlstatus aus Select oder gespeicherten Altdaten."""
+
+	if value is None or value == '':
+		return None
+	if isinstance(value, str):
+		return value.strip().casefold() == 'ja'
+	return bool(value)
+
+
+def parse_positive_int(value: Any) -> int | None:
+	"""Liest eine positive Ganzzahl aus Preisstamm-Dauerwerten."""
+
+	text = str(value or '').strip()
+	if not text:
+		return None
+	try:
+		number = int(text)
+	except ValueError:
+		return None
+	return number if number > 0 else None
+
+
+def add_months(value: date, months: int) -> date:
+	"""Addiert Monate und klemmt den Tag an das Monatsende."""
+
+	month_index = value.month - 1 + months
+	year = value.year + month_index // 12
+	month = month_index % 12 + 1
+	month_lengths = [31, 29 if is_leap_year(year) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+	day = min(value.day, month_lengths[month - 1])
+	return date(year, month, day)
+
+
+def is_leap_year(year: int) -> bool:
+	"""Prüft, ob ein Jahr ein Schaltjahr ist."""
+
+	return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+
 def create_form_control(
 	config: PopelsConfig,
 	field: str,
@@ -311,6 +563,9 @@ def create_form_control(
 		if page_definition.get('pflichtfeld'):
 			props += ' required'
 		control = ui.textarea(label).props(props).classes('w-full')
+	elif control_type in {'kursbuchungen', 'kursbesuche'}:
+		context = context or {}
+		control = CourseBookingsInput(label, context.get('options'))
 	elif definition['type'] == 'liste':
 		control = CommaSeparatedListInput(label)
 	else:

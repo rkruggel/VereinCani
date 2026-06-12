@@ -14,6 +14,7 @@ from src.pages.persoenlich.start import (
 	PERSOENLICH_DB,
 	PERSOENLICHLISTEN_EINSTELLUNGEN,
 )
+from src.pages.preise.preisstamm import PREISSTAMM
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -51,6 +52,7 @@ def render_mitglieder_page() -> None:
 
 	personal_options = create_personal_options(personal_records)
 	dog_options = create_dog_options(dog_records)
+	course_options = load_course_options()
 
 	with ui.tabs().props('align=left dense').classes('w-full justify-start') as tabs:
 		mitglieder_tab = ui.tab('Mitglieder').props('no-caps').classes('text-xs px-2')
@@ -89,6 +91,9 @@ def render_mitglieder_page() -> None:
 					'hunde': {
 						'options': dog_options,
 						'on_select': select_dog,
+					},
+					'kursbesuche': {
+						'options': course_options,
 					},
 				},
 			)
@@ -160,4 +165,23 @@ def create_dog_options(dog_records: dict[str, dict[str, Any]]) -> dict[str, str]
 			label = f'{label} ({record_id})'
 		used_labels.add(label)
 		options[record_id] = label
+	return options
+
+
+def load_course_options() -> list[dict[str, str]]:
+	"""Lädt Kursdaten aus dem Preisstamm für die Mitglieder-Kursbesuche."""
+
+	try:
+		courses = PREISSTAMM.get_courses()
+	except Exception as error:
+		ui.notify(f'Kurse konnten nicht geladen werden: {error}', type='warning')
+		return []
+	options = []
+	used_options: set[str] = set()
+	for course in courses:
+		name = str(course.get('kurs') or '').strip()
+		if not name or name in used_options:
+			continue
+		used_options.add(name)
+		options.append(course)
 	return options

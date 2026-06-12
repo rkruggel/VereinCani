@@ -221,6 +221,39 @@ field_labels:
       listPos: 130
       listValueClasses: text-sm text-slate-500
 
+  hundevereinMitglied:
+    type: string
+    text: Mitglied im Hundeverein
+    beschreibung: Gibt an, ob die Person beziehungsweise der Haushalt Mitglied im Hundeverein ist.
+    page:
+      steuerelement: select
+      optionen: [Ja, Nein]
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 75
+      listValueClasses: text-sm text-slate-500
+
+  kursbesuche:
+    type: kursbesuche
+    text: Kursbesuche
+    beschreibung: Kursbesuche dieses Mitglieds. Der Kursname kommt aus dem Preisstamm; Datum bis wird aus Startdatum und Kursdauer berechnet.
+    page:
+      steuerelement: kursbesuche
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: false
+      listSection: secondary
+      listPos: 78
+      listValueClasses: text-sm text-slate-500
+
   text:
     type: string
     text: Text vorhanden

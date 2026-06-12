@@ -82,7 +82,11 @@ class CouchPopelsDatabase:
 				value = data.get(field, '')
 				if self.config.field_labels[field]['type'] == 'liste':
 					value = normalize_list_value(value)
+				elif self.config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
+					value = normalize_course_bookings_value(value)
 				document[field] = value
+				if field == 'kursbesuche':
+					document.pop('kursbuchungen', None)
 
 		document = self._get_database().mutate_document(record_id, mutate)
 		return self._normalize_document(document) if document is not None else None
@@ -233,6 +237,8 @@ class CouchPopelsDatabase:
 			value = data.get(field, '')
 			if self.config.field_labels[field]['type'] == 'liste':
 				value = normalize_list_value(value)
+			elif self.config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
+				value = normalize_course_bookings_value(value)
 			values[field] = value
 		return self.model(id=record_id, **values)
 
@@ -241,10 +247,14 @@ class CouchPopelsDatabase:
 
 		values = {}
 		for field, definition in self.config.field_labels.items():
-			default = [] if definition['type'] in {'liste', 'bilder'} else ''
+			default = [] if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'} else ''
 			value = document.get(field, default)
 			if definition['type'] == 'liste':
 				value = normalize_list_value(value)
+			elif definition['type'] in {'kursbuchungen', 'kursbesuche'}:
+				value = normalize_course_bookings_value(value)
+				if field == 'kursbesuche' and not value:
+					value = normalize_course_bookings_value(document.get('kursbuchungen', default))
 			values[field] = value
 		values['id'] = document.get('_id') or document.get('id') or values.get('id', '')
 		return values
@@ -258,6 +268,37 @@ def normalize_list_value(value: Any) -> list[Any]:
 	if isinstance(value, list):
 		return value
 	return [value]
+
+
+def normalize_course_bookings_value(value: Any) -> list[dict[str, Any]]:
+	"""Normalisiert Kursbesuchszeilen auf saubere Wörterbücher."""
+
+	if value in (None, ''):
+		return []
+	if not isinstance(value, list):
+		return []
+	rows = []
+	for row in value:
+		if not isinstance(row, dict):
+			continue
+		booking = {
+			'kurs': str(row.get('kurs') or '').strip(),
+			'datumVon': str(row.get('datumVon') or row.get('datum') or '').strip(),
+			'bezahlt': normalize_paid_value(row.get('bezahlt')),
+		}
+		if booking['kurs'] or booking['datumVon'] or booking['bezahlt'] is not None:
+			rows.append(booking)
+	return rows
+
+
+def normalize_paid_value(value: Any) -> bool | None:
+	"""Normalisiert den Bezahlstatus und erhält leere Werte."""
+
+	if value is None or value == '':
+		return None
+	if isinstance(value, str):
+		return value.strip().casefold() == 'ja'
+	return bool(value)
 
 
 def sort_records(
