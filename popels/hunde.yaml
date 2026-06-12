@@ -35,6 +35,7 @@ field_labels:
   hundename:
     type: string
     text: Hundename
+    beschreibung: Offizieller Name des Hundes. Dieser Name wird als wichtigste Bezeichnung in Listen und Verknüpfungen genutzt.
     page:
       steuerelement: input
       formular: true
@@ -52,6 +53,7 @@ field_labels:
   rufname:
     type: string
     text: Rufname
+    beschreibung: Name, auf den der Hund im Alltag hört, falls er vom offiziellen Namen abweicht.
     page:
       steuerelement: input
       formular: true
@@ -69,6 +71,7 @@ field_labels:
   rasseOderMix:
     type: string
     text: Rasse oder Mix
+    beschreibung: Gibt an, ob der Hund als Rassehund oder Mischling geführt wird.
     page:
       steuerelement: select
       optionen: [Rasse, Mix]
@@ -85,6 +88,7 @@ field_labels:
   rasse:
     type: string
     text: Rasse
+    beschreibung: Rasse des Hundes, wenn bekannt oder relevant.
     page:
       steuerelement: input
       formular: true
@@ -100,6 +104,7 @@ field_labels:
   mixRasse:
     type: string
     text: Mix-Rasse
+    beschreibung: Bekannte oder vermutete Rassenanteile bei einem Mischling.
     page:
       steuerelement: input
       formular: true
@@ -115,6 +120,7 @@ field_labels:
   ursprung:
     type: string
     text: Ursprung
+    beschreibung: Herkunft des Hundes, zum Beispiel Züchter, Tierheim, privat oder sonstige Quelle.
     page:
       steuerelement: select
       optionen: [Züchter, Tierheim, Privat, Sonstiges]
@@ -131,6 +137,7 @@ field_labels:
   geschlecht:
     type: select
     text: Geschlecht
+    beschreibung: Geschlecht des Hundes.
     page:
       steuerelement: select
       optionen: [Rüde, Hündin, Unbekannt]
@@ -147,6 +154,7 @@ field_labels:
   geboren:
     type: datum
     text: Geboren
+    beschreibung: Geburtsdatum des Hundes. Daraus wird das aktuelle Alter berechnet.
     page:
       steuerelement: date
       formular: true
@@ -162,6 +170,7 @@ field_labels:
   alter:
     type: string
     text: Alter Jahre
+    beschreibung: Automatisch berechnetes Alter des Hundes anhand des Geburtsdatums.
     page:
       steuerelement: input
       formular: true
@@ -178,6 +187,7 @@ field_labels:
   beimirseit:
     type: datum
     text: bei mir seit
+    beschreibung: Datum, seit dem der Hund bei der aktuellen Bezugsperson lebt.
     page:
       steuerelement: date
       formular: true
@@ -193,6 +203,7 @@ field_labels:
   beimirAlter:
     type: string
     text: Alter Jahre
+    beschreibung: Automatisch berechnete Dauer, seit der Hund bei der aktuellen Bezugsperson lebt.
     page:
       steuerelement: input
       formular: true
@@ -209,6 +220,7 @@ field_labels:
   kastriert:
     type: string
     text: Kastriert
+    beschreibung: Gibt an, ob der Hund kastriert ist oder ob die Information unsicher ist.
     page:
       steuerelement: select
       optionen: [Ja, Nein, Unsicher]
@@ -225,6 +237,7 @@ field_labels:
   kastrAlter:
     type: string
     text: Kastriert Alter
+    beschreibung: Alter des Hundes zum Zeitpunkt der Kastration, falls bekannt.
     page:
       steuerelement: input
       formular: true
@@ -240,6 +253,7 @@ field_labels:
   wannKastriert:
     type: datum
     text: Wann kastriert
+    beschreibung: Datum der Kastration, falls bekannt.
     page:
       steuerelement: date
       formular: true
@@ -255,6 +269,7 @@ field_labels:
   chipNummer:
     type: string
     text: Chip Nummer
+    beschreibung: Mikrochip-Nummer zur eindeutigen Identifikation des Hundes.
     page:
       steuerelement: input
       formular: true
@@ -270,6 +285,7 @@ field_labels:
   geimpft:
     type: string
     text: Geimpft
+    beschreibung: Gibt an, ob der Hund aktuell als geimpft geführt wird.
     page:
       steuerelement: select
       optionen: [Ja, Nein]
@@ -286,6 +302,7 @@ field_labels:
   besitzer:
     type: string
     text: Besitzer
+    beschreibung: Zugeordnete Person, die als Besitzer oder Hauptkontakt für den Hund geführt wird.
     page:
       steuerelement: select
       optionen: []
@@ -302,6 +319,7 @@ field_labels:
   anamnese:
     type: string
     text: Anamnese
+    beschreibung: Kurzer medizinischer oder verhaltensbezogener Hintergrund des Hundes.
     page:
       steuerelement: input
       formular: true
@@ -317,6 +335,7 @@ field_labels:
   erstkontakt:
     type: datum
     text: Erstkontakt
+    beschreibung: Datum des ersten Kontakts zum Hund oder zur Bezugsperson.
     page:
       steuerelement: date
       formular: true
@@ -332,6 +351,7 @@ field_labels:
   gewicht:
     type: int
     text: Gewicht
+    beschreibung: Aktuelles Gewicht des Hundes.
     page:
       steuerelement: input
       formular: true
@@ -347,6 +367,7 @@ field_labels:
   gewichtSoll:
     type: string
     text: Gewicht Soll
+    beschreibung: Ziel- oder Idealgewicht des Hundes.
     page:
       steuerelement: input
       formular: true
@@ -362,6 +383,7 @@ field_labels:
   diff:
     type: int
     text: Diff
+    beschreibung: Automatisch berechnete Differenz zwischen Sollgewicht und aktuellem Gewicht.
     page:
       steuerelement: input
       formular: true
@@ -378,6 +400,7 @@ field_labels:
   gewichtOk:
     type: string
     text: Gewicht Ok
+    beschreibung: Automatisch berechnete Einschätzung, ob das aktuelle Gewicht zum Sollgewicht passt.
     page:
       steuerelement: input
       formular: true
@@ -394,6 +417,7 @@ field_labels:
   schulterhoehe:
     type: int
     text: Schulterhöhe in cm
+    beschreibung: Schulterhöhe des Hundes in Zentimetern.
     page:
       steuerelement: input
       formular: true
@@ -409,6 +433,7 @@ field_labels:
   vertraeglichMitHunden:
     type: string
     text: Verträglich mit Hunden
+    beschreibung: Einschätzung, wie verträglich der Hund mit anderen Hunden ist.
     page:
       steuerelement: select
       optionen: [Ja, Nein, Nach Eingewöhnung, Unsicher]
@@ -425,6 +450,7 @@ field_labels:
   vertraeglichMitMenschen:
     type: string
     text: Verträglich mit Menschen
+    beschreibung: Einschätzung, wie verträglich der Hund mit Menschen ist.
     page:
       steuerelement: select
       optionen: [Ja, Nein, Nach Eingewöhnung, Unsicher]
@@ -441,6 +467,7 @@ field_labels:
   istEinAngsthund:
     type: string
     text: Ist ein Angsthund
+    beschreibung: Gibt an, ob der Hund als Angsthund eingeschätzt wird oder ob dies unsicher ist.
     page:
       steuerelement: select
       optionen: [Ja, Nein, Unsicher]
@@ -457,6 +484,7 @@ field_labels:
   angstBeschreiben:
     type: string
     text: Angst beschreiben
+    beschreibung: Beschreibung der Ängste, Auslöser oder Situationen, die beim Hund besondere Vorsicht erfordern.
     page:
       steuerelement: input
       formular: true
@@ -472,6 +500,7 @@ field_labels:
   istVersichert:
     type: string
     text: Ist versichert
+    beschreibung: Gibt an, ob für den Hund eine Haftpflichtversicherung vorliegt.
     page:
       steuerelement: select
       optionen: [Ja, Nein]
@@ -488,6 +517,7 @@ field_labels:
   derVersicherer:
     type: string
     text: Der Versicherer
+    beschreibung: Name der Versicherungsgesellschaft oder des Versicherers.
     page:
       steuerelement: input
       formular: true
@@ -503,6 +533,7 @@ field_labels:
   haftpflichtSeit:
     type: datum
     text: Haftpflicht seit
+    beschreibung: Datum, seit dem die Haftpflichtversicherung besteht.
     page:
       steuerelement: date
       formular: true

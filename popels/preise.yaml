@@ -26,6 +26,7 @@ field_labels:
   bezeichnung:
     type: string
     text: Bezeichnung
+    beschreibung: Name oder kurze Bezeichnung des Preises, zum Beispiel Mitgliedsbeitrag oder Kursgebühr.
     page:
       steuerelement: input
       formular: true
@@ -40,9 +41,27 @@ field_labels:
       listPos: 20
       listValueClasses: text-base font-semibold text-slate-900
 
+  mitglied:
+    type: string
+    text: Mitglied
+    beschreibung: Mitglied, zu dem dieser Preis- oder Zahlungsdatensatz gehört.
+    page:
+      steuerelement: select
+      optionen: []
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 30
+      listValueClasses: text-sm text-slate-500
+
   betrag:
     type: string
     text: Betrag
+    beschreibung: Geldbetrag des Preises. Bitte als Zahl mit optionalem Dezimaltrennzeichen eintragen.
     page:
       steuerelement: input
       formular: true
@@ -59,6 +78,7 @@ field_labels:
   intervall:
     type: string
     text: Intervall
+    beschreibung: Zahlungsrhythmus oder Gültigkeitsintervall des Preises.
     page:
       steuerelement: select
       optionen: [Einmalig, Monatlich, Vierteljährlich, Halbjährlich, Jährlich]
@@ -75,6 +95,7 @@ field_labels:
   gueltigAb:
     type: datum
     text: Gültig ab
+    beschreibung: Datum, ab dem dieser Preis verwendet werden soll.
     page:
       steuerelement: date
       formular: true
@@ -90,6 +111,7 @@ field_labels:
   beschreibung:
     type: string
     text: Beschreibung
+    beschreibung: Freitext für Erläuterungen, Bedingungen oder interne Hinweise zu diesem Preis.
     page:
       steuerelement: textarea
       formular: true
@@ -106,6 +128,7 @@ field_labels:
   betrag:
     type: string
     text: Betrag
+    beschreibung: Geldbetrag des Preises. Bitte als Zahl mit optionalem Dezimaltrennzeichen eintragen.
     page:
       steuerelement: input
       formular: true
@@ -121,6 +144,7 @@ field_labels:
   zuZahlen:
     type: string
     text: Zu Zahlen
+    beschreibung: Betrag, der tatsächlich zu zahlen ist, falls er vom Grundbetrag abweicht.
     page:
       steuerelement: input
       formular: true
@@ -136,6 +160,7 @@ field_labels:
   sonderPreis:
     type: string
     text: Sonder Preis
+    beschreibung: Individueller Sonderpreis oder abweichender Betrag für besondere Fälle.
     page:
       steuerelement: input
       formular: true
@@ -151,6 +176,7 @@ field_labels:
   monat:
     type: string
     text: Monat
+    beschreibung: Monat, auf den sich dieser Preis- oder Zahlungswert bezieht.
     page:
       steuerelement: input
       formular: true
@@ -166,6 +192,7 @@ field_labels:
   zuzahlen:
     type: string
     text: Zu Zahlen
+    beschreibung: Betrag, der tatsächlich zu zahlen ist, falls er vom Grundbetrag abweicht.
     page:
       steuerelement: input
       formular: true

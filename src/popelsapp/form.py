@@ -331,6 +331,33 @@ def create_form_control(
 	return control
 
 
+def create_form_control_with_description(
+	config: PopelsConfig,
+	field: str,
+	validate_phone: Callable[[Any], str | None],
+	context: dict[str, Any] | None = None,
+) -> Any:
+	"""Erzeugt ein Formularfeld mit optionaler Feldbeschreibung links daneben."""
+
+	definition = config.field_labels[field]
+	description = str(definition.get('beschreibung') or '').strip()
+	if not description:
+		return create_form_control(config, field, validate_phone, context)
+
+	with ui.row().classes('w-full gap-1 items-start'):
+		with ui.dialog() as description_dialog, ui.card().classes('w-[380px] max-w-full gap-2'):
+			ui.label(definition['text']).classes('text-base font-semibold text-slate-900')
+			ui.label(description).classes('text-sm text-slate-700 whitespace-pre-wrap')
+			with ui.row().classes('w-full justify-end'):
+				ui.button('Schliessen', on_click=description_dialog.close).props('flat no-caps dense')
+		ui.button(
+			icon='info',
+			on_click=description_dialog.open,
+		).props('flat round dense size=sm').classes('mt-3 shrink-0 text-slate-500').tooltip('Feldbeschreibung')
+		with ui.column().classes('flex-1 min-w-0'):
+			return create_form_control(config, field, validate_phone, context)
+
+
 def render_popels_form(
 	config: PopelsConfig,
 	validate_phone: Callable[[Any], str | None],
@@ -346,7 +373,7 @@ def render_popels_form(
 		for fields in group_form_fields(config):
 			if len(fields) == 1:
 				field = fields[0]
-				controls[field] = create_form_control(
+				controls[field] = create_form_control_with_description(
 					config,
 					field,
 					validate_phone,
@@ -356,7 +383,7 @@ def render_popels_form(
 			with ui.row().classes('w-full gap-2 items-start max-sm:flex-col'):
 				for field in fields:
 					with ui.column().classes('flex-1 min-w-0'):
-						controls[field] = create_form_control(
+						controls[field] = create_form_control_with_description(
 							config,
 							field,
 							validate_phone,

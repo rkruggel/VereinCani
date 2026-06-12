@@ -31,6 +31,8 @@ def render_popels_page(
 	initial_record_id: str | None = None,
 	clear_form_after_save: bool = True,
 	on_selection_change: Callable[[str | None], None] | None = None,
+	initial_form_values: dict[str, Any] | None = None,
+	show_records_list: bool = True,
 ) -> None:
 	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
@@ -47,6 +49,7 @@ def render_popels_page(
 	PAGE_TOP_ANCHOR_ID = f'{config.key}-page-top'
 	POPELS_DB = database
 	LISTEN_EINSTELLUNGEN = settings
+	default_form_values = initial_form_values or {}
 	list_fields = config.list_fields
 	filter_records = partial(configured_filter_records, config)
 	display_value = partial(configured_display_value, config)
@@ -83,6 +86,14 @@ def render_popels_page(
 			if not config.page(field).get('berechnen')
 		}
 
+	def apply_default_form_values() -> None:
+		"""Setzt konfigurierte Startwerte für neue Datensätze."""
+
+		for field, value in default_form_values.items():
+			if field in form_controls:
+				form_controls[field].value = value
+		recalculate_form(config, form_controls)
+
 	def clear_form() -> None:
 		"""Setzt Formular, Text, Bilder und aktive Datensatzauswahl zurück."""
 
@@ -94,7 +105,7 @@ def render_popels_page(
 		selected_image['attachment_name'] = None
 		for field in FORM_FIELDS:
 			form_controls[field].value = [] if POPELS_FIELDS[field]['type'] == 'liste' else ''
-		recalculate_form(config, form_controls)
+		apply_default_form_values()
 		if mode_label['element'] is not None:
 			mode_label['element'].set_text(f'Neue {config.singular}')
 		if text_editor['element'] is not None:
@@ -103,6 +114,12 @@ def render_popels_page(
 			text_save_button['element'].set_enabled(False)
 		render_uploaded_images.refresh()
 		render_active_actions.refresh()
+
+	def refresh_records_list() -> None:
+		"""Aktualisiert die Kartenliste nur, wenn sie sichtbar ist."""
+
+		if show_records_list:
+			render_records.refresh()
 
 	def scroll_to_page_top() -> None:
 		"""Scrollt den Arbeitsbereich zum Anfang des Popels-Formulars."""
@@ -196,7 +213,7 @@ def render_popels_page(
 			ui.notify(f'{config.singular} #{selected_id["value"]} gespeichert')
 		if clear_form_after_save:
 			clear_form()
-		render_records.refresh()
+		refresh_records_list()
 
 	def request_delete_record(record_id: str, name: str) -> None:
 		"""Bereitet den Bestätigungsdialog für das Löschen eines Datensatzes vor."""
@@ -226,7 +243,7 @@ def render_popels_page(
 			if selected_id['value'] == record_id:
 				clear_form()
 			ui.notify(f'{config.singular} #{record_id} geloescht')
-			render_records.refresh()
+			refresh_records_list()
 		else:
 			ui.notify(f'{config.singular} nicht gefunden', type='warning')
 
@@ -242,7 +259,7 @@ def render_popels_page(
 		except Exception as error:
 			ui.notify(f'Listeneinstellungen konnten nicht gespeichert werden: {error}', type='negative')
 			return
-		render_records.refresh()
+		refresh_records_list()
 
 	def cycle_sort_field(field: str) -> None:
 		"""Schaltet die Sortierrichtung eines Feldes weiter und speichert sie."""
@@ -255,7 +272,7 @@ def render_popels_page(
 			return
 		sort_criteria['value'] = new_sortierungen
 		render_sort_controls.refresh()
-		render_records.refresh()
+		refresh_records_list()
 
 	def clear_sorting() -> None:
 		"""Entfernt die gespeicherte Sortierung."""
@@ -268,14 +285,14 @@ def render_popels_page(
 			return
 		sort_criteria['value'] = default_sortierungen
 		render_sort_controls.refresh()
-		render_records.refresh()
+		refresh_records_list()
 
 	def apply_search() -> None:
 		"""Übernimmt den Suchtext und aktualisiert die Popels-Liste."""
 
 		search_query['value'] = str(search_input['element'].value or '').strip()
 		search_dialog.close()
-		render_records.refresh()
+		refresh_records_list()
 
 	def clear_search() -> None:
 		"""Leert den Suchtext und zeigt wieder alle Popels-Datensätze an."""
@@ -284,7 +301,7 @@ def render_popels_page(
 		if search_input['element'] is not None:
 			search_input['element'].value = ''
 		search_dialog.close()
-		render_records.refresh()
+		refresh_records_list()
 
 	def save_text() -> None:
 		"""Speichert den freien Text des aktuell bearbeiteten Datensatzes."""
@@ -306,7 +323,7 @@ def render_popels_page(
 		text_save_button['element'].set_enabled(False)
 		text_dialog.close()
 		ui.notify('Text wurde gespeichert.')
-		render_records.refresh()
+		refresh_records_list()
 
 	def handle_text_change(event: events.ValueChangeEventArguments) -> None:
 		"""Aktiviert das Speichern nur bei einer Änderung des Editor-Inhalts."""
@@ -353,10 +370,10 @@ def render_popels_page(
 			'source': image_data_url(content_type, data),
 		})
 		render_uploaded_images.refresh()
-		render_records.refresh()
+		refresh_records_list()
 		ui.notify(f'{event.file.name} wurde gespeichert.')
 		image_caption_draft['value'] = ''
-		render_records.refresh()
+		refresh_records_list()
 
 	def update_image_caption(attachment_name: str, caption: str | None) -> None:
 		"""Speichert den Kurztext zu einem Bild dauerhaft."""
@@ -424,7 +441,7 @@ def render_popels_page(
 		]
 		selected_image['attachment_name'] = None
 		render_uploaded_images.refresh()
-		render_records.refresh()
+		refresh_records_list()
 		ui.notify('Bild wurde geloescht.')
 
 	def clear_images() -> None:
@@ -444,7 +461,7 @@ def render_popels_page(
 		uploaded_images.clear()
 		selected_image['attachment_name'] = None
 		render_uploaded_images.refresh()
-		render_records.refresh()
+		refresh_records_list()
 		ui.notify('Bilder wurden entfernt.')
 
 	def render_field_value(record: dict[str, Any], field: str, value_classes: str = 'text-slate-700') -> None:
@@ -747,24 +764,40 @@ def render_popels_page(
 
 	with ui.column().classes('w-full gap-3'):
 		ui.element('div').props(f'id={PAGE_TOP_ANCHOR_ID}').classes('h-0')
-		with ui.splitter(value=50, limits=(25, 60)).classes('w-full') as page_splitter:
-			with page_splitter.before:
-				with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
-					mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
-					ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
-					render_active_actions()
+		if show_records_list:
+			with ui.splitter(value=50, limits=(25, 60)).classes('w-full') as page_splitter:
+				with page_splitter.before:
+					with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
+						mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
+						ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
+						render_active_actions()
 
-					form_controls.update(render_popels_form(
-						config,
-						validate_phone,
-						clear_form,
-						save_record,
-						form_control_contexts,
-					))
+						form_controls.update(render_popels_form(
+							config,
+							validate_phone,
+							clear_form,
+							save_record,
+							form_control_contexts,
+						))
 
-			with page_splitter.after:
-				with ui.column().classes('w-full min-w-0 gap-3 pl-3'):
-					render_records()
+				with page_splitter.after:
+					with ui.column().classes('w-full min-w-0 gap-3 pl-3'):
+						render_records()
+		else:
+			with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
+				mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
+				ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
+				render_active_actions()
+
+				form_controls.update(render_popels_form(
+					config,
+					validate_phone,
+					clear_form,
+					save_record,
+					form_control_contexts,
+				))
 
 	if initial_record_id is not None:
 		load_record(initial_record_id, scroll=False)
+	elif default_form_values:
+		apply_default_form_values()

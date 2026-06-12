@@ -27,6 +27,7 @@ field_labels:
   anrede:
     type: string
     text: Anrede
+    beschreibung: Anrede der Person für Anschreiben und formale Kommunikation.
     page:
       steuerelement: select
       optionen: [Herr, Frau, Diverse]
@@ -44,6 +45,7 @@ field_labels:
   titel:
     type: string
     text: Titel
+    beschreibung: Akademischer oder beruflicher Titel, der zusammen mit dem Namen angezeigt werden soll.
     page:
       steuerelement: select
       optionen: [Dr., Prof., Prof. Dr.]
@@ -61,6 +63,7 @@ field_labels:
   name:
     type: string
     text: Name
+    beschreibung: Vollständiger Name der Person. Dieses Feld ist die wichtigste Bezeichnung in Listen und Verknüpfungen.
     page:
       steuerelement: input
       formular: true
@@ -78,6 +81,7 @@ field_labels:
   zusatz:
     type: string
     text: Zusatz
+    beschreibung: Zusätzliche Namens- oder Adressangaben, zum Beispiel Firma, c/o, Abteilung oder besondere Hinweise.
     page:
       steuerelement: textarea
       formular: true
@@ -93,6 +97,7 @@ field_labels:
   adresse:
     type: string
     text: Adresse
+    beschreibung: Straße, Hausnummer und weitere Adresszeilen der Person.
     page:
       steuerelement: textarea
       formular: true
@@ -108,6 +113,7 @@ field_labels:
   ort:
     type: string
     text: Ort
+    beschreibung: Postleitzahl und Wohnort beziehungsweise Zustellort.
     page:
       steuerelement: input
       formular: true
@@ -123,6 +129,7 @@ field_labels:
   geboren:
     type: datum
     text: Geboren
+    beschreibung: Geburtsdatum der Person, falls es für Vereinsverwaltung oder Auswertungen benötigt wird.
     page:
       steuerelement: date
       formular: true
@@ -138,6 +145,7 @@ field_labels:
   email:
     type: liste
     text: E-Mail
+    beschreibung: Eine oder mehrere E-Mail-Adressen. Mehrere Einträge können als Liste gepflegt werden.
     page:
       steuerelement: input
       formular: true
@@ -153,6 +161,7 @@ field_labels:
   www:
     type: liste
     text: www
+    beschreibung: Webseiten oder Profile, die zur Person gehören.
     page:
       steuerelement: input
       formular: true
@@ -168,6 +177,7 @@ field_labels:
   handy:
     type: liste
     text: Handy
+    beschreibung: Eine oder mehrere Mobilnummern der Person.
     page:
       steuerelement: input
       formular: true
@@ -183,6 +193,7 @@ field_labels:
   festnetz:
     type: liste
     text: Festnetz
+    beschreibung: Eine oder mehrere Festnetznummern der Person.
     page:
       steuerelement: input
       formular: true
@@ -198,6 +209,7 @@ field_labels:
   beruf:
     type: string
     text: Beruf
+    beschreibung: Berufliche Tätigkeit oder Fachgebiet der Person.
     page:
       steuerelement: input
       formular: true
@@ -213,6 +225,7 @@ field_labels:
   hobby:
     type: string
     text: Hobby
+    beschreibung: Hobbys oder Interessen, die für den Verein hilfreich sein können.
     page:
       steuerelement: input
       formular: true
@@ -228,6 +241,7 @@ field_labels:
   faehigkeiten:
     type: string
     text: Fähigkeiten
+    beschreibung: Fähigkeiten, Kenntnisse oder Unterstützungsmöglichkeiten, die im Verein nützlich sein können.
     page:
       steuerelement: textarea
       formular: true
@@ -243,6 +257,7 @@ field_labels:
   nichtWochentag:
     type: liste
     text: Nicht an Wochentagen
+    beschreibung: Wochentage, an denen die Person normalerweise nicht verfügbar ist.
     page:
       steuerelement: multiselect
       optionen: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
@@ -259,6 +274,7 @@ field_labels:
   verhalten:
     type: string
     text: Verhalten
+    beschreibung: Kurzer Hinweis zum Auftreten, Umgang oder zu organisatorisch relevanten Besonderheiten.
     page:
       steuerelement: input
       formular: true

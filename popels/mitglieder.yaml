@@ -43,6 +43,7 @@ field_labels:
   name:
     type: string
     text: Name
+    beschreibung: Anzeigename des Mitglieds in der Mitgliederliste. Dieser Name dient als schnelle Orientierung und sollte eindeutig sein.
     page:
       steuerelement: input
       formular: true
@@ -60,6 +61,7 @@ field_labels:
   status:
     type: string
     text: Mitgliedsstatus
+    beschreibung: Aktueller Status der Mitgliedschaft. Aktiv und Passiv bleiben im Bestand, Ehemalig kennzeichnet nicht mehr aktive Mitglieder.
     page:
       steuerelement: select
       optionen: [Aktiv, Passiv, Ehemalig]
@@ -76,6 +78,7 @@ field_labels:
   erstkontakt:
     type: datum
     text: Erstkontakt
+    beschreibung: Datum des ersten Kontakts mit der Person oder dem Haushalt, zum Beispiel Anfrage, Kennenlernen oder Probetraining.
     page:
       steuerelement: date
       formular: true
@@ -91,6 +94,7 @@ field_labels:
   mitgliedSeit:
     type: datum
     text: Mitglied seit
+    beschreibung: Datum, ab dem die Mitgliedschaft offiziell beginnt oder begonnen hat.
     page:
       steuerelement: date
       formular: true
@@ -106,6 +110,7 @@ field_labels:
   artMitglied:
     type: string
     text: Art des Mitglieds
+    beschreibung: Fachliche Einordnung des Kontakts, zum Beispiel Mitglied, Interessent, Vorstand, Sponsor oder ausgetreten.
     page:
       steuerelement: select
       optionen: [Mitglied, Interessent, Gast, Vorstand, Lieferant, Presse, Öffentlichkeit, Einzelarbeit, Fördermitglied, Sponsor, Ausgetreten ]
@@ -122,6 +127,7 @@ field_labels:
   typ:
     type: string
     text: Typ
+    beschreibung: Beitrags- und Verwaltungsart des Datensatzes. Haushalt kann mehrere Personen oder Hunde bündeln, Person steht für ein Einzelmitglied.
     page:
       steuerelement: select
       optionen: [Haushalt, Person, Fördermitglied, Sponsor]
@@ -138,6 +144,7 @@ field_labels:
   persoenlich:
     type: liste
     text: Persönlich
+    beschreibung: Verknüpfte persönliche Datensätze zu diesem Mitglied. Ein Klick auf einen Chip öffnet den zugehörigen Persönlich-Datensatz.
     page:
       steuerelement: input_chips
       formular: true
@@ -153,6 +160,7 @@ field_labels:
   hunde:
     type: liste
     text: Hunde
+    beschreibung: Hunde, die diesem Mitglied zugeordnet sind. Die Anzahl der Hunde kann für die Beitragsberechnung verwendet werden.
     page:
       steuerelement: input_chips
       formular: true
@@ -168,6 +176,7 @@ field_labels:
   preis:
     type: string
     text: Preis
+    beschreibung: Automatisch berechneter Mitgliedspreis anhand der zugeordneten Hunde und des Preisstamms. Das Feld wird nicht manuell bearbeitet.
     page:
       steuerelement: input
       formular: true
@@ -184,6 +193,7 @@ field_labels:
   unterlagenAusgehaendigt:
     type: datum
     text: Unterlagen ausgehändigt
+    beschreibung: Datum, an dem die Mitgliedsunterlagen an das Mitglied ausgegeben oder versendet wurden.
     page:
       steuerelement: date
       formular: true
@@ -199,6 +209,7 @@ field_labels:
   unterlagenZurueck:
     type: datum
     text: Unterlagen zurück
+    beschreibung: Datum, an dem die ausgefüllten Mitgliedsunterlagen zurückgegeben wurden.
     page:
       steuerelement: date
       formular: true
@@ -214,6 +225,7 @@ field_labels:
   sepaZurueck:
     type: datum
     text: SEPA zurück
+    beschreibung: Datum, an dem das unterschriebene SEPA-Mandat zurückgegeben wurde.
     page:
       steuerelement: date
       formular: true
