@@ -209,7 +209,7 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
-# VereinCani local configuration and runtime storage
+# VereinGUI local configuration and runtime storage
 config.ini
 .nicegui/
 

@@ -98,7 +98,7 @@ class FreeInputChips:
 		with ui.column().classes('w-full gap-1'):
 			with ui.row().classes('w-full gap-1 items-start'):
 				self._input = ui.input(label).props(
-					f'dense autocomplete="new-password" name="vereincani_{autofill_key}_frei" '
+					f'dense autocomplete="new-password" name="vereingui_{autofill_key}_frei" '
 					'autocorrect="off" autocapitalize="off" spellcheck="false"'
 				).classes('flex-1')
 				self._add_button = ui.button(

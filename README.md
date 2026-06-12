@@ -1,4 +1,4 @@
-# VereinCani
+# VereinGUI
 
 Vereinssoftware. Erstellt mit NiceGUI und CouchDB.
 

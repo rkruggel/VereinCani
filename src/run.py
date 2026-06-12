@@ -36,8 +36,8 @@ def render_start_page() -> None:
 	def render_header() -> None:
 		with ui.row().classes('w-full items-center justify-between gap-5 px-6 py-3 bg-white border-b border-slate-200 shadow-sm max-md:flex-col max-md:items-start max-md:px-4'):
 			with ui.column().classes('gap-0'):
-				ui.label('VereinCani').classes('text-2xl font-bold text-slate-900')
-				ui.label('Für und mit dem Hund').classes('text-xs text-slate-500')
+				ui.label('VereinGUI').classes('text-2xl font-bold text-slate-900')
+				ui.label('Programm zur dynamischen Vereinsverwaltung').classes('text-xs text-slate-500')
 			render_menu(selected_page, switch_page)
 
 	with ui.column().classes('w-full h-screen bg-slate-50 gap-0'):
@@ -47,7 +47,7 @@ def render_start_page() -> None:
 			with ui.column().classes('w-72 max-md:w-full bg-white border-r border-slate-200 px-4 py-6 gap-4'):
 				with ui.column().classes('gap-1 px-2'):
 					ui.label('Programmbereiche').classes('text-xs uppercase tracking-[0.25em] text-slate-500')
-					ui.label('VereinCani').classes('text-xl font-semibold text-slate-900')
+					ui.label('per-cani').classes('text-xl font-semibold text-slate-900')
 					ui.label('Für und mit dem Hund').classes('text-sm text-slate-500')
 				render_login_panel(on_auth_change=handle_auth_change)
 

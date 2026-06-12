@@ -1,4 +1,4 @@
-"""Beitragsbereich der VereinCani-Anwendung."""
+"""Beitragsbereich der VereinGUI-Anwendung."""
 
 from nicegui import ui
 
@@ -18,7 +18,7 @@ def render_beitraege_page() -> None:
 		with ui.row().classes('w-full gap-4 items-stretch max-md:flex-col'):
 			with ui.card().classes('flex-1 min-w-[220px] p-5 rounded-2xl shadow-sm'):
 				ui.label('Programmdaten').classes('text-sm uppercase tracking-wide text-slate-500')
-				ui.label('VereinCani').classes('text-2xl font-bold')
+				ui.label('VereinGUI').classes('text-2xl font-bold')
 				ui.label('Beitragsverwaltung in Vorbereitung').classes('text-sm text-slate-600')
 			with ui.card().classes('flex-1 min-w-[220px] p-5 rounded-2xl shadow-sm'):
 				ui.label('Aktive Seite').classes('text-sm uppercase tracking-wide text-slate-500')

@@ -1,12 +1,12 @@
 """
 Projekt:
-  VereinCani - Eine dynamische Vereinsverwaltung.
+	VereinGUI - Eine dynamische Vereinsverwaltung.
 
 Modul:
   main.py
 
 Beschreibung:
-  Startpunkt und Konfiguration der VereinCani-Anwendung.
+	Startpunkt und Konfiguration der VereinGUI-Anwendung.
 
 Autor: Roland Kruggel
 Version: 0.0.1
@@ -55,7 +55,7 @@ def register_request_time_logging() -> None:
 def main() -> None:
 	config = configparser.ConfigParser()
 	config.read(CONFIG_PATH)
-	title = config.get('allgemein', 'title', fallback='VereinCani')
+	title = config.get('allgemein', 'title', fallback='VereinGUI')
 	host = config.get('allgemein', 'host', fallback='0.0.0.0')
 	port = config.getint('allgemein', 'port', fallback=9000)
 	storage_secret = config.get('allgemein', 'storage_secret', fallback='aMqMoA7')
