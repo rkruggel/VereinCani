@@ -9,6 +9,9 @@ from src.pages.preise.preisstamm import PREISSTAMM
 
 
 class Datumsdifferenz(TypedDict):
+    """
+    Beschreibt eine Datumsdifferenz in Jahren, Monaten und Tagen.
+    """
     jahre: int
     monate: int
     tage: int
@@ -17,6 +20,9 @@ class Datumsdifferenz(TypedDict):
 
 
 def _to_date(value: date | datetime | str) -> date:
+    """
+    Wandelt Datumswerte in Date-Objekte um.
+    """
     if isinstance(value, datetime):
         return value.date()
 
@@ -33,6 +39,9 @@ def _datumsdifferenz(
     von: date | datetime | str,
     bis: date | datetime | str,
 ) -> Datumsdifferenz:
+    """
+    Berechnet die Differenz zwischen zwei Datumswerten.
+    """
     start = _to_date(von)
     ende = _to_date(bis)
 
@@ -67,6 +76,9 @@ def _werte_ausdruck_aus(
     namen: dict[str, Any],
     funktionen: dict[str, Any],
 ) -> Any:
+    """
+    Ersetzt Feldnamen in einer Formel durch aktuelle Werte.
+    """
     if isinstance(ausdruck, ast.Name):
         if ausdruck.id not in namen:
             raise ValueError(f"Unbekanntes Feld in Formel: {ausdruck.id}")
@@ -92,8 +104,9 @@ def _werte_ausdruck_aus(
 
 
 def berechne(formel: str, werte: dict[str, Any], heute: date | None = None) -> Any:
-    """Wertet eine eingeschränkte Formel aus der YAML-Konfiguration aus."""
-
+    """
+    Wertet eine eingeschränkte Formel aus der YAML-Konfiguration aus.
+    """
     namen = {**werte, "today": heute or date.today()}
     funktionen = {
         "datumDiff": datumDiff,
@@ -112,6 +125,9 @@ def berechne(formel: str, werte: dict[str, Any], heute: date | None = None) -> A
 
 
 def datumDiff(von, bis):
+    """
+    Berechnet eine formatierte Datumsdifferenz.
+    """
     if von in (None, "") or bis in (None, ""):
         return ""
 
@@ -119,6 +135,9 @@ def datumDiff(von, bis):
 
 
 def intDiff(von, bis):
+    """
+    Berechnet die Differenz zweier Ganzzahlwerte.
+    """
     if von in (None, "") or bis in (None, ""):
         return ""
 
@@ -126,6 +145,9 @@ def intDiff(von, bis):
 
 
 def gewichtOk(gewicht_soll, gewicht):
+    """
+    Prüft, ob ein Gewicht innerhalb der erlaubten Grenze liegt.
+    """
     diff = intDiff(gewicht_soll, gewicht)
     if diff == "":
         return ""
@@ -134,6 +156,9 @@ def gewichtOk(gewicht_soll, gewicht):
     return erg
 
 def preisNachHunden(hunde):
+    """
+    Liest den Preis passend zur Hundeanzahl aus dem Preisstamm.
+    """
     if not hunde:
         return ""
 
@@ -144,6 +169,9 @@ def preisNachHunden(hunde):
 
 
 def kassenDiff(einnahme, ausgabe, einnahmen_c24, ausgaben_c24):
+    """
+    Berechnet die Differenz zwischen Soll- und Ist-Kassenbestand.
+    """
     result = (
         _to_decimal(einnahme)
         - _to_decimal(ausgabe)
@@ -154,6 +182,9 @@ def kassenDiff(einnahme, ausgabe, einnahmen_c24, ausgaben_c24):
 
 
 def _to_decimal(value):
+    """
+    Wandelt Geldwerte robust in Decimal um.
+    """
     text = str(value or "").strip().replace("€", "").replace(" ", "").replace(",", ".")
     if not text:
         return Decimal("0")

@@ -1,9 +1,10 @@
-"""Hilfsfunktionen für eingebettete Bankdaten."""
-
-
+"""
+Hilfsfunktionen für eingebettete Bankdaten.
+"""
 def embedded_bankdata_document(record: dict) -> dict:
-	"""Bereitet Bankdaten für die Einbettung im Mitglied vor."""
-
+	"""
+	Bereitet Bankdaten für die Einbettung im Mitglied vor.
+	"""
 	result = {
 		'kreditinstitut': str(record.get('kreditinstitut') or '').strip(),
 		'iban': str(record.get('iban') or '').strip(),
@@ -17,8 +18,9 @@ def embedded_bankdata_document(record: dict) -> dict:
 
 
 def format_bankdaten_summary(record: dict) -> str:
-	"""Formatiert Bankdaten für die Mitgliederliste."""
-
+	"""
+	Formatiert Bankdaten für die Mitgliederliste.
+	"""
 	parts = [
 		str(record.get('kreditinstitut') or '').strip(),
 		str(record.get('iban') or '').strip(),

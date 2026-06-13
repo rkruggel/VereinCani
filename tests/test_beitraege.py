@@ -1,5 +1,6 @@
-"""Tests für die Beitragsberechnung."""
-
+"""
+Tests für die Beitragsberechnung.
+"""
 import unittest
 
 from src.pages.beitraege.start import (
@@ -10,10 +11,19 @@ from src.pages.beitraege.start import (
 
 
 class FakePreisstamm:
+	"""
+	Stellt einen minimalen Preisstamm für Beitragstests bereit.
+	"""
 	def __init__(self) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self.requests = []
 
 	def get_price(self, dog_count: int) -> str:
+		"""
+		Liefert den Testpreis für eine Hundeanzahl.
+		"""
 		self.requests.append(dog_count)
 		return {
 			1: '10.00',
@@ -22,7 +32,13 @@ class FakePreisstamm:
 
 
 class BeitraegeTest(unittest.TestCase):
+	"""
+	Bündelt Tests für Beitrags- und Kursberechnungen.
+	"""
 	def test_membership_rows_use_all_club_members_with_yes_value(self) -> None:
+		"""
+		Prüft den Testfall: membership rows use all club members with yes value.
+		"""
 		preisstamm = FakePreisstamm()
 		members = [
 			{
@@ -57,6 +73,9 @@ class BeitraegeTest(unittest.TestCase):
 		self.assertEqual(preisstamm.requests, [2, 1])
 
 	def test_course_rows_use_course_prices_from_prestamm(self) -> None:
+		"""
+		Prüft den Testfall: course rows use course prices from prestamm.
+		"""
 		rows = calculate_course_rows(
 			[
 				{
@@ -82,6 +101,9 @@ class BeitraegeTest(unittest.TestCase):
 		])
 
 	def test_sum_amounts_ignores_empty_values(self) -> None:
+		"""
+		Prüft den Testfall: sum amounts ignores empty values.
+		"""
 		self.assertEqual(sum_amounts(['10.00', '', '2,50']), '12.50')
 
 

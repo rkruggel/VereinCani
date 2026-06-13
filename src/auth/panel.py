@@ -1,5 +1,6 @@
-"""NiceGUI-Anmeldebereich für Registrierung, Anmeldung und Abmeldung."""
-
+"""
+NiceGUI-Anmeldebereich für Registrierung, Anmeldung und Abmeldung.
+"""
 import re
 from typing import Any, Callable
 
@@ -13,9 +14,15 @@ EMAIL_PATTERN = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 
 def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> None:
+	"""
+	Rendert den Anmeldebereich mit Login und Registrierung.
+	"""
 	login_controls: dict[str, Any] = {}
 
 	def login() -> None:
+		"""
+		Meldet einen Benutzer mit E-Mail und Kennung an.
+		"""
 		email = str(login_controls['email'].value or '').strip()
 		kennung = str(login_controls['kennung'].value or '')
 		if not is_valid_email(email) or not kennung:
@@ -41,6 +48,9 @@ def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> 
 		ui.notify(f'Willkommen, {benutzer.name}.')
 
 	def register(name_control: Any, email_control: Any, kennung_control: Any) -> None:
+		"""
+		Registriert einen neuen Benutzer und meldet ihn an.
+		"""
 		name = str(name_control.value or '').strip()
 		email = str(email_control.value or '').strip()
 		kennung = str(kennung_control.value or '')
@@ -73,6 +83,9 @@ def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> 
 		ui.notify('Zugang wurde erstellt.')
 
 	def logout() -> None:
+		"""
+		Meldet den aktuellen Benutzer ab.
+		"""
 		app.storage.user.pop(AUTH_STORAGE_KEY, None)
 		render_authentication.refresh()
 		if on_auth_change is not None:
@@ -81,6 +94,9 @@ def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> 
 
 	@ui.refreshable
 	def render_authentication() -> None:
+		"""
+		Rendert den passenden Authentifizierungszustand.
+		"""
 		benutzer = app.storage.user.get(AUTH_STORAGE_KEY)
 		if benutzer:
 			with ui.card().classes('w-full p-4 gap-2 rounded-xl shadow-sm border border-slate-200'):
@@ -123,4 +139,7 @@ def render_login_panel(on_auth_change: Callable[[bool], None] | None = None) -> 
 
 
 def is_valid_email(email: str) -> bool:
+	"""
+	Prüft die syntaktische Form einer E-Mail-Adresse.
+	"""
 	return EMAIL_PATTERN.fullmatch(email.strip()) is not None

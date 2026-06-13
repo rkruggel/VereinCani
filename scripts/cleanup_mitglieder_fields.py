@@ -1,13 +1,15 @@
-"""Einmalige Bereinigung der Mitglieder-Dokumente in CouchDB."""
-
+"""
+Einmalige Bereinigung der Mitglieder-Dokumente in CouchDB.
+"""
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.repository import CouchPopelsDatabase
 
 
 def main() -> None:
-	"""Bereinigt alle nicht zur Konfiguration gehörenden Felder aus Mitgliederdokumenten."""
-
+	"""
+	Bereinigt alle nicht zur Konfiguration gehörenden Felder aus Mitgliederdokumenten.
+	"""
 	config = load_popels_config('mitglieder.yaml')
 	model = create_popels_model(config)
 	database = CouchPopelsDatabase(config, model)

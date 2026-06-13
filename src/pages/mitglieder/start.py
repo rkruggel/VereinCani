@@ -1,5 +1,6 @@
-"""Startpunkt der Mitgliederverwaltung."""
-
+"""
+Startpunkt der Mitgliederverwaltung.
+"""
 from typing import Any
 
 from nicegui import ui
@@ -31,8 +32,9 @@ MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_mitglieder_page() -> None:
-	"""Zeigt Mitglieder, persönliche Daten, Hunde und Bankdaten in Registerkarten."""
-
+	"""
+	Zeigt Mitglieder, persönliche Daten, Hunde und Bankdaten in Registerkarten.
+	"""
 	selected_member = {'id': None}
 	selected_personal = {'id': None}
 	selected_dog = {'id': None}
@@ -67,23 +69,26 @@ def render_mitglieder_page() -> None:
 		bank_tab.set_enabled(False)
 
 	def select_member(record_id: str | None) -> None:
-		"""Merkt das aktuell gewählte Mitglied und aktiviert die Bankdaten."""
-
+		"""
+		Merkt das aktuell gewählte Mitglied und aktiviert die Bankdaten.
+		"""
 		selected_member['id'] = record_id
 		bank_tab.set_enabled(record_id is not None)
 		render_selected_bankdata.refresh()
 
 	def select_personal(record_id: str) -> None:
-		"""Wählt zugeordnete persönliche Daten und öffnet deren Registerkarte."""
-
+		"""
+		Wählt zugeordnete persönliche Daten und öffnet deren Registerkarte.
+		"""
 		selected_personal['id'] = record_id
 		personal_tab.set_enabled(True)
 		render_selected_personal.refresh()
 		tabs.set_value(personal_tab)
 
 	def select_dog(record_id: str) -> None:
-		"""Wählt einen zugeordneten Hund und öffnet dessen Registerkarte."""
-
+		"""
+		Wählt einen zugeordneten Hund und öffnet dessen Registerkarte.
+		"""
 		selected_dog['id'] = record_id
 		dog_tab.set_enabled(True)
 		render_selected_dog.refresh()
@@ -114,8 +119,9 @@ def render_mitglieder_page() -> None:
 		with ui.tab_panel(personal_tab).classes('px-0'):
 			@ui.refreshable
 			def render_selected_personal() -> None:
-				"""Zeigt den Bereich Persönlich mit ausgewähltem Datensatz."""
-
+				"""
+				Zeigt den Bereich Persönlich mit ausgewähltem Datensatz.
+				"""
 				record_id = selected_personal['id']
 				if record_id is None:
 					ui.label('Nichts unter Persönlich ausgewählt.').classes('text-sm text-slate-500')
@@ -132,8 +138,9 @@ def render_mitglieder_page() -> None:
 		with ui.tab_panel(dog_tab).classes('px-0'):
 			@ui.refreshable
 			def render_selected_dog() -> None:
-				"""Zeigt die gemeinsame Hundeverwaltung mit ausgewähltem Datensatz."""
-
+				"""
+				Zeigt die gemeinsame Hundeverwaltung mit ausgewähltem Datensatz.
+				"""
 				record_id = selected_dog['id']
 				if record_id is None:
 					ui.label('Kein Hund ausgewählt.').classes('text-sm text-slate-500')
@@ -155,8 +162,9 @@ def render_mitglieder_page() -> None:
 		with ui.tab_panel(bank_tab).classes('px-0'):
 			@ui.refreshable
 			def render_selected_bankdata() -> None:
-				"""Bearbeitet die eingebetteten Bankdaten des ausgewählten Mitglieds."""
-
+				"""
+				Bearbeitet die eingebetteten Bankdaten des ausgewählten Mitglieds.
+				"""
 				record_id = selected_member['id']
 				if record_id is None:
 					ui.label('Kein Mitglied ausgewählt.').classes('text-sm text-slate-500')
@@ -172,8 +180,9 @@ def render_mitglieder_page() -> None:
 
 
 def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict[str, str]:
-	"""Erzeugt eindeutige Chip-Beschriftungen aus den Namen."""
-
+	"""
+	Erzeugt eindeutige Chip-Beschriftungen aus den Namen.
+	"""
 	options = {}
 	used_labels: set[str] = set()
 	for record_id, record in personal_records.items():
@@ -186,8 +195,9 @@ def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict
 
 
 def create_dog_options(dog_records: dict[str, dict[str, Any]]) -> dict[str, str]:
-	"""Erzeugt eindeutige Chip-Beschriftungen aus den Hundenamen."""
-
+	"""
+	Erzeugt eindeutige Chip-Beschriftungen aus den Hundenamen.
+	"""
 	options = {}
 	used_labels: set[str] = set()
 	for record_id, record in dog_records.items():
@@ -200,8 +210,9 @@ def create_dog_options(dog_records: dict[str, dict[str, Any]]) -> dict[str, str]
 
 
 def load_course_options() -> list[dict[str, str]]:
-	"""Lädt Kursdaten aus dem Preisstamm für die Mitglieder-Kursbesuche."""
-
+	"""
+	Lädt Kursdaten aus dem Preisstamm für die Mitglieder-Kursbesuche.
+	"""
 	try:
 		courses = PREISSTAMM.get_courses()
 	except Exception as error:
@@ -219,8 +230,9 @@ def load_course_options() -> list[dict[str, str]]:
 
 
 def enrich_members_with_bankdata(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-	"""Stellt sicher, dass Bankdaten in der Mitgliederliste als Objekt vorliegen."""
-
+	"""
+	Stellt sicher, dass Bankdaten in der Mitgliederliste als Objekt vorliegen.
+	"""
 	return [
 		{
 			**record,
@@ -231,8 +243,9 @@ def enrich_members_with_bankdata(records: list[dict[str, Any]]) -> list[dict[str
 
 
 def render_embedded_bankdata_form(member_id: str, member_record: dict[str, Any]) -> None:
-	"""Rendert ein Formular für Bankdaten direkt im Mitglieder-Dokument."""
-
+	"""
+	Rendert ein Formular für Bankdaten direkt im Mitglieder-Dokument.
+	"""
 	bankdata = member_record.get('bankdaten') if isinstance(member_record.get('bankdaten'), dict) else {}
 	with ui.card().classes('w-[800px] max-w-full p-4 gap-4 rounded-lg shadow-sm border border-slate-200'):
 		ui.label('Bankdaten').classes('text-lg font-semibold text-slate-900')
@@ -251,11 +264,17 @@ def render_embedded_bankdata_form(member_id: str, member_record: dict[str, Any])
 		).props('type=date dense autocomplete="off"').classes('w-full')
 
 		def format_iban_input(_event: Any) -> None:
+			"""
+			Formatiert eine IBAN-Eingabe für die Bankdatenmaske.
+			"""
 			formatted = format_iban(iban.value)
 			if iban.value != formatted:
 				iban.value = formatted
 
 		def save_bankdata() -> None:
+			"""
+			Speichert eingebettete Bankdaten im ausgewählten Mitglied.
+			"""
 			bankdata_record = embedded_bankdata_document({
 				'kreditinstitut': bank_name.value,
 				'iban': format_iban(iban.value),

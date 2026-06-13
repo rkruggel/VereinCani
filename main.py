@@ -13,7 +13,6 @@ Version: 0.0.1
 Stand: 06.06.2026
 Lizens: MIT
 """
-
 import configparser
 from pathlib import Path
 from time import perf_counter
@@ -28,8 +27,9 @@ REQUEST_TIME_LOGGING_REGISTERED = False
 
 
 def register_request_time_logging() -> None:
-	"""Gibt nach jeder HTTP-Anfrage die verstrichene Zeit aus."""
-
+	"""
+	Gibt nach jeder HTTP-Anfrage die verstrichene Zeit aus.
+	"""
 	global REQUEST_TIME_LOGGING_REGISTERED
 	if REQUEST_TIME_LOGGING_REGISTERED:
 		return
@@ -37,6 +37,9 @@ def register_request_time_logging() -> None:
 
 	@app.middleware('http')
 	async def log_request_time(request, call_next):
+		"""
+		Protokolliert die Laufzeit einer HTTP-Anfrage.
+		"""
 		start = perf_counter()
 		status = 'Fehler'
 		try:
@@ -53,6 +56,9 @@ def register_request_time_logging() -> None:
 
 
 def main() -> None:
+	"""
+	Startet die NiceGUI-Anwendung.
+	"""
 	config = configparser.ConfigParser()
 	config.read(CONFIG_PATH)
 	title = config.get('allgemein', 'title', fallback='VereinGUI')

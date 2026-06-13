@@ -1,5 +1,6 @@
-"""NiceGUI-Hauptseite mit Navigation und geschützten Programmbereichen."""
-
+"""
+NiceGUI-Hauptseite mit Navigation und geschützten Programmbereichen.
+"""
 from typing import Any
 
 from nicegui import events, ui
@@ -9,15 +10,24 @@ from src.menu import can_access_page, get_page, render_menu
 
 
 def render_start_page(initial_page_key: str = 'dashboard') -> None:
+	"""
+	Rendert die Startseite mit Navigation und Inhalt.
+	"""
 	selected_page = {'key': initial_page_key if get_page(initial_page_key) is not None else 'dashboard'}
 
 	def key_from_hash(value: Any) -> str:
+		"""
+		Ermittelt den Menüschlüssel aus dem URL-Hash.
+		"""
 		text = str(value or '').strip()
 		if isinstance(value, list) and value:
 			text = str(value[0] or '').strip()
 		return text.removeprefix('#').strip('/') or 'dashboard'
 
 	def switch_page(page_key: str, *, update_hash: bool = True) -> None:
+		"""
+		Wechselt den aktiven Programmbereich.
+		"""
 		if not can_access_page(page_key, is_authenticated()):
 			ui.notify('Bitte zuerst anmelden.', type='warning')
 			return
@@ -28,11 +38,17 @@ def render_start_page(initial_page_key: str = 'dashboard') -> None:
 		render_content.refresh()
 
 	def handle_hash_change(event: events.GenericEventArguments) -> None:
+		"""
+		Reagiert auf Änderungen des URL-Hashs.
+		"""
 		page_key = key_from_hash(event.args)
 		if page_key != selected_page['key']:
 			switch_page(page_key, update_hash=False)
 
 	def handle_auth_change(authenticated: bool) -> None:
+		"""
+		Aktualisiert die Ansicht nach einer Authentifizierungsänderung.
+		"""
 		if not can_access_page(selected_page['key'], authenticated):
 			selected_page['key'] = 'dashboard'
 			ui.run_javascript('window.history.replaceState(null, "", "#dashboard");')
@@ -41,6 +57,9 @@ def render_start_page(initial_page_key: str = 'dashboard') -> None:
 
 	@ui.refreshable
 	def render_content() -> None:
+		"""
+		Rendert den Inhalt des aktuell gewählten Programmbereichs.
+		"""
 		if not can_access_page(selected_page['key'], is_authenticated()):
 			selected_page['key'] = 'dashboard'
 			ui.run_javascript('window.history.replaceState(null, "", "#dashboard");')
@@ -51,6 +70,9 @@ def render_start_page(initial_page_key: str = 'dashboard') -> None:
 
 	@ui.refreshable
 	def render_header() -> None:
+		"""
+		Rendert Kopfbereich und Navigation der Anwendung.
+		"""
 		with ui.row().classes('w-full items-center justify-between gap-5 px-6 py-3 bg-white border-b border-slate-200 shadow-sm max-md:flex-col max-md:items-start max-md:px-4'):
 			with ui.column().classes('gap-0'):
 				ui.label('VereinGUI').classes('text-2xl font-bold text-slate-900')

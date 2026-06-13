@@ -1,5 +1,6 @@
-"""NiceGUI-Seite zur Pflege, Suche und Anzeige konfigurierbarer Popels."""
-
+"""
+NiceGUI-Seite zur Pflege, Suche und Anzeige konfigurierbarer Popels.
+"""
 from functools import partial
 from collections.abc import Callable
 from typing import Any
@@ -37,8 +38,9 @@ def render_popels_page(
 	record_enricher: Callable[[list[dict[str, Any]]], list[dict[str, Any]]] | None = None,
 	on_after_save: Callable[[dict[str, Any]], None] | None = None,
 ) -> None:
-	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
-
+	"""
+	Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer.
+	"""
 	benutzer = get_authenticated_user()
 	if benutzer is None:
 		ui.notify('Bitte zuerst anmelden.', type='warning')
@@ -82,8 +84,9 @@ def render_popels_page(
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
 	def rename_editable_option(field: str, old_value: str, new_value: str) -> None:
-		"""Übernimmt umbenannte Select-Werte in vorhandene Datensätze."""
-
+		"""
+		Übernimmt umbenannte Select-Werte in vorhandene Datensätze.
+		"""
 		old_text = str(old_value or '').strip()
 		new_text = str(new_value or '').strip()
 		if not old_text or not new_text or old_text == new_text:
@@ -93,8 +96,9 @@ def render_popels_page(
 				POPELS_DB.update_fields(record['id'], {field: new_text})
 
 	def editable_select_context(field: str) -> dict[str, Any]:
-		"""Liefert DB-gebundene Steuerdaten für editierbare Select-Felder."""
-
+		"""
+		Liefert DB-gebundene Steuerdaten für editierbare Select-Felder.
+		"""
 		try:
 			options = settings.load_editable_options(field)
 		except Exception as error:
@@ -112,8 +116,9 @@ def render_popels_page(
 		}
 
 	def merged_form_control_contexts() -> dict[str, dict[str, Any]]:
-		"""Ergänzt fehlende DB-Kontexte für alle editierbaren Selects."""
-
+		"""
+		Ergänzt fehlende DB-Kontexte für alle editierbaren Selects.
+		"""
 		contexts = {
 			field: dict(context)
 			for field, context in (form_control_contexts or {}).items()
@@ -126,11 +131,12 @@ def render_popels_page(
 			contexts[field] = default_context
 		return contexts
 
-	effective_form_control_contexts = merged_form_control_contexts()
+	effective_form_control_contexts = merged_form_control_contexts()				# das test
 
 	def collect_form_data() -> dict[str, Any]:
-		"""Liest die aktuellen Werte aller Steuerelemente des Popels-Formulars."""
-
+		"""
+		Liest die aktuellen Werte aller Steuerelemente des Popels-Formulars.
+		"""
 		return {
 			field: form_controls[field].value
 			for field in FORM_FIELDS
@@ -138,16 +144,18 @@ def render_popels_page(
 		}
 
 	def apply_default_form_values() -> None:
-		"""Setzt konfigurierte Startwerte für neue Datensätze."""
-
+		"""
+		Setzt konfigurierte Startwerte für neue Datensätze.
+		"""
 		for field, value in default_form_values.items():
 			if field in form_controls:
 				form_controls[field].value = value
 		recalculate_form(config, form_controls)
 
 	def clear_form() -> None:
-		"""Setzt Formular, Text, Bilder und aktive Datensatzauswahl zurück."""
-
+		"""
+		Setzt Formular, Text, Bilder und aktive Datensatzauswahl zurück.
+		"""
 		selected_id['value'] = None
 		if on_selection_change is not None:
 			on_selection_change(None)
@@ -171,14 +179,16 @@ def render_popels_page(
 		render_active_actions.refresh()
 
 	def refresh_records_list() -> None:
-		"""Aktualisiert die Kartenliste nur, wenn sie sichtbar ist."""
-
+		"""
+		Aktualisiert die Kartenliste nur, wenn sie sichtbar ist.
+		"""
 		if show_records_list:
 			render_records.refresh()
 
 	def scroll_to_page_top() -> None:
-		"""Scrollt den Arbeitsbereich zum Anfang des Popels-Formulars."""
-
+		"""
+		Scrollt den Arbeitsbereich zum Anfang des Popels-Formulars.
+		"""
 		ui.run_javascript(
 			f'''
 				const appTop = document.getElementById("app-page-top");
@@ -190,8 +200,9 @@ def render_popels_page(
 		)
 
 	def load_record(record_id: str, *, scroll: bool = True) -> None:
-		"""Lädt einen Datensatz samt Text und Bildern in den Bearbeitungszustand."""
-
+		"""
+		Lädt einen Datensatz samt Text und Bildern in den Bearbeitungszustand.
+		"""
 		if scroll:
 			scroll_to_page_top()
 		try:
@@ -233,8 +244,9 @@ def render_popels_page(
 			mode_label['element'].set_text(f'{config.singular} bearbeiten: {record_heading(record)}')
 
 	def save_record() -> None:
-		"""Validiert und erstellt beziehungsweise aktualisiert einen Datensatz."""
-
+		"""
+		Validiert und erstellt beziehungsweise aktualisiert einen Datensatz.
+		"""
 		data = collect_form_data()
 		missing_fields = [
 			POPELS_FIELDS[field]['text']
@@ -288,8 +300,9 @@ def render_popels_page(
 		refresh_records_list()
 
 	def request_delete_record(record_id: str, name: str) -> None:
-		"""Bereitet den Bestätigungsdialog für das Löschen eines Datensatzes vor."""
-
+		"""
+		Bereitet den Bestätigungsdialog für das Löschen eines Datensatzes vor.
+		"""
 		scroll_to_page_top()
 		pending_delete['record_id'] = record_id
 		pending_delete['name'] = name
@@ -297,8 +310,9 @@ def render_popels_page(
 		delete_dialog.open()
 
 	def delete_record() -> None:
-		"""Löscht den im Bestätigungsdialog vorgemerkten Datensatz."""
-
+		"""
+		Löscht den im Bestätigungsdialog vorgemerkten Datensatz.
+		"""
 		record_id = pending_delete['record_id']
 		if record_id is None:
 			delete_dialog.close()
@@ -320,8 +334,9 @@ def render_popels_page(
 			ui.notify(f'{config.singular} nicht gefunden', type='warning')
 
 	def set_field_visibility(field: str, visible: bool | None) -> None:
-		"""Ändert und speichert die Sichtbarkeit eines Feldes in der Popels-Liste."""
-
+		"""
+		Ändert und speichert die Sichtbarkeit eines Feldes in der Popels-Liste.
+		"""
 		if visible:
 			visible_fields.add(field)
 		else:
@@ -334,8 +349,9 @@ def render_popels_page(
 		refresh_records_list()
 
 	def cycle_sort_field(field: str) -> None:
-		"""Schaltet die Sortierrichtung eines Feldes weiter und speichert sie."""
-
+		"""
+		Schaltet die Sortierrichtung eines Feldes weiter und speichert sie.
+		"""
 		new_sortierungen = cycle_sort_criterion(sort_criteria['value'], field)
 		try:
 			LISTEN_EINSTELLUNGEN.save_sortierungen(benutzer_name, new_sortierungen)
@@ -347,8 +363,9 @@ def render_popels_page(
 		refresh_records_list()
 
 	def clear_sorting() -> None:
-		"""Entfernt die gespeicherte Sortierung."""
-
+		"""
+		Entfernt die gespeicherte Sortierung.
+		"""
 		default_sortierungen: list[str] = []
 		try:
 			LISTEN_EINSTELLUNGEN.save_sortierungen(benutzer_name, default_sortierungen)
@@ -360,15 +377,17 @@ def render_popels_page(
 		refresh_records_list()
 
 	def apply_search() -> None:
-		"""Übernimmt den Suchtext und aktualisiert die Popels-Liste."""
-
+		"""
+		Übernimmt den Suchtext und aktualisiert die Popels-Liste.
+		"""
 		search_query['value'] = str(search_input['element'].value or '').strip()
 		search_dialog.close()
 		refresh_records_list()
 
 	def clear_search() -> None:
-		"""Leert den Suchtext und zeigt wieder alle Popels-Datensätze an."""
-
+		"""
+		Leert den Suchtext und zeigt wieder alle Popels-Datensätze an.
+		"""
 		search_query['value'] = ''
 		if search_input['element'] is not None:
 			search_input['element'].value = ''
@@ -376,8 +395,9 @@ def render_popels_page(
 		refresh_records_list()
 
 	def save_text() -> None:
-		"""Speichert den freien Text des aktuell bearbeiteten Datensatzes."""
-
+		"""
+		Speichert den freien Text des aktuell bearbeiteten Datensatzes.
+		"""
 		record_id = selected_id['value']
 		value = str(text_editor['element'].value or '')
 		if record_id is None:
@@ -402,21 +422,24 @@ def render_popels_page(
 		refresh_records_list()
 
 	def handle_text_change(event: events.ValueChangeEventArguments) -> None:
-		"""Aktiviert das Speichern nur bei einer Änderung des Editor-Inhalts."""
-
+		"""
+		Aktiviert das Speichern nur bei einer Änderung des Editor-Inhalts.
+		"""
 		changed = str(event.value or '') != text_value['value']
 		text_save_button['element'].set_enabled(changed)
 
 	def cancel_text_editing() -> None:
-		"""Verwirft ungespeicherte Editor-Änderungen und schließt den Dialog."""
-
+		"""
+		Verwirft ungespeicherte Editor-Änderungen und schließt den Dialog.
+		"""
 		text_editor['element'].value = text_value['value']
 		text_save_button['element'].set_enabled(False)
 		text_dialog.close()
 
 	async def handle_image_upload(event: events.UploadEventArguments) -> None:
-		"""Prüft und speichert ein hochgeladenes Bild für den aktiven Datensatz."""
-
+		"""
+		Prüft und speichert ein hochgeladenes Bild für den aktiven Datensatz.
+		"""
 		record_id = selected_id['value']
 		if record_id is None:
 			ui.notify(f'Bitte zuerst {config.singular} auswaehlen.', type='warning')
@@ -452,8 +475,9 @@ def render_popels_page(
 		refresh_records_list()
 
 	def update_image_caption(attachment_name: str, caption: str | None) -> None:
-		"""Speichert den Kurztext zu einem Bild dauerhaft."""
-
+		"""
+		Speichert den Kurztext zu einem Bild dauerhaft.
+		"""
 		record_id = selected_id['value']
 		if record_id is None:
 			ui.notify(f'Bitte zuerst {config.singular} auswaehlen.', type='warning')
@@ -472,32 +496,37 @@ def render_popels_page(
 				break
 
 	def handle_rejected_images() -> None:
-		"""Informiert über abgelehnte Bilddateien oder überschrittene Uploadgrenzen."""
-
+		"""
+		Informiert über abgelehnte Bilddateien oder überschrittene Uploadgrenzen.
+		"""
 		ui.notify(
 			'Bild abgelehnt. Pro Auswahl sind maximal 50 Bilder mit jeweils bis zu 50 MB erlaubt.',
 			type='warning',
 		)
 
 	def upload_selected_images() -> None:
-		"""Startet den Upload der lokal ausgewählten Dateien."""
-
+		"""
+		Startet den Upload der lokal ausgewählten Dateien.
+		"""
 		image_upload['element'].run_method('upload')
 
 	def reset_image_upload() -> None:
-		"""Leert die Upload-Warteschlange nach abgeschlossenem Mehrfach-Upload."""
-
+		"""
+		Leert die Upload-Warteschlange nach abgeschlossenem Mehrfach-Upload.
+		"""
 		image_upload['element'].reset()
 
 	def select_image(attachment_name: str, selected: bool | None) -> None:
-		"""Markiert genau ein vorhandenes Bild für eine mögliche Löschung."""
-
+		"""
+		Markiert genau ein vorhandenes Bild für eine mögliche Löschung.
+		"""
 		selected_image['attachment_name'] = attachment_name if selected else None
 		render_uploaded_images.refresh()
 
 	def delete_selected_image() -> None:
-		"""Löscht das ausgewählte Bild aus CouchDB und der lokalen Vorschau."""
-
+		"""
+		Löscht das ausgewählte Bild aus CouchDB und der lokalen Vorschau.
+		"""
 		record_id = selected_id['value']
 		attachment_name = selected_image['attachment_name']
 		if record_id is None or attachment_name is None:
@@ -521,8 +550,9 @@ def render_popels_page(
 		ui.notify('Bild wurde geloescht.')
 
 	def clear_images() -> None:
-		"""Löscht alle Bilder des aktuell bearbeiteten Datensatzes."""
-
+		"""
+		Löscht alle Bilder des aktuell bearbeiteten Datensatzes.
+		"""
 		record_id = selected_id['value']
 		if record_id is None:
 			return
@@ -541,15 +571,17 @@ def render_popels_page(
 		ui.notify('Bilder wurden entfernt.')
 
 	def render_field_value(record: dict[str, Any], field: str, value_classes: str = 'text-slate-700') -> None:
-		"""Zeigt Beschriftung und formatierten Wert eines Popels-Feldes an."""
-
+		"""
+		Zeigt Beschriftung und formatierten Wert eines Popels-Feldes an.
+		"""
 		with ui.row().classes('items-baseline gap-1'):
 			ui.label(f'{POPELS_FIELDS[field]["text"]}:').classes('font-medium text-green-600')
 			ui.label(display_value(record, field)).classes(value_classes)
 
 	def render_content_status(record: dict[str, Any], field: str) -> None:
-		"""Zeigt nur an, ob Text beziehungsweise Bilder vorhanden sind."""
-
+		"""
+		Zeigt nur an, ob Text beziehungsweise Bilder vorhanden sind.
+		"""
 		available = content_available(field, record.get(field))
 		status = 'Ja' if available else 'Nein'
 		status_classes = 'text-green-700 font-medium' if available else 'text-slate-400'
@@ -573,8 +605,9 @@ def render_popels_page(
 	with ui.dialog() as sort_dialog, ui.card().classes('w-[520px] max-w-full gap-3'):
 		@ui.refreshable
 		def render_sort_controls() -> None:
-			"""Rendert Prioritäten und Schaltflächen der aktuellen Sortierung."""
-
+			"""
+			Rendert Prioritäten und Schaltflächen der aktuellen Sortierung.
+			"""
 			ui.label('Sortierreihenfolge').classes('text-lg font-semibold text-slate-900')
 			ui.label(
 				'Klick: aufsteigend, nochmals: absteigend, nochmals: entfernen. '
@@ -721,8 +754,9 @@ def render_popels_page(
 
 		@ui.refreshable
 		def render_uploaded_images() -> None:
-			"""Rendert die gespeicherten Bilder samt Einzelauswahl."""
-
+			"""
+			Rendert die gespeicherten Bilder samt Einzelauswahl.
+			"""
 			if not uploaded_images:
 				ui.label('Noch keine Bilder hochgeladen.').classes('text-sm text-slate-500')
 				return
@@ -762,8 +796,9 @@ def render_popels_page(
 
 	@ui.refreshable
 	def render_active_actions() -> None:
-		"""Zeigt separat bearbeitete Inhalte als Aktionen."""
-
+		"""
+		Zeigt separat bearbeitete Inhalte als Aktionen.
+		"""
 		if not CONTENT_ACTION_FIELDS:
 			return
 		action_handlers = {
@@ -784,8 +819,9 @@ def render_popels_page(
 
 	@ui.refreshable
 	def render_records() -> None:
-		"""Lädt, filtert und rendert die Popels-Datensätze als Kartenliste."""
-
+		"""
+		Lädt, filtert und rendert die Popels-Datensätze als Kartenliste.
+		"""
 		try:
 			all_records = POPELS_DB.list(sort_criteria['value'])
 			if record_enricher is not None:

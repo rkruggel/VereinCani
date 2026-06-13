@@ -18,6 +18,9 @@ class RelatedRecordChips:
 		options: dict[str, str],
 		on_select: Callable[[str], None] | None = None,
 	) -> None:
+		"""
+		Initialisiert das Chip-Feld mit ID-zu-Anzeige-Optionen.
+		"""
 		self._id_to_label = dict(options)
 		self._label_to_id = {option_label: record_id for record_id, option_label in options.items()}
 		self._element = ui.input_chips(label, clearable=True).props('dense options-dense')
@@ -61,6 +64,9 @@ class RelatedRecordChips:
 
 	@value.setter
 	def value(self, record_ids: list[str] | None) -> None:
+		"""
+		Setzt die sichtbaren Chips anhand gespeicherter Datensatz-IDs.
+		"""
 		labels = []
 		for record_id in record_ids or []:
 			if record_id in self._id_to_label:
@@ -85,6 +91,9 @@ class RelatedRecordChips:
 		event: events.GenericEventArguments,
 		on_select: Callable[[str], None],
 	) -> None:
+		"""
+		Übersetzt den geklickten Chip-Text in eine ID und meldet sie zurück.
+		"""
 		record_id = self._label_to_id.get(str(event.args or ''))
 		if record_id is not None:
 			on_select(record_id)
@@ -95,6 +104,9 @@ class FreeInputChips:
 	Zeigt frei eingebbare Mehrfachwerte als Chips.
 	"""
 	def __init__(self, label: str) -> None:
+		"""
+		Initialisiert Eingabezeile, Hinzufügen-Button und Chip-Anzeige.
+		"""
 		self._values: list[str] = []
 		self._enabled = True
 		autofill_key = ''.join(character for character in label.lower() if character.isalnum()) or 'wert'
@@ -112,6 +124,9 @@ class FreeInputChips:
 
 			@ui.refreshable
 			def render_values() -> None:
+				"""
+				Zeichnet die aktuell eingegebenen freien Chip-Werte.
+				"""
 				if not self._values:
 					return
 				with ui.row().classes('w-full gap-1 flex-wrap'):
@@ -139,6 +154,9 @@ class FreeInputChips:
 
 	@value.setter
 	def value(self, values: list[str] | str | None) -> None:
+		"""
+		Ersetzt die gespeicherten freien Chip-Werte.
+		"""
 		if values in (None, ''):
 			self._values = []
 			self._render_values.refresh()
@@ -161,6 +179,9 @@ class FreeInputChips:
 		self._render_values.refresh()
 
 	def _add_current_value(self, *_args: Any) -> None:
+		"""
+		Übernimmt den aktuellen Eingabetext als neuen Chip.
+		"""
 		text = str(self._input.value or '').strip()
 		if not text:
 			return
@@ -169,6 +190,9 @@ class FreeInputChips:
 		self._render_values.refresh()
 
 	def _remove_value(self, index: int) -> None:
+		"""
+		Entfernt einen freien Chip anhand seines Listenindex.
+		"""
 		if 0 <= index < len(self._values):
 			self._values.pop(index)
 		self._render_values.refresh()
@@ -184,6 +208,9 @@ class RelatedRecordSelect:
 		options: dict[str, str],
 		on_select: Callable[[str], None] | None = None,
 	) -> None:
+		"""
+		Initialisiert ein Select mit Anzeigeoptionen und stabilen Datensatz-IDs.
+		"""
 		self._id_to_label = dict(options)
 		self._label_to_id = {option_label: record_id for record_id, option_label in options.items()}
 		self._element = ui.select(list(self._label_to_id), label=label, clearable=True).props(
@@ -202,6 +229,9 @@ class RelatedRecordSelect:
 
 	@value.setter
 	def value(self, record_id: str | None) -> None:
+		"""
+		Setzt die Auswahl anhand einer gespeicherten Datensatz-ID.
+		"""
 		if record_id in (None, ''):
 			self._element.value = None
 			return
@@ -224,6 +254,9 @@ class RelatedRecordSelect:
 		self._element.set_enabled(value)
 
 	def _notify_selection(self, on_select: Callable[[str], None]) -> None:
+		"""
+		Meldet eine gültige Select-Auswahl an den externen Handler.
+		"""
 		record_id = self.value
 		if record_id:
 			on_select(record_id)
@@ -241,6 +274,9 @@ class EditableOptionsSelect:
 		on_options_load: Callable[[], list[str]] | None = None,
 		on_option_rename: Callable[[str, str], None] | None = None,
 	) -> None:
+		"""
+		Initialisiert Select, Optionsaktionen und Bearbeitungsdialog.
+		"""
 		self._options = normalize_editable_options(options or [])
 		self._on_options_change = on_options_change
 		self._on_options_load = on_options_load
@@ -268,10 +304,16 @@ class EditableOptionsSelect:
 
 	@property
 	def value(self) -> str:
+		"""
+		Liefert die aktuell ausgewählte Option als bereinigten Text.
+		"""
 		return str(self._element.value or '').strip()
 
 	@value.setter
 	def value(self, value: Any) -> None:
+		"""
+		Setzt die Auswahl und ergänzt unbekannte Werte als neue Option.
+		"""
 		text = str(value or '').strip()
 		if not text:
 			self._element.value = None
@@ -304,6 +346,9 @@ class EditableOptionsSelect:
 		self._element.classes(classes)
 
 	def _open_option_dialog(self, mode: str) -> None:
+		"""
+		Öffnet den Dialog zum Hinzufügen oder Bearbeiten einer Option.
+		"""
 		if not self._enabled:
 			return
 		self._reload_options()
@@ -318,6 +363,9 @@ class EditableOptionsSelect:
 		ui.timer(0.1, lambda: self._option_input.run_method('focus'), once=True)
 
 	def _save_option_dialog(self, dialog: Any) -> None:
+		"""
+		Speichert den Dialogwert als neue oder umbenannte Option.
+		"""
 		text = str(self._option_input.value or '').strip()
 		if not text:
 			ui.notify('Bitte einen Wert eingeben.', type='warning')
@@ -338,6 +386,9 @@ class EditableOptionsSelect:
 		dialog.close()
 
 	def _delete_current_option(self) -> None:
+		"""
+		Löscht die aktuell ausgewählte Option aus der Optionsliste.
+		"""
 		if not self._enabled:
 			return
 		self._reload_options()
@@ -352,11 +403,17 @@ class EditableOptionsSelect:
 		self._reload_options()
 
 	def _refresh_options(self) -> None:
+		"""
+		Überträgt die interne Optionsliste in das sichtbare Select.
+		"""
 		current_value = self.value
 		next_value = current_value if current_value in self._options else None
 		self._element.set_options(list(self._options), value=next_value)
 
 	def _reload_options(self, selected_value: str | None = None) -> None:
+		"""
+		Lädt Optionswerte über den optionalen externen Loader neu.
+		"""
 		if self._on_options_load is None:
 			return
 		current_value = selected_value if selected_value is not None else self.value
@@ -370,6 +427,9 @@ class EditableOptionsSelect:
 			self._element.value = current_value
 
 	def _rename_option(self, old_value: str, new_value: str) -> None:
+		"""
+		Meldet eine Optionsumbenennung an den optionalen externen Handler.
+		"""
 		if self._on_option_rename is None:
 			return
 		try:
@@ -378,6 +438,9 @@ class EditableOptionsSelect:
 			ui.notify(f'Geänderte Werte konnten nicht übernommen werden: {error}', type='warning')
 
 	def _persist_options(self) -> None:
+		"""
+		Speichert die aktuelle Optionsliste über den optionalen Callback.
+		"""
 		if self._on_options_change is not None:
 			self._on_options_change(list(self._options))
 
@@ -402,6 +465,9 @@ class CommaSeparatedListInput:
 	Bearbeitet Listenwerte als kommagetrennte Eingabezeile.
 	"""
 	def __init__(self, label: str) -> None:
+		"""
+		Initialisiert eine Eingabezeile für kommagetrennte Listenwerte.
+		"""
 		self._element = ui.input(label).props(
 			'dense autocomplete="off"'
 		).classes('w-full')
@@ -419,6 +485,9 @@ class CommaSeparatedListInput:
 
 	@value.setter
 	def value(self, values: list[str] | str | None) -> None:
+		"""
+		Setzt die Eingabezeile aus einer Liste oder einem Rohtext.
+		"""
 		if values in (None, ''):
 			self._element.value = ''
 			return
@@ -445,6 +514,9 @@ class IbanInput:
 	Formatiert IBAN-Werte in Vierergruppen.
 	"""
 	def __init__(self, label: str) -> None:
+		"""
+		Initialisiert ein IBAN-Feld mit automatischer Formatierung.
+		"""
 		self._element = ui.input(label).props(
 			'dense autocomplete="off" autocapitalize="characters" spellcheck="false"'
 		).classes('w-full')
@@ -452,10 +524,16 @@ class IbanInput:
 
 	@property
 	def value(self) -> str:
+		"""
+		Liefert die formatierte IBAN aus dem Eingabefeld.
+		"""
 		return format_iban(self._element.value)
 
 	@value.setter
 	def value(self, value: Any) -> None:
+		"""
+		Setzt und formatiert den IBAN-Wert im Eingabefeld.
+		"""
 		self._element.value = format_iban(value)
 
 	def set_enabled(self, value: bool) -> None:
@@ -477,6 +555,9 @@ class IbanInput:
 		self._element.classes(classes)
 
 	def _format_current_value(self, _event: Any) -> None:
+		"""
+		Normalisiert den sichtbaren IBAN-Wert nach einer Eingabeänderung.
+		"""
 		formatted = format_iban(self._element.value)
 		if self._element.value != formatted:
 			self._element.value = formatted
@@ -501,6 +582,9 @@ class CourseBookingsInput:
 	EMPTY_ROW = {'kurs': '', 'datumVon': '', 'bezahlt': None}
 
 	def __init__(self, label: str, options: list[Any] | None = None) -> None:
+		"""
+		Initialisiert Kursbuchungszeilen mit optionalen Kursdefinitionen.
+		"""
 		self._label = label
 		self._course_definitions = self._course_definitions_from_options(options or [])
 		self._options = list(self._course_definitions)
@@ -512,6 +596,9 @@ class CourseBookingsInput:
 
 			@ui.refreshable
 			def render_rows() -> None:
+				"""
+				Zeichnet alle Kursbuchungszeilen und ihre Aktionsbuttons.
+				"""
 				self._controls.clear()
 				for index, row in enumerate(self._rows):
 					with ui.row().classes('w-full items-start gap-1 flex-nowrap'):
@@ -556,6 +643,9 @@ class CourseBookingsInput:
 							date_from: Any = date_from_control,
 							date_to: Any = date_to_control,
 						) -> None:
+							"""
+							Aktualisiert das berechnete Enddatum einer Kurszeile.
+							"""
 							date_to.value = self._calculate_date_to(course.value, date_from.value)
 
 						course_control.on_value_change(update_date_to)
@@ -589,6 +679,9 @@ class CourseBookingsInput:
 
 	@value.setter
 	def value(self, rows: list[dict[str, Any]] | None) -> None:
+		"""
+		Setzt die Kursbuchungszeilen aus gespeicherten Rohdaten.
+		"""
 		normalized_rows = self._normalize_rows(rows)
 		if not normalized_rows:
 			self.clear()
@@ -617,6 +710,9 @@ class CourseBookingsInput:
 		self._render_rows.refresh()
 
 	def _sync_rows(self) -> None:
+		"""
+		Schreibt die sichtbaren Steuerelementwerte in die interne Zeilenliste.
+		"""
 		if not self._controls:
 			return
 		self._rows = [
@@ -629,11 +725,17 @@ class CourseBookingsInput:
 		]
 
 	def _add_row(self, after_index: int) -> None:
+		"""
+		Fügt nach der angegebenen Position eine leere Kurszeile ein.
+		"""
 		self._sync_rows()
 		self._rows.insert(after_index + 1, self.EMPTY_ROW.copy())
 		self._render_rows.refresh()
 
 	def _delete_row(self, index: int) -> None:
+		"""
+		Entfernt eine Kurszeile und hält mindestens eine Leerzeile vor.
+		"""
 		self._sync_rows()
 		if 0 <= index < len(self._rows):
 			self._rows.pop(index)
@@ -642,6 +744,9 @@ class CourseBookingsInput:
 		self._render_rows.refresh()
 
 	def _course_options(self, current_value: Any) -> list[str]:
+		"""
+		Liefert Kursoptionen inklusive eines noch unbekannten aktuellen Werts.
+		"""
 		options = list(self._options)
 		current_text = str(current_value or '').strip()
 		if current_text and current_text not in options:
@@ -649,6 +754,9 @@ class CourseBookingsInput:
 		return options
 
 	def _calculate_date_to(self, course_name: Any, date_from: Any) -> str:
+		"""
+		Berechnet das Kursende aus Kursdefinition und Startdatum.
+		"""
 		course = self._course_definitions.get(str(course_name or '').strip())
 		if course is None:
 			return ''
@@ -672,6 +780,9 @@ class CourseBookingsInput:
 
 	@staticmethod
 	def _course_definitions_from_options(options: list[Any]) -> dict[str, dict[str, Any]]:
+		"""
+		Normalisiert Kursoptionen zu einem Namensindex mit Kursdefinitionen.
+		"""
 		definitions: dict[str, dict[str, Any]] = {}
 		for option in options:
 			if isinstance(option, dict):
@@ -686,6 +797,9 @@ class CourseBookingsInput:
 
 	@classmethod
 	def _normalize_rows(cls, rows: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+		"""
+		Bereinigt gespeicherte Kursbuchungszeilen für die interne Darstellung.
+		"""
 		if not isinstance(rows, list):
 			return []
 		normalized_rows = []
@@ -752,5 +866,4 @@ def is_leap_year(year: int) -> bool:
 	Prüft, ob ein Jahr ein Schaltjahr ist.
 	"""
 	return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
-
 

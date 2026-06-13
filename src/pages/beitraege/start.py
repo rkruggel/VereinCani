@@ -1,5 +1,6 @@
-"""Beitragsberechnung der VereinGUI-Anwendung."""
-
+"""
+Beitragsberechnung der VereinGUI-Anwendung.
+"""
 from collections.abc import Iterable
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -14,8 +15,9 @@ CALCULATION_OPTIONS = ['Beitrag', 'Kurse']
 
 
 def render_beitraege_page() -> None:
-	"""Erzeugt das Berechnungsfenster für Beiträge und Kurse."""
-
+	"""
+	Erzeugt das Berechnungsfenster für Beiträge und Kurse.
+	"""
 	result_rows = {'value': []}
 	total = {'value': '0.00'}
 	error_message = {'value': ''}
@@ -33,6 +35,9 @@ def render_beitraege_page() -> None:
 
 		@ui.refreshable
 		def render_results() -> None:
+			"""
+			Rendert die Ergebnislisten der Beitragsberechnung.
+			"""
 			if error_message['value']:
 				ui.label(error_message['value']).classes('text-sm text-red-600')
 				return
@@ -57,6 +62,9 @@ def render_beitraege_page() -> None:
 				ui.label(f'{total["value"]} €').classes('text-base font-semibold text-slate-900')
 
 		def calculate() -> None:
+			"""
+			Berechnet Beiträge und Kursbeträge für die Anzeige.
+			"""
 			error_message['value'] = ''
 			try:
 				members = MITGLIEDER_DB.list()
@@ -96,8 +104,9 @@ def calculate_membership_rows(
 	members: list[dict[str, Any]],
 	preisstamm: Any,
 ) -> list[dict[str, str]]:
-	"""Berechnet Vereinsbeiträge für Mitglieder mit Hundeverein-Mitgliedschaft."""
-
+	"""
+	Berechnet Vereinsbeiträge für Mitglieder mit Hundeverein-Mitgliedschaft.
+	"""
 	rows = []
 	for member in members:
 		if not is_yes(member.get('hundevereinMitglied')):
@@ -117,8 +126,9 @@ def calculate_course_rows(
 	members: list[dict[str, Any]],
 	courses: list[dict[str, Any]],
 ) -> list[dict[str, str]]:
-	"""Berechnet Kursbeträge aus Kursbesuchen und Preisstamm-Kursen."""
-
+	"""
+	Berechnet Kursbeträge aus Kursbesuchen und Preisstamm-Kursen.
+	"""
 	course_prices = {
 		str(course.get('kurs') or '').strip(): str(course.get('preis') or '').strip()
 		for course in courses
@@ -139,22 +149,25 @@ def calculate_course_rows(
 
 
 def is_yes(value: Any) -> bool:
-	"""Prüft Ja/Nein-Felder robust."""
-
+	"""
+	Prüft Ja/Nein-Felder robust.
+	"""
 	return str(value or '').strip().casefold() == 'ja'
 
 
 def normalize_list(value: Any) -> list[Any]:
-	"""Normalisiert Listenfelder aus der Datenbank."""
-
+	"""
+	Normalisiert Listenfelder aus der Datenbank.
+	"""
 	if value in (None, ''):
 		return []
 	return value if isinstance(value, list) else [value]
 
 
 def price_for_dog_count(preisstamm: Any, dog_count: int) -> str:
-	"""Lädt den Preis passend zur Hundeanzahl."""
-
+	"""
+	Lädt den Preis passend zur Hundeanzahl.
+	"""
 	try:
 		return str(preisstamm.get_price(dog_count) or '')
 	except Exception:
@@ -162,8 +175,9 @@ def price_for_dog_count(preisstamm: Any, dog_count: int) -> str:
 
 
 def normalize_course_visits(value: Any) -> list[dict[str, str]]:
-	"""Normalisiert Kursbesuche für die Kursberechnung."""
-
+	"""
+	Normalisiert Kursbesuche für die Kursberechnung.
+	"""
 	if not isinstance(value, list):
 		return []
 	visits = []
@@ -183,8 +197,9 @@ def normalize_course_visits(value: Any) -> list[dict[str, str]]:
 
 
 def course_visit_basis(visit: dict[str, str]) -> str:
-	"""Formatiert eine Kursbesuchszeile für die Ergebnisliste."""
-
+	"""
+	Formatiert eine Kursbesuchszeile für die Ergebnisliste.
+	"""
 	parts = [
 		visit.get('kurs', ''),
 		visit.get('datumVon', ''),
@@ -194,8 +209,9 @@ def course_visit_basis(visit: dict[str, str]) -> str:
 
 
 def paid_text(value: Any) -> str:
-	"""Formatiert den Bezahlstatus."""
-
+	"""
+	Formatiert den Bezahlstatus.
+	"""
 	if value is None or value == '':
 		return ''
 	if isinstance(value, str):
@@ -204,8 +220,9 @@ def paid_text(value: Any) -> str:
 
 
 def sum_amounts(values: Iterable[str]) -> str:
-	"""Summiert Geldbeträge und ignoriert leere Werte."""
-
+	"""
+	Summiert Geldbeträge und ignoriert leere Werte.
+	"""
 	total = Decimal('0.00')
 	for value in values:
 		text = str(value or '').strip().replace('€', '').replace(' ', '').replace(',', '.')

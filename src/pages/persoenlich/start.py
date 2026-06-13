@@ -1,5 +1,6 @@
-"""Startpunkt des Bereichs Persönlich."""
-
+"""
+Startpunkt des Bereichs Persönlich.
+"""
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -14,6 +15,7 @@ PERSOENLICHLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_persoenlich_page() -> None:
-	"""Übergibt die Konfiguration für Persönlich an die gemeinsame Popels-Seite."""
-
+	"""
+	Übergibt die Konfiguration für Persönlich an die gemeinsame Popels-Seite.
+	"""
 	render_popels_page(CONFIG, PERSOENLICH_DB, PERSOENLICHLISTEN_EINSTELLUNGEN)

@@ -1,5 +1,6 @@
-"""Dynamische Modelle für konfigurierbare Popels."""
-
+"""
+Dynamische Modelle für konfigurierbare Popels.
+"""
 from dataclasses import asdict, field, make_dataclass
 from typing import Any, Self
 
@@ -7,8 +8,9 @@ from src.popelsapp import PopelsConfig
 
 
 def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
-	"""Ermittelt Python-Typ und Dataclass-Standardwert einer Felddefinition."""
-
+	"""
+	Ermittelt Python-Typ und Dataclass-Standardwert einer Felddefinition.
+	"""
 	field_type = definition['type']
 	if field_type == 'liste':
 		return list[str], field(default_factory=list)
@@ -22,13 +24,15 @@ def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
 
 
 class PopelsModel:
-	"""Stellt gemeinsames Verhalten für dynamisch erzeugte Modelle bereit."""
-
+	"""
+	Stellt gemeinsames Verhalten für dynamisch erzeugte Modelle bereit.
+	"""
 	_config: PopelsConfig
 
 	def __post_init__(self) -> None:
-		"""Normalisiert Listenfelder aus älteren Dokumenten auf leere Listen."""
-
+		"""
+		Normalisiert Listenfelder aus älteren Dokumenten auf leere Listen.
+		"""
 		for field_name, definition in self._config.field_labels.items():
 			if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'}:
 				value = getattr(self, field_name, None)
@@ -45,8 +49,9 @@ class PopelsModel:
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> Self:
-		"""Erstellt ein Modell aus CouchDB-Daten und übernimmt optionale Altdaten."""
-
+		"""
+		Erstellt ein Modell aus CouchDB-Daten und übernimmt optionale Altdaten.
+		"""
 		values = {
 			key: value
 			for key, value in data.items()
@@ -55,8 +60,9 @@ class PopelsModel:
 		return cls(**values)
 
 	def to_json(self) -> dict[str, Any]:
-		"""Gibt alle konfigurierten Modellfelder als Wörterbuch zurück."""
-
+		"""
+		Gibt alle konfigurierten Modellfelder als Wörterbuch zurück.
+		"""
 		data = asdict(self)
 		for field_name in self._config.field_labels:
 			if self._config.page(field_name).get('berechnen'):
@@ -65,8 +71,9 @@ class PopelsModel:
 
 
 def create_popels_model(config: PopelsConfig) -> type[PopelsModel]:
-	"""Erzeugt eine Dataclass passend zu den Felddefinitionen eines Moduls."""
-
+	"""
+	Erzeugt eine Dataclass passend zu den Felddefinitionen eines Moduls.
+	"""
 	model = make_dataclass(
 		config.model_name,
 		[

@@ -1,5 +1,6 @@
-"""Verwaltung des angemeldeten Benutzers in der NiceGUI-Sitzung."""
-
+"""
+Verwaltung des angemeldeten Benutzers in der NiceGUI-Sitzung.
+"""
 from nicegui import app
 
 
@@ -7,6 +8,9 @@ AUTH_STORAGE_KEY = 'angemeldeter_benutzer'
 
 
 def get_authenticated_user() -> dict[str, str] | None:
+	"""
+	Liefert den aktuell angemeldeten Benutzer aus der Sitzung.
+	"""
 	benutzer = app.storage.user.get(AUTH_STORAGE_KEY)
 	if not isinstance(benutzer, dict):
 		return None
@@ -16,4 +20,7 @@ def get_authenticated_user() -> dict[str, str] | None:
 
 
 def is_authenticated() -> bool:
+	"""
+	Prüft, ob ein Benutzer angemeldet ist.
+	"""
 	return get_authenticated_user() is not None

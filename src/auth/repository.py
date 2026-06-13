@@ -1,5 +1,6 @@
-"""CouchDB-Zugriff für Benutzerkonten und Anmeldedaten."""
-
+"""
+CouchDB-Zugriff für Benutzerkonten und Anmeldedaten.
+"""
 import hashlib
 from dataclasses import asdict
 
@@ -9,10 +10,19 @@ from src.db.client import CouchConflictError, create_couch_database
 
 
 class BenutzerRepository:
+	"""
+	Verwaltet Benutzerkonten und Anmeldedaten in CouchDB.
+	"""
 	def __init__(self) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self._database = None
 
 	def register(self, email: str, name: str, kennung: str) -> Benutzer:
+		"""
+		Registriert einen neuen Benutzer und meldet ihn an.
+		"""
 		normalized_email = normalize_email(email)
 		document_id = benutzer_id(normalized_email)
 		if self._get_database().get_document(document_id) is not None:
@@ -36,6 +46,9 @@ class BenutzerRepository:
 		return benutzer
 
 	def authenticate(self, email: str, kennung: str) -> Benutzer | None:
+		"""
+		Prüft Anmeldedaten gegen die gespeicherten Benutzerkonten.
+		"""
 		document = self._get_database().get_document(benutzer_id(normalize_email(email)))
 		if document is None:
 			return None
@@ -48,19 +61,31 @@ class BenutzerRepository:
 		return benutzer
 
 	def delete(self, email: str) -> bool:
+		"""
+		Löscht den angegebenen Datensatz.
+		"""
 		return self._get_database().delete_document(benutzer_id(normalize_email(email)))
 
 	def _get_database(self):
+		"""
+		Erzeugt den Zugriff auf die zugrunde liegende CouchDB-Datenbank.
+		"""
 		if self._database is None:
 			self._database = create_couch_database()
 		return self._database
 
 
 def normalize_email(email: str) -> str:
+	"""
+	Normalisiert eine E-Mail-Adresse für die Speicherung.
+	"""
 	return email.strip().lower()
 
 
 def benutzer_id(email: str) -> str:
+	"""
+	Erzeugt die stabile Dokument-ID eines Benutzerkontos.
+	"""
 	email_hash = hashlib.sha256(email.encode('utf-8')).hexdigest()
 	return f'benutzer/{email_hash}'
 

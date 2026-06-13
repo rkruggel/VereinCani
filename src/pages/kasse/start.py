@@ -1,5 +1,6 @@
-"""Startpunkt des Kassenprogramms."""
-
+"""
+Startpunkt des Kassenprogramms.
+"""
 from src.popelsapp import load_popels_config
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
@@ -14,6 +15,7 @@ KASSENLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_kasse_page() -> None:
-	"""Zeigt das Kassenprogramm."""
-
+	"""
+	Zeigt das Kassenprogramm.
+	"""
 	render_popels_page(CONFIG, KASSE_DB, KASSENLISTEN_EINSTELLUNGEN)

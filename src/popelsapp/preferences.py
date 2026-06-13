@@ -1,5 +1,6 @@
-"""Laden und Speichern benutzerspezifischer Popels-Listen-Einstellungen."""
-
+"""
+Laden und Speichern benutzerspezifischer Popels-Listen-Einstellungen.
+"""
 from nicegui import app
 
 from src.popelsapp import PopelsConfig
@@ -12,8 +13,9 @@ def load_visible_fields(
 	settings: ListeneinstellungenRepository,
 	benutzer_name: str,
 ) -> set[str]:
-	"""Lädt die sichtbaren Felder und übernimmt bei Bedarf alte NiceGUI-Einstellungen."""
-
+	"""
+	Lädt die sichtbaren Felder und übernimmt bei Bedarf alte NiceGUI-Einstellungen.
+	"""
 	saved_fields = settings.get(benutzer_name)
 	if saved_fields is None:
 		legacy_fields = app.storage.general.get(f'{config.key}_visible_fields')
@@ -32,8 +34,9 @@ def save_visible_fields(
 	benutzer_name: str,
 	visible_fields: set[str],
 ) -> None:
-	"""Speichert die ausgewählten Listenfelder in ihrer definierten Reihenfolge."""
-
+	"""
+	Speichert die ausgewählten Listenfelder in ihrer definierten Reihenfolge.
+	"""
 	settings.save(
 		benutzer_name,
 		[field for field in config.list_display_fields if field in visible_fields],
@@ -45,8 +48,9 @@ def load_sort_criteria(
 	settings: ListeneinstellungenRepository,
 	benutzer_name: str,
 ) -> list[str]:
-	"""Lädt und normalisiert die persönliche Sortierreihenfolge."""
-
+	"""
+	Lädt und normalisiert die persönliche Sortierreihenfolge.
+	"""
 	document = settings.get_document(benutzer_name)
 	if document is None:
 		return []

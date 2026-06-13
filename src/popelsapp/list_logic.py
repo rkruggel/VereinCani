@@ -1,5 +1,6 @@
-"""Reine Hilfsfunktionen für Suche, Sortierung und Wertdarstellung."""
-
+"""
+Reine Hilfsfunktionen für Suche, Sortierung und Wertdarstellung.
+"""
 import base64
 import html
 import re
@@ -10,15 +11,17 @@ from src.popelsapp import PopelsConfig
 
 
 def image_data_url(content_type: str, data: bytes) -> str:
-	"""Kodiert Binärdaten als Data-URL für die Bildvorschau im Browser."""
-
+	"""
+	Kodiert Binärdaten als Data-URL für die Bildvorschau im Browser.
+	"""
 	encoded_data = base64.b64encode(data).decode('ascii')
 	return f'data:{content_type};base64,{encoded_data}'
 
 
 def validate_phone(value: Any) -> str | None:
-	"""Validiert Telefonnummern und liefert bei Erfolg ``None`` zurück."""
-
+	"""
+	Validiert Telefonnummern und liefert bei Erfolg ``None`` zurück.
+	"""
 	text = str(value or '')
 	if all(character.isdigit() or character in {'+', ' '} for character in text):
 		return None
@@ -29,8 +32,9 @@ def normalize_sort_criteria(
 	config: PopelsConfig,
 	sortierungen: list[str],
 ) -> list[str]:
-	"""Entfernt ungültige und doppelte Sortierkriterien."""
-
+	"""
+	Entfernt ungültige und doppelte Sortierkriterien.
+	"""
 	result: list[str] = []
 	used_fields: set[str] = set()
 	for criterion in sortierungen:
@@ -47,8 +51,9 @@ def normalize_sort_criteria(
 
 
 def cycle_sort_criterion(sortierungen: list[str], field: str) -> list[str]:
-	"""Schaltet ein Feld zwischen aufsteigend, absteigend und nicht sortiert um."""
-
+	"""
+	Schaltet ein Feld zwischen aufsteigend, absteigend und nicht sortiert um.
+	"""
 	result = list(sortierungen)
 	for index, criterion in enumerate(result):
 		selected_field, _separator, direction = criterion.partition(':')
@@ -64,8 +69,9 @@ def cycle_sort_criterion(sortierungen: list[str], field: str) -> list[str]:
 
 
 def normalize_search_text(value: Any) -> str:
-	"""Normalisiert einen Wert für eine akzent- und großschreibungsfreie Suche."""
-
+	"""
+	Normalisiert einen Wert für eine akzent- und großschreibungsfreie Suche.
+	"""
 	if isinstance(value, list):
 		value = ' '.join(str(item) for item in value)
 	text = unicodedata.normalize('NFKD', str(value or ''))
@@ -73,8 +79,9 @@ def normalize_search_text(value: Any) -> str:
 
 
 def searchable_value(config: PopelsConfig, field: str, value: Any) -> str:
-	"""Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf."""
-
+	"""
+	Bereitet einen Feldwert entsprechend seiner Konfiguration für die Suche auf.
+	"""
 	if config.page(field).get('steuerelement') == 'editor':
 		value = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
 	return normalize_search_text(value)
@@ -85,8 +92,9 @@ def filter_records(
 	records: list[dict[str, Any]],
 	query: str,
 ) -> list[dict[str, Any]]:
-	"""Filtert Datensätze nach Begriffen, die über mehrere Felder verteilt sein dürfen."""
-
+	"""
+	Filtert Datensätze nach Begriffen, die über mehrere Felder verteilt sein dürfen.
+	"""
 	search_terms = normalize_search_text(query).split()
 	if not search_terms:
 		return records
@@ -102,8 +110,9 @@ def filter_records(
 
 
 def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> str:
-	"""Formatiert einen Feldwert für die kompakte Anzeige in einer Popels-Karte."""
-
+	"""
+	Formatiert einen Feldwert für die kompakte Anzeige in einer Popels-Karte.
+	"""
 	value = record[field]
 	if config.field_labels[field]['type'] == 'liste':
 		return ', '.join(value) if value else '-'
@@ -118,8 +127,9 @@ def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> s
 
 
 def display_bankdata(value: Any) -> str:
-	"""Formatiert eingebettete Bankdaten für die Kartenliste."""
-
+	"""
+	Formatiert eingebettete Bankdaten für die Kartenliste.
+	"""
 	if not isinstance(value, dict) or not value:
 		return '-'
 	parts = [
@@ -132,8 +142,9 @@ def display_bankdata(value: Any) -> str:
 
 
 def display_course_bookings(value: Any) -> str:
-	"""Formatiert Kursbesuche für die Kartenliste."""
-
+	"""
+	Formatiert Kursbesuche für die Kartenliste.
+	"""
 	if not isinstance(value, list) or not value:
 		return '-'
 	parts = []
@@ -154,8 +165,9 @@ def display_course_bookings(value: Any) -> str:
 
 
 def content_available(config: PopelsConfig, field: str, value: Any) -> bool:
-	"""Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält."""
-
+	"""
+	Prüft, ob ein Inhaltsfeld tatsächlich nutzbaren Inhalt enthält.
+	"""
 	if config.page(field).get('steuerelement') != 'editor':
 		return bool(value)
 	text = html.unescape(re.sub(r'<[^>]*>', ' ', str(value or '')))
@@ -171,8 +183,9 @@ def record_heading(
 	fallback_to_id: bool = True,
 	name_last_first: bool = False,
 ) -> str:
-	"""Erzeugt die Überschrift aus numerisch markierten Feldern."""
-
+	"""
+	Erzeugt die Überschrift aus numerisch markierten Feldern.
+	"""
 	heading_fields = sorted(
 		(
 			(config.field_position(field, 'formHeaderPos'), field)
@@ -197,8 +210,9 @@ def record_heading(
 
 
 def format_heading_value(field: str, value: Any, name_last_first: bool) -> str:
-	"""Formatiert den Namen in sortierten Listen passend zur Nachnamensreihenfolge."""
-
+	"""
+	Formatiert den Namen in sortierten Listen passend zur Nachnamensreihenfolge.
+	"""
 	text = str(value or '').strip()
 	if field != 'name' or not name_last_first:
 		return text

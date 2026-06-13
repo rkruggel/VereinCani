@@ -1,5 +1,6 @@
-"""CouchDB-Zugriff für konfigurierbare Popels und Bild-Anhänge."""
-
+"""
+CouchDB-Zugriff für konfigurierbare Popels und Bild-Anhänge.
+"""
 from __future__ import annotations
 
 import base64
@@ -14,30 +15,37 @@ from src.services.calc import berechne
 
 
 class CouchPopelsDatabase:
-	"""Kapselt Datenbankoperationen für ein konfiguriertes Popels-Modul."""
-
+	"""
+	Kapselt Datenbankoperationen für ein konfiguriertes Popels-Modul.
+	"""
 	def __init__(self, config: PopelsConfig, model: type) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self.config = config
 		self.model = model
 		self._database = None
 
 	def list(self, sortierungen: list[str] | None = None) -> list[dict[str, Any]]:
-		"""Lädt alle Datensätze und sortiert sie nach den übergebenen Kriterien."""
-
+		"""
+		Lädt alle Datensätze und sortiert sie nach den übergebenen Kriterien.
+		"""
 		documents = self._get_database().list_documents(self.config.collection_name)
 		criteria = [] if sortierungen is None else sortierungen
 		records = [self._normalize_document(document) for document in documents]
 		return sort_records(records, criteria, self.config.sort_fields)
 
 	def get(self, record_id: str) -> dict[str, Any] | None:
-		"""Lädt einen Datensatz anhand seiner CouchDB-ID."""
-
+		"""
+		Lädt einen Datensatz anhand seiner CouchDB-ID.
+		"""
 		document = self._get_database().get_document(record_id)
 		return self._normalize_document(document) if document is not None else None
 
 	def cleanup_unknown_fields(self) -> tuple[int, int]:
-		"""Entfernt alle Dokumentfelder, die nicht in der Feldkonfiguration stehen."""
-
+		"""
+		Entfernt alle Dokumentfelder, die nicht in der Feldkonfiguration stehen.
+		"""
 		allowed_fields = set(self.config.field_labels) | set(COUCH_INTERNAL_FIELDS)
 		checked = 0
 		updated = 0
@@ -56,6 +64,9 @@ class CouchPopelsDatabase:
 			updated += 1
 
 			def mutate(stored_document: dict[str, Any]) -> None:
+				"""
+				Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+				"""
 				for field_name in extra_fields:
 					stored_document.pop(field_name, None)
 
@@ -63,8 +74,9 @@ class CouchPopelsDatabase:
 		return checked, updated
 
 	def create(self, data: dict[str, Any]) -> dict[str, Any]:
-		"""Erstellt und speichert einen neuen Datensatz mit eindeutiger ID."""
-
+		"""
+		Erstellt und speichert einen neuen Datensatz mit eindeutiger ID.
+		"""
 		record = self._create_record(data, f'{self.config.id_prefix}/{uuid4()}')
 		self._get_database().create_document(
 			record.id,
@@ -74,9 +86,13 @@ class CouchPopelsDatabase:
 		return asdict(record)
 
 	def update(self, record_id: str, data: dict[str, Any]) -> dict[str, Any] | None:
-		"""Aktualisiert die Formularfelder eines vorhandenen Datensatzes."""
-
+		"""
+		Aktualisiert die Formularfelder eines vorhandenen Datensatzes.
+		"""
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			for field in self.config.form_fields:
 				if self.config.page(field).get('berechnen'):
 					document.pop(field, None)
@@ -98,11 +114,15 @@ class CouchPopelsDatabase:
 		return self._normalize_document(document) if document is not None else None
 
 	def update_fields(self, record_id: str, values: dict[str, Any]) -> dict[str, Any] | None:
-		"""Aktualisiert einzelne konfigurierte Dokumentfelder außerhalb des Formulars."""
-
+		"""
+		Aktualisiert einzelne konfigurierte Dokumentfelder außerhalb des Formulars.
+		"""
 		allowed_fields = set(self.config.field_labels)
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			for field, value in values.items():
 				if field not in allowed_fields:
 					continue
@@ -123,12 +143,16 @@ class CouchPopelsDatabase:
 		return self._normalize_document(document) if document is not None else None
 
 	def update_text(self, record_id: str, text: str) -> bool:
-		"""Speichert den freien Text eines Datensatzes."""
-
+		"""
+		Speichert den freien Text eines Datensatzes.
+		"""
 		if self.config.editor_field is None:
 			return False
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			document[self.config.editor_field] = text
 
 		return self._get_database().mutate_document(record_id, mutate) is not None
@@ -141,8 +165,9 @@ class CouchPopelsDatabase:
 		data: bytes,
 		caption: str | None = None,
 	) -> dict[str, str] | None:
-		"""Speichert ein Bild als CouchDB-Anhang und ergänzt dessen Metadaten."""
-
+		"""
+		Speichert ein Bild als CouchDB-Anhang und ergänzt dessen Metadaten.
+		"""
 		if self.config.image_field is None:
 			return None
 		attachment_name = f'{uuid4()}-{file_name}'
@@ -154,6 +179,9 @@ class CouchPopelsDatabase:
 		}
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			images = list(document.get(self.config.image_field) or [])
 			images.append(image)
 			document[self.config.image_field] = images
@@ -168,14 +196,18 @@ class CouchPopelsDatabase:
 		return image if document is not None else None
 
 	def update_image_caption(self, record_id: str, attachment_name: str, caption: str) -> bool:
-		"""Aktualisiert den Kurztext (caption) eines vorhandenen Bildes."""
-
+		"""
+		Aktualisiert den Kurztext (caption) eines vorhandenen Bildes.
+		"""
 		if self.config.image_field is None:
 			return False
 
 		updated = {'value': False}
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			images = list(document.get(self.config.image_field) or [])
 			for image in images:
 				if image.get('attachment_name') == attachment_name:
@@ -188,8 +220,9 @@ class CouchPopelsDatabase:
 		return document is not None and updated['value']
 
 	def get_images(self, record_id: str) -> list[dict[str, Any]]:
-		"""Lädt Bildmetadaten und Binärdaten aller konfigurierten Anhänge."""
-
+		"""
+		Lädt Bildmetadaten und Binärdaten aller konfigurierten Anhänge.
+		"""
 		document = self._get_database().get_document(record_id)
 		if document is None or self.config.image_field is None:
 			return []
@@ -204,12 +237,16 @@ class CouchPopelsDatabase:
 		return images
 
 	def clear_images(self, record_id: str) -> bool:
-		"""Löscht sämtliche konfigurierten Bild-Anhänge eines Datensatzes."""
-
+		"""
+		Löscht sämtliche konfigurierten Bild-Anhänge eines Datensatzes.
+		"""
 		if self.config.image_field is None:
 			return False
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			attachments = dict(document.get('_attachments') or {})
 			for image in document.get(self.config.image_field) or []:
 				attachments.pop(image.get('attachment_name'), None)
@@ -222,13 +259,17 @@ class CouchPopelsDatabase:
 		return self._get_database().mutate_document(record_id, mutate) is not None
 
 	def delete_image(self, record_id: str, attachment_name: str) -> bool:
-		"""Löscht ein einzelnes Bild anhand seines internen Attachment-Namens."""
-
+		"""
+		Löscht ein einzelnes Bild anhand seines internen Attachment-Namens.
+		"""
 		if self.config.image_field is None:
 			return False
 		deleted = {'value': False}
 
 		def mutate(document: dict[str, Any]) -> None:
+			"""
+			Verändert das geladene Dokument für eine CouchDB-Aktualisierung.
+			"""
 			images = list(document.get(self.config.image_field) or [])
 			if not any(image.get('attachment_name') == attachment_name for image in images):
 				return
@@ -249,18 +290,23 @@ class CouchPopelsDatabase:
 		return document is not None and deleted['value']
 
 	def delete(self, record_id: str) -> bool:
-		"""Löscht einen Datensatz samt seiner Anhänge."""
-
+		"""
+		Löscht einen Datensatz samt seiner Anhänge.
+		"""
 		return self._get_database().delete_document(record_id)
 
 	def _get_database(self):
+		"""
+		Erzeugt den Zugriff auf die zugrunde liegende CouchDB-Datenbank.
+		"""
 		if self._database is None:
 			self._database = create_couch_database()
 		return self._database
 
 	def _create_record(self, data: dict[str, Any], record_id: str):
-		"""Erstellt ein normalisiertes Modell aus Formularwerten."""
-
+		"""
+		Erstellt ein normalisiertes Modell aus Formularwerten.
+		"""
 		values = {}
 		for field in self.config.form_fields:
 			if self.config.page(field).get('berechnen'):
@@ -280,8 +326,9 @@ class CouchPopelsDatabase:
 		return self.model(id=record_id, **values)
 
 	def _normalize_document(self, document: dict[str, Any]) -> dict[str, Any]:
-		"""Übernimmt ein CouchDB-Dokument mit den konfigurierten Feldnamen."""
-
+		"""
+		Übernimmt ein CouchDB-Dokument mit den konfigurierten Feldnamen.
+		"""
 		values = {}
 		for field, definition in self.config.field_labels.items():
 			default = [] if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'} else {}
@@ -307,8 +354,9 @@ class CouchPopelsDatabase:
 
 
 def normalize_list_value(value: Any) -> list[Any]:
-	"""Normalisiert alte Einzelwerte und neue Listenwerte auf eine Liste."""
-
+	"""
+	Normalisiert alte Einzelwerte und neue Listenwerte auf eine Liste.
+	"""
 	if value in (None, ''):
 		return []
 	if isinstance(value, list):
@@ -317,8 +365,9 @@ def normalize_list_value(value: Any) -> list[Any]:
 
 
 def apply_calculated_fields(config: PopelsConfig, values: dict[str, Any]) -> None:
-	"""Berechnet konfigurierte Rechenfelder für geladene Datensätze."""
-
+	"""
+	Berechnet konfigurierte Rechenfelder für geladene Datensätze.
+	"""
 	for field in config.field_labels:
 		formula = config.page(field).get('berechnen')
 		if not formula:
@@ -330,8 +379,9 @@ def apply_calculated_fields(config: PopelsConfig, values: dict[str, Any]) -> Non
 
 
 def normalize_iban_value(value: Any) -> str:
-	"""Bereinigt eine IBAN und gruppiert sie in Viererblöcke."""
-
+	"""
+	Bereinigt eine IBAN und gruppiert sie in Viererblöcke.
+	"""
 	compact = ''.join(
 		character
 		for character in str(value or '').upper()
@@ -341,8 +391,9 @@ def normalize_iban_value(value: Any) -> str:
 
 
 def normalize_euro_value(value: Any) -> str:
-	"""Normalisiert einen Euro-Betrag auf zwei Nachkommastellen."""
-
+	"""
+	Normalisiert einen Euro-Betrag auf zwei Nachkommastellen.
+	"""
 	text = str(value or '').strip().replace('€', '').replace(' ', '').replace(',', '.')
 	if not text:
 		return ''
@@ -356,8 +407,9 @@ def normalize_euro_value(value: Any) -> str:
 
 
 def normalize_bankdata_value(value: Any) -> dict[str, Any]:
-	"""Normalisiert eingebettete Bankdaten im Mitglieder-Dokument."""
-
+	"""
+	Normalisiert eingebettete Bankdaten im Mitglieder-Dokument.
+	"""
 	if not isinstance(value, dict):
 		return {}
 	result = {
@@ -373,8 +425,9 @@ def normalize_bankdata_value(value: Any) -> dict[str, Any]:
 
 
 def normalize_course_bookings_value(value: Any) -> list[dict[str, Any]]:
-	"""Normalisiert Kursbesuchszeilen auf saubere Wörterbücher."""
-
+	"""
+	Normalisiert Kursbesuchszeilen auf saubere Wörterbücher.
+	"""
 	if value in (None, ''):
 		return []
 	if not isinstance(value, list):
@@ -394,8 +447,9 @@ def normalize_course_bookings_value(value: Any) -> list[dict[str, Any]]:
 
 
 def normalize_paid_value(value: Any) -> bool | None:
-	"""Normalisiert den Bezahlstatus und erhält leere Werte."""
-
+	"""
+	Normalisiert den Bezahlstatus und erhält leere Werte.
+	"""
 	if value is None or value == '':
 		return None
 	if isinstance(value, str):
@@ -408,8 +462,9 @@ def sort_records(
 	sortierungen: list[str],
 	sort_fields: list[str],
 ) -> list[dict[str, Any]]:
-	"""Sortiert Datensätze stabil nach mehreren priorisierten Kriterien."""
-
+	"""
+	Sortiert Datensätze stabil nach mehreren priorisierten Kriterien.
+	"""
 	result = list(records)
 	for criterion in reversed(sortierungen):
 		field, separator, direction = criterion.partition(':')
@@ -430,16 +485,18 @@ def sort_records(
 
 
 def sortable_field_value(field: str, value: Any) -> str | tuple[str, str]:
-	"""Bereitet ein Feld entsprechend seiner fachlichen Sortierung auf."""
-
+	"""
+	Bereitet ein Feld entsprechend seiner fachlichen Sortierung auf.
+	"""
 	if field == 'name':
 		return sortable_name(value)
 	return sortable_value(value)
 
 
 def sortable_name(value: Any) -> tuple[str, str]:
-	"""Sortiert vollständige Namen nach dem letzten und danach den übrigen Teilen."""
-
+	"""
+	Sortiert vollständige Namen nach dem letzten und danach den übrigen Teilen.
+	"""
 	parts = str(value or '').split()
 	if not parts:
 		return '', ''
@@ -447,8 +504,9 @@ def sortable_name(value: Any) -> tuple[str, str]:
 
 
 def sortable_value(value: Any) -> str:
-	"""Wandelt unterschiedliche Feldwerte in einen vergleichbaren Suchtext um."""
-
+	"""
+	Wandelt unterschiedliche Feldwerte in einen vergleichbaren Suchtext um.
+	"""
 	if isinstance(value, list):
 		value = ', '.join(str(item) for item in value)
 	return str(value or '').casefold()

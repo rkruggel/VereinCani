@@ -1,5 +1,6 @@
-"""Konfiguration und HTTP-Zugriff für die gemeinsame CouchDB-Datenbank."""
-
+"""
+Konfiguration und HTTP-Zugriff für die gemeinsame CouchDB-Datenbank.
+"""
 import configparser
 import os
 from copy import deepcopy
@@ -24,17 +25,18 @@ COUCH_INTERNAL_FIELDS = {
 
 
 class CouchDatabaseError(RuntimeError):
-	"""Meldet fehlgeschlagene CouchDB-Anfragen."""
-
-
+	"""
+	Meldet fehlgeschlagene CouchDB-Anfragen.
+	"""
 class CouchConflictError(CouchDatabaseError):
-	"""Meldet einen nicht auflösbaren Revisionskonflikt."""
-
-
+	"""
+	Meldet einen nicht auflösbaren Revisionskonflikt.
+	"""
 @dataclass(frozen=True)
 class CouchConfig:
-	"""Verbindungsdaten der CouchDB-Instanz."""
-
+	"""
+	Verbindungsdaten der CouchDB-Instanz.
+	"""
 	server_url: str
 	database: str
 	username: str = ''
@@ -42,8 +44,9 @@ class CouchConfig:
 
 
 def load_couch_config(config_path: Path = CONFIG_PATH) -> CouchConfig:
-	"""Lädt die CouchDB-Zugangsdaten aus Umgebung oder ``config.ini``."""
-
+	"""
+	Lädt die CouchDB-Zugangsdaten aus Umgebung oder ``config.ini``.
+	"""
 	parser = configparser.ConfigParser()
 	parser.read(config_path)
 	return CouchConfig(
@@ -67,11 +70,15 @@ def load_couch_config(config_path: Path = CONFIG_PATH) -> CouchConfig:
 
 
 class CouchDatabase:
-	"""Kapselt dokumentorientierte CouchDB-Operationen für die Anwendung."""
-
+	"""
+	Kapselt dokumentorientierte CouchDB-Operationen für die Anwendung.
+	"""
 	MAX_RETRIES = 5
 
 	def __init__(self, config: CouchConfig | None = None) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self.config = config or load_couch_config()
 		self._session = requests.Session()
 		if self.config.username:
@@ -83,16 +90,18 @@ class CouchDatabase:
 		self.ensure_database()
 
 	def ensure_database(self) -> None:
-		"""Legt die konfigurierte Datenbank an, falls sie noch nicht existiert."""
-
+		"""
+		Legt die konfigurierte Datenbank an, falls sie noch nicht existiert.
+		"""
 		response = self._session.get(self._database_url, timeout=15)
 		if response.status_code == 404:
 			response = self._session.put(self._database_url, timeout=15)
 		self._raise_for_status(response, 'CouchDB-Datenbank konnte nicht geöffnet werden')
 
 	def list_documents(self, collection: str) -> list[dict[str, Any]]:
-		"""Lädt alle Dokumente einer logischen Collection."""
-
+		"""
+		Lädt alle Dokumente einer logischen Collection.
+		"""
 		response = self._session.get(
 			f'{self._database_url}/_all_docs',
 			params={'include_docs': 'true'},
@@ -106,8 +115,9 @@ class CouchDatabase:
 		]
 
 	def get_document(self, document_id: str) -> dict[str, Any] | None:
-		"""Lädt ein Dokument anhand seiner stabilen ID."""
-
+		"""
+		Lädt ein Dokument anhand seiner stabilen ID.
+		"""
 		response = self._session.get(self._document_url(document_id), timeout=15)
 		if response.status_code == 404:
 			return None
@@ -120,8 +130,9 @@ class CouchDatabase:
 		data: dict[str, Any],
 		collection: str,
 	) -> dict[str, Any]:
-		"""Erstellt ein neues Dokument und lehnt vorhandene IDs ab."""
-
+		"""
+		Erstellt ein neues Dokument und lehnt vorhandene IDs ab.
+		"""
 		document = self._prepare_document(document_id, data, collection)
 		response = self._session.put(
 			self._document_url(document_id),
@@ -140,8 +151,9 @@ class CouchDatabase:
 		data: dict[str, Any],
 		collection: str,
 	) -> dict[str, Any]:
-		"""Erstellt oder ersetzt ein Dokument revisionssicher."""
-
+		"""
+		Erstellt oder ersetzt ein Dokument revisionssicher.
+		"""
 		for _attempt in range(self.MAX_RETRIES):
 			existing = self.get_document(document_id)
 			document = self._prepare_document(document_id, data, collection)
@@ -166,8 +178,9 @@ class CouchDatabase:
 		document_id: str,
 		mutator: Callable[[dict[str, Any]], None],
 	) -> dict[str, Any] | None:
-		"""Ändert ein vorhandenes Dokument mit Konfliktwiederholung."""
-
+		"""
+		Ändert ein vorhandenes Dokument mit Konfliktwiederholung.
+		"""
 		for _attempt in range(self.MAX_RETRIES):
 			document = self.get_document(document_id)
 			if document is None:
@@ -186,8 +199,9 @@ class CouchDatabase:
 		raise CouchConflictError(f'CouchDB-Dokument {document_id} wurde gleichzeitig geändert')
 
 	def delete_document(self, document_id: str) -> bool:
-		"""Löscht ein Dokument einschließlich seiner Anhänge."""
-
+		"""
+		Löscht ein Dokument einschließlich seiner Anhänge.
+		"""
 		for _attempt in range(self.MAX_RETRIES):
 			document = self.get_document(document_id)
 			if document is None:
@@ -204,8 +218,9 @@ class CouchDatabase:
 		raise CouchConflictError(f'CouchDB-Dokument {document_id} wurde gleichzeitig geändert')
 
 	def get_attachment(self, document_id: str, attachment_name: str) -> bytes | None:
-		"""Lädt die Binärdaten eines CouchDB-Anhangs."""
-
+		"""
+		Lädt die Binärdaten eines CouchDB-Anhangs.
+		"""
 		response = self._session.get(
 			f'{self._document_url(document_id)}/{quote(attachment_name, safe="")}',
 			timeout=60,
@@ -219,8 +234,9 @@ class CouchDatabase:
 		return response.content
 
 	def plain_document(self, document: dict[str, Any]) -> dict[str, Any]:
-		"""Entfernt CouchDB-interne Felder aus einem Anwendungsdokument."""
-
+		"""
+		Entfernt CouchDB-interne Felder aus einem Anwendungsdokument.
+		"""
 		return {
 			key: deepcopy(value)
 			for key, value in document.items()
@@ -228,6 +244,9 @@ class CouchDatabase:
 		}
 
 	def close(self) -> None:
+		"""
+		Schließt die HTTP-Sitzung des CouchDB-Clients.
+		"""
 		self._session.close()
 
 	def _prepare_document(
@@ -236,6 +255,9 @@ class CouchDatabase:
 		data: dict[str, Any],
 		collection: str,
 	) -> dict[str, Any]:
+		"""
+		Bereitet ein Anwendungsdokument für CouchDB vor.
+		"""
 		document = deepcopy(data)
 		document['_id'] = document_id
 		document[COLLECTION_FIELD] = collection
@@ -243,6 +265,9 @@ class CouchDatabase:
 
 	@staticmethod
 	def _document_collection(document: dict[str, Any]) -> str | None:
+		"""
+		Liest die logische Collection eines CouchDB-Dokuments.
+		"""
 		if document.get(COLLECTION_FIELD) is not None:
 			return document[COLLECTION_FIELD]
 		for legacy_field in LEGACY_COLLECTION_FIELDS:
@@ -251,10 +276,16 @@ class CouchDatabase:
 		return None
 
 	def _document_url(self, document_id: str) -> str:
+		"""
+		Erzeugt die URL eines CouchDB-Dokuments.
+		"""
 		return f'{self._database_url}/{quote(document_id, safe="")}'
 
 	@staticmethod
 	def _raise_for_status(response: requests.Response, message: str) -> None:
+		"""
+		Wandelt fehlgeschlagene HTTP-Antworten in Ausnahmen um.
+		"""
 		if response.ok:
 			return
 		try:
@@ -265,6 +296,7 @@ class CouchDatabase:
 
 
 def create_couch_database(config: CouchConfig | None = None) -> CouchDatabase:
-	"""Erzeugt einen CouchDB-Client für die konfigurierte Datenbank."""
-
+	"""
+	Erzeugt einen CouchDB-Client für die konfigurierte Datenbank.
+	"""
 	return CouchDatabase(config)

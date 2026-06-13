@@ -1,5 +1,6 @@
-"""Menükonfiguration, Zugriffsschutz und Navigation der Anwendung."""
-
+"""
+Menükonfiguration, Zugriffsschutz und Navigation der Anwendung.
+"""
 from collections.abc import Callable
 from typing import Any
 

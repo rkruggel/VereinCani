@@ -1,5 +1,6 @@
-"""Dashboard der VereinGUI-Anwendung."""
-
+"""
+Dashboard der VereinGUI-Anwendung.
+"""
 from nicegui import ui
 
 
@@ -41,8 +42,9 @@ DASHBOARD_STEPS = [
 
 
 def render_dashboard_page() -> None:
-	"""Erzeugt die vollständige Dashboard-Ansicht."""
-
+	"""
+	Erzeugt die vollständige Dashboard-Ansicht.
+	"""
 	with ui.column().classes('w-full gap-4'):
 		with ui.card().classes('w-full p-6 rounded-lg shadow-sm border border-slate-200 gap-3'):
 			ui.label('Willkommen in VereinGUI').classes('text-2xl font-bold text-slate-900')

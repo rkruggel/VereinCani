@@ -1,5 +1,6 @@
-"""Konfiguration eines aus Felddefinitionen aufgebauten Popels-Moduls."""
-
+"""
+Konfiguration eines aus Felddefinitionen aufgebauten Popels-Moduls.
+"""
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -9,8 +10,9 @@ import yaml
 
 @dataclass(frozen=True)
 class PopelsConfig:
-	"""Beschreibt Felder, Texte und Persistenz eines Popels-Bereichs."""
-
+	"""
+	Beschreibt Felder, Texte und Persistenz eines Popels-Bereichs.
+	"""
 	key: str
 	singular: str
 	plural: str
@@ -21,44 +23,51 @@ class PopelsConfig:
 
 	@property
 	def id_prefix(self) -> str:
-		"""Liefert das CouchDB-ID-Präfix der Fachdokumente."""
-
+		"""
+		Liefert das CouchDB-ID-Präfix der Fachdokumente.
+		"""
 		return self.key
 
 	@property
 	def settings_id_prefix(self) -> str:
-		"""Liefert das CouchDB-ID-Präfix der Benutzereinstellungen."""
-
+		"""
+		Liefert das CouchDB-ID-Präfix der Benutzereinstellungen.
+		"""
 		return f'{self.key}-listen-einstellungen'
 
 	@property
 	def form_fields(self) -> list[str]:
-		"""Liefert alle im Eingabeformular verwendeten Felder."""
-
+		"""
+		Liefert alle im Eingabeformular verwendeten Felder.
+		"""
 		return self.page_fields_with('formular')
 
 	@property
 	def required_fields(self) -> list[str]:
-		"""Liefert alle als Pflichtfeld markierten Felder."""
-
+		"""
+		Liefert alle als Pflichtfeld markierten Felder.
+		"""
 		return self.page_fields_with('pflichtfeld')
 
 	@property
 	def search_fields(self) -> list[str]:
-		"""Liefert alle Felder der Volltextsuche."""
-
+		"""
+		Liefert alle Felder der Volltextsuche.
+		"""
 		return self.list_fields_with('suchbar')
 
 	@property
 	def sort_fields(self) -> list[str]:
-		"""Liefert alle für die Sortierung freigegebenen Felder."""
-
+		"""
+		Liefert alle für die Sortierung freigegebenen Felder.
+		"""
 		return self.list_fields_with('sortierbar')
 
 	@property
 	def content_action_fields(self) -> list[str]:
-		"""Liefert separat bearbeitete Inhaltsfelder wie Text und Bilder."""
-
+		"""
+		Liefert separat bearbeitete Inhaltsfelder wie Text und Bilder.
+		"""
 		return [
 			field
 			for field in self.field_labels
@@ -67,29 +76,34 @@ class PopelsConfig:
 
 	@property
 	def editor_field(self) -> str | None:
-		"""Liefert das optionale Rich-Text-Feld."""
-
+		"""
+		Liefert das optionale Rich-Text-Feld.
+		"""
 		return self.field_for_control('editor')
 
 	@property
 	def image_field(self) -> str | None:
-		"""Liefert das optionale Bilderfeld."""
-
+		"""
+		Liefert das optionale Bilderfeld.
+		"""
 		return self.field_for_control('upload')
 
 	def page(self, field: str) -> dict[str, Any]:
-		"""Liefert die Seitenkonfiguration eines Feldes."""
-
+		"""
+		Liefert die Seitenkonfiguration eines Feldes.
+		"""
 		return self.field_labels[field].get('page', {})
 
 	def liste(self, field: str) -> dict[str, Any]:
-		"""Liefert die Listenkonfiguration eines Feldes."""
-
+		"""
+		Liefert die Listenkonfiguration eines Feldes.
+		"""
 		return self.field_labels[field].get('liste', {})
 
 	def page_fields_with(self, marker: str) -> list[str]:
-		"""Liefert Felder mit einem gesetzten Marker im ``page``-Block."""
-
+		"""
+		Liefert Felder mit einem gesetzten Marker im ``page``-Block.
+		"""
 		return [
 			field
 			for field in self.field_labels
@@ -97,8 +111,9 @@ class PopelsConfig:
 		]
 
 	def list_fields_with(self, marker: str) -> list[str]:
-		"""Liefert Felder mit einem gesetzten Marker im ``liste``-Block."""
-
+		"""
+		Liefert Felder mit einem gesetzten Marker im ``liste``-Block.
+		"""
 		return [
 			field
 			for field in self.field_labels
@@ -106,8 +121,9 @@ class PopelsConfig:
 		]
 
 	def field_for_control(self, control: str) -> str | None:
-		"""Sucht das erste Feld mit einem bestimmten Steuerelement."""
-
+		"""
+		Sucht das erste Feld mit einem bestimmten Steuerelement.
+		"""
 		return next(
 			(
 				field
@@ -118,27 +134,31 @@ class PopelsConfig:
 		)
 
 	def field_position(self, field: str, key: str, default: Any = None) -> Any:
-		"""Liefert eine Positionsangabe aus dem ``liste``-Block eines Feldes."""
-
+		"""
+		Liefert eine Positionsangabe aus dem ``liste``-Block eines Feldes.
+		"""
 		value = self.liste(field).get(key, default)
 		if key == 'listSection' and value is False:
 			return 'off'
 		return value
 
 	def is_list_field(self, field: str) -> bool:
-		"""Prüft, ob ein Feld grundsätzlich in der Kartenliste erscheinen darf."""
-
+		"""
+		Prüft, ob ein Feld grundsätzlich in der Kartenliste erscheinen darf.
+		"""
 		return self.field_position(field, 'listSection') != 'off'
 
 	@property
 	def list_display_fields(self) -> list[str]:
-		"""Liefert alle Felder, die für die Kartenliste freigegeben sind."""
-
+		"""
+		Liefert alle Felder, die für die Kartenliste freigegeben sind.
+		"""
 		return [field for field in self.field_labels if self.is_list_field(field)]
 
 	def list_fields(self, section: str) -> list[str]:
-		"""Liefert die Felder eines Listenbereichs in konfigurierter Reihenfolge."""
-
+		"""
+		Liefert die Felder eines Listenbereichs in konfigurierter Reihenfolge.
+		"""
 		return [
 			field
 			for field in sorted(
@@ -151,8 +171,9 @@ class PopelsConfig:
 
 
 def load_popels_config(file_name: str) -> PopelsConfig:
-	"""Lädt eine Popels-Konfiguration aus dem Projektordner ``popels``."""
-
+	"""
+	Lädt eine Popels-Konfiguration aus dem Projektordner ``popels``.
+	"""
 	project_root = Path(__file__).resolve().parents[2]
 	config_path = project_root / 'popels' / file_name
 	with config_path.open(encoding='utf-8') as config_file:

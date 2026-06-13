@@ -1,5 +1,6 @@
-"""Terminbereich der VereinGUI-Anwendung."""
-
+"""
+Terminbereich der VereinGUI-Anwendung.
+"""
 from nicegui import ui
 
 
@@ -12,8 +13,9 @@ TERMINE_ITEMS = [
 
 
 def render_termine_page() -> None:
-	"""Erzeugt die vollständige Vorschau des Terminbereichs."""
-
+	"""
+	Erzeugt die vollständige Vorschau des Terminbereichs.
+	"""
 	with ui.column().classes('w-full gap-4'):
 		with ui.row().classes('w-full gap-4 items-stretch max-md:flex-col'):
 			with ui.card().classes('flex-1 min-w-[220px] p-5 rounded-2xl shadow-sm'):

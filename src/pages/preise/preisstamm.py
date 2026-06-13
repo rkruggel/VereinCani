@@ -1,5 +1,6 @@
-"""CouchDB-Zugriff und Stammdatenseite für den Preisstamm."""
-
+"""
+CouchDB-Zugriff und Stammdatenseite für den Preisstamm.
+"""
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -17,29 +18,37 @@ EMPTY_COURSE = {'kurs': '', 'preis': '', 'dauer': '', 'einheit': 'einmalig'}
 
 
 class PreisstammRepository:
-	"""Speichert die Preise für ein bis fünf Hunde in einem festen Dokument."""
-
+	"""
+	Speichert die Preise für ein bis fünf Hunde in einem festen Dokument.
+	"""
 	def __init__(self, database: Any | None = None) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self._database = database
 
 	def get(self) -> dict[int, str]:
-		"""Lädt alle Hundepreise und ergänzt noch nicht gespeicherte Werte."""
-
+		"""
+		Lädt alle Hundepreise und ergänzt noch nicht gespeicherte Werte.
+		"""
 		return prices_from_document(self.get_document())
 
 	def get_valid_from(self) -> str:
-		"""Lädt das Datum, ab dem der Preisstamm gültig ist."""
-
+		"""
+		Lädt das Datum, ab dem der Preisstamm gültig ist.
+		"""
 		return valid_from_document(self.get_document())
 
 	def get_courses(self) -> list[dict[str, str]]:
-		"""Lädt die gespeicherten Kurspreise aus dem Preisstamm."""
-
+		"""
+		Lädt die gespeicherten Kurspreise aus dem Preisstamm.
+		"""
 		return courses_from_document(self.get_document())
 
 	def get_document(self) -> dict[str, Any]:
-		"""Lädt das feste Preisstamm-Dokument genau einmal."""
-
+		"""
+		Lädt das feste Preisstamm-Dokument genau einmal.
+		"""
 		return self._get_database().get_document(PREISSTAMM_ID) or {}
 
 	def save(
@@ -48,8 +57,9 @@ class PreisstammRepository:
 		valid_from: Any,
 		courses: list[dict[str, Any]] | None = None,
 	) -> None:
-		"""Speichert einen vollständigen und normalisierten Hundepreisstamm."""
-
+		"""
+		Speichert einen vollständigen und normalisierten Hundepreisstamm.
+		"""
 		normalized = {
 			str(count): normalize_price(prices.get(count, ''))
 			for count in HUNDE_ANZAHLEN
@@ -66,21 +76,26 @@ class PreisstammRepository:
 		)
 
 	def get_price(self, dog_count: int) -> str:
-		"""Liefert den gespeicherten Preis für eine konkrete Hundeanzahl."""
-
+		"""
+		Liefert den gespeicherten Preis für eine konkrete Hundeanzahl.
+		"""
 		if dog_count not in HUNDE_ANZAHLEN:
 			raise ValueError('Die Hundeanzahl muss zwischen 1 und 5 liegen.')
 		return self.get()[dog_count]
 
 	def _get_database(self):
+		"""
+		Erzeugt den Zugriff auf die zugrunde liegende CouchDB-Datenbank.
+		"""
 		if self._database is None:
 			self._database = create_couch_database()
 		return self._database
 
 
 def normalize_price(value: Any) -> str:
-	"""Normalisiert einen nicht-negativen Geldbetrag auf zwei Nachkommastellen."""
-
+	"""
+	Normalisiert einen nicht-negativen Geldbetrag auf zwei Nachkommastellen.
+	"""
 	text = str(value or '').strip().replace('€', '').replace(' ', '').replace(',', '.')
 	if not text:
 		raise ValueError('Alle Preise müssen angegeben werden.')
@@ -94,8 +109,9 @@ def normalize_price(value: Any) -> str:
 
 
 def number_input_value(value: Any) -> float | None:
-	"""Bereitet gespeicherte Preiswerte für NiceGUI-Zahlenfelder vor."""
-
+	"""
+	Bereitet gespeicherte Preiswerte für NiceGUI-Zahlenfelder vor.
+	"""
 	text = str(value or '').strip()
 	if not text:
 		return None
@@ -103,8 +119,9 @@ def number_input_value(value: Any) -> float | None:
 
 
 def normalize_valid_from(value: Any, field_label: str = 'Gültig ab') -> str:
-	"""Validiert das Gültigkeitsdatum und liefert das ISO-Datumsformat."""
-
+	"""
+	Validiert das Gültigkeitsdatum und liefert das ISO-Datumsformat.
+	"""
 	text = str(value or '').strip()
 	if not text:
 		raise ValueError(f'Das Feld {field_label} muss angegeben werden.')
@@ -115,8 +132,9 @@ def normalize_valid_from(value: Any, field_label: str = 'Gültig ab') -> str:
 
 
 def normalize_course_interval(value: Any) -> str:
-	"""Normalisiert die Einheit einer Kursdauer auf eine auswählbare Option."""
-
+	"""
+	Normalisiert die Einheit einer Kursdauer auf eine auswählbare Option.
+	"""
 	text = str(value or 'einmalig').strip()
 	for option in COURSE_INTERVAL_OPTIONS:
 		if text.casefold() == option.casefold():
@@ -129,8 +147,9 @@ def normalize_courses(
 	*,
 	allow_empty: bool = False,
 ) -> list[dict[str, str]]:
-	"""Normalisiert Kurszeilen und verwirft vollständig leere Zeilen."""
-
+	"""
+	Normalisiert Kurszeilen und verwirft vollständig leere Zeilen.
+	"""
 	normalized = []
 	for row in courses:
 		course = str(row.get('kurs') or '').strip()
@@ -163,8 +182,9 @@ def normalize_courses(
 
 
 def prices_from_document(document: dict[str, Any]) -> dict[int, str]:
-	"""Liest die Hundepreise aus einem Preisstamm-Dokument."""
-
+	"""
+	Liest die Hundepreise aus einem Preisstamm-Dokument.
+	"""
 	prices = document.get('hundepreise') or {}
 	return {
 		count: normalize_price(prices.get(str(count))) if prices.get(str(count)) not in (None, '') else ''
@@ -173,14 +193,16 @@ def prices_from_document(document: dict[str, Any]) -> dict[int, str]:
 
 
 def valid_from_document(document: dict[str, Any]) -> str:
-	"""Liest das Gültigkeitsdatum aus einem Preisstamm-Dokument."""
-
+	"""
+	Liest das Gültigkeitsdatum aus einem Preisstamm-Dokument.
+	"""
 	return str(document.get('gueltig_ab') or '')
 
 
 def courses_from_document(document: dict[str, Any]) -> list[dict[str, str]]:
-	"""Liest die Kurszeilen aus einem Preisstamm-Dokument."""
-
+	"""
+	Liest die Kurszeilen aus einem Preisstamm-Dokument.
+	"""
 	return normalize_courses(document.get('kurse') or [], allow_empty=True)
 
 
@@ -188,8 +210,9 @@ PREISSTAMM = PreisstammRepository()
 
 
 def render_preisstamm_page() -> None:
-	"""Rendert die Stammdatenseite zur Pflege der fünf Hundepreise."""
-
+	"""
+	Rendert die Stammdatenseite zur Pflege der fünf Hundepreise.
+	"""
 	repository = PREISSTAMM
 	inputs: dict[int, Any] = {}
 	course_inputs: list[dict[str, Any]] = []
@@ -243,6 +266,9 @@ def render_preisstamm_page() -> None:
 		ui.separator().classes('w-full')
 
 		def sync_course_rows() -> None:
+			"""
+			Synchronisiert sichtbare Kurszeilen mit dem internen Zustand.
+			"""
 			if not course_inputs:
 				return
 			course_rows['value'] = [
@@ -256,12 +282,18 @@ def render_preisstamm_page() -> None:
 			]
 
 		def add_course_row(after_index: int | None = None) -> None:
+			"""
+			Fügt eine leere Kurszeile ein.
+			"""
 			sync_course_rows()
 			insert_at = len(course_rows['value']) if after_index is None else after_index + 1
 			course_rows['value'].insert(insert_at, EMPTY_COURSE.copy())
 			render_course_rows.refresh()
 
 		def delete_course_row(index: int) -> None:
+			"""
+			Löscht eine Kurszeile und hält mindestens eine Zeile vor.
+			"""
 			sync_course_rows()
 			if 0 <= index < len(course_rows['value']):
 				course_rows['value'].pop(index)
@@ -271,6 +303,9 @@ def render_preisstamm_page() -> None:
 
 		@ui.refreshable
 		def render_course_rows() -> None:
+			"""
+			Rendert die editierbaren Kurszeilen des Preisstamms.
+			"""
 			course_inputs.clear()
 			for index, row in enumerate(course_rows['value']):
 				with ui.row().classes('w-full items-start gap-2 max-sm:flex-col'):
@@ -314,6 +349,9 @@ def render_preisstamm_page() -> None:
 		render_course_rows()
 
 		def save_prices() -> None:
+			"""
+			Validiert und speichert den Preisstamm.
+			"""
 			sync_course_rows()
 			try:
 				repository.save({

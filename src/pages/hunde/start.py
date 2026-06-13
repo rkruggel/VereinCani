@@ -1,5 +1,6 @@
-"""Startpunkt der Hundeverwaltung."""
-
+"""
+Startpunkt der Hundeverwaltung.
+"""
 from typing import Any
 
 from nicegui import ui
@@ -19,8 +20,9 @@ HUNDELISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_hunde_page() -> None:
-	"""Übergibt die Hundekonfiguration an die gemeinsame Popels-Seite."""
-
+	"""
+	Übergibt die Hundekonfiguration an die gemeinsame Popels-Seite.
+	"""
 	try:
 		personal_records = {
 			record['id']: record
@@ -42,8 +44,9 @@ def render_hunde_page() -> None:
 
 
 def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict[str, str]:
-	"""Erzeugt eindeutige Select-Beschriftungen aus den Namen."""
-
+	"""
+	Erzeugt eindeutige Select-Beschriftungen aus den Namen.
+	"""
 	options = {}
 	used_labels: set[str] = set()
 	for record_id, record in personal_records.items():

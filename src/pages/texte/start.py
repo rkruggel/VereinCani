@@ -1,5 +1,6 @@
-"""Startpunkt des Bereichs Texte."""
-
+"""
+Startpunkt des Bereichs Texte.
+"""
 from typing import Any
 
 from nicegui import ui
@@ -20,8 +21,9 @@ TEXT_GROUP_OPTIONS_ID = 'texte/gruppen'
 
 
 def render_texte_page() -> None:
-	"""Zeigt die Textverwaltung."""
-
+	"""
+	Zeigt die Textverwaltung.
+	"""
 	try:
 		group_options = load_group_options()
 	except Exception as error:
@@ -43,15 +45,17 @@ def render_texte_page() -> None:
 
 
 def load_group_options() -> list[str]:
-	"""Lädt die verwaltbaren Gruppenwerte."""
-
+	"""
+	Lädt die verwaltbaren Gruppenwerte.
+	"""
 	document = create_couch_database().get_document(TEXT_GROUP_OPTIONS_ID) or {}
 	return normalize_group_options(document.get('optionen') or [])
 
 
 def save_group_options(options: list[str]) -> None:
-	"""Speichert die verwaltbaren Gruppenwerte."""
-
+	"""
+	Speichert die verwaltbaren Gruppenwerte.
+	"""
 	create_couch_database().put_document(
 		TEXT_GROUP_OPTIONS_ID,
 		{'optionen': normalize_group_options(options)},
@@ -60,8 +64,9 @@ def save_group_options(options: list[str]) -> None:
 
 
 def rename_text_group(old_value: str, new_value: str) -> None:
-	"""Übernimmt einen geänderten Gruppennamen in vorhandene Text-Dokumente."""
-
+	"""
+	Übernimmt einen geänderten Gruppennamen in vorhandene Text-Dokumente.
+	"""
 	old_text = str(old_value or '').strip()
 	new_text = str(new_value or '').strip()
 	if not old_text or not new_text or old_text == new_text:
@@ -72,8 +77,9 @@ def rename_text_group(old_value: str, new_value: str) -> None:
 
 
 def normalize_group_options(options: list[Any]) -> list[str]:
-	"""Normalisiert Gruppenwerte eindeutig und sortiert."""
-
+	"""
+	Normalisiert Gruppenwerte eindeutig und sortiert.
+	"""
 	seen = set()
 	result = []
 	for option in options:

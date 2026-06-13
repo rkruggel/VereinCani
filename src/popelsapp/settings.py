@@ -1,5 +1,6 @@
-"""CouchDB-Modell und Repository für persönliche Listeneinstellungen."""
-
+"""
+CouchDB-Modell und Repository für persönliche Listeneinstellungen.
+"""
 from dataclasses import asdict, dataclass
 from typing import Any
 from urllib.parse import quote
@@ -10,30 +11,44 @@ from src.popelsapp import PopelsConfig
 
 @dataclass
 class Listeneinstellung:
-	"""Speichert sichtbare Felder und Sortierung eines Benutzers."""
-
+	"""
+	Speichert sichtbare Felder und Sortierung eines Benutzers.
+	"""
 	id: str = ''
 	benutzer_name: str = ''
 	sichtbare_felder: list[str] | None = None
 	sortierungen: list[str] | None = None
 
 	def __post_init__(self) -> None:
+		"""
+		Normalisiert die Felder nach der Dataclass-Erzeugung.
+		"""
 		self.sichtbare_felder = list(self.sichtbare_felder or [])
 		self.sortierungen = list(self.sortierungen or [])
 
 
 class ListeneinstellungenRepository:
-	"""Verwaltet benutzerspezifische Listeneinstellungen in CouchDB."""
-
+	"""
+	Verwaltet benutzerspezifische Listeneinstellungen in CouchDB.
+	"""
 	def __init__(self, config: PopelsConfig) -> None:
+		"""
+		Initialisiert die Instanz mit den übergebenen Werten.
+		"""
 		self.config = config
 		self._database = None
 
 	def get(self, benutzer_name: str) -> list[str] | None:
+		"""
+		Lädt die gespeicherten Listeneinstellungen eines Benutzers.
+		"""
 		einstellung = self.get_document(benutzer_name)
 		return list(einstellung.sichtbare_felder) if einstellung is not None else None
 
 	def get_document(self, benutzer_name: str) -> Listeneinstellung | None:
+		"""
+		Lädt ein Dokument anhand seiner festen ID.
+		"""
 		document = self._get_database().get_document(self.einstellung_id(benutzer_name))
 		if document is None:
 			return None
@@ -43,10 +58,16 @@ class ListeneinstellungenRepository:
 		})
 
 	def get_sortierungen(self, benutzer_name: str) -> list[str] | None:
+		"""
+		Lädt die gespeicherte Sortierreihenfolge eines Benutzers.
+		"""
 		einstellung = self.get_document(benutzer_name)
 		return list(einstellung.sortierungen) if einstellung is not None else None
 
 	def save(self, benutzer_name: str, sichtbare_felder: list[str]) -> None:
+		"""
+		Speichert sichtbare Felder für einen Benutzer.
+		"""
 		einstellung = self.get_document(benutzer_name) or Listeneinstellung(
 			id=self.einstellung_id(benutzer_name),
 			benutzer_name=benutzer_name,
@@ -55,6 +76,9 @@ class ListeneinstellungenRepository:
 		self._save(einstellung)
 
 	def save_sortierungen(self, benutzer_name: str, sortierungen: list[str]) -> None:
+		"""
+		Speichert die Sortierreihenfolge eines Benutzers.
+		"""
 		einstellung = self.get_document(benutzer_name) or Listeneinstellung(
 			id=self.einstellung_id(benutzer_name),
 			benutzer_name=benutzer_name,
@@ -63,14 +87,16 @@ class ListeneinstellungenRepository:
 		self._save(einstellung)
 
 	def load_editable_options(self, field: str) -> list[str]:
-		"""Lädt die gespeicherten Optionen eines editierbaren Select-Feldes."""
-
+		"""
+		Lädt die gespeicherten Optionen eines editierbaren Select-Feldes.
+		"""
 		document = self._get_database().get_document(self.editable_options_id(field)) or {}
 		return normalize_editable_options(document.get('optionen') or [])
 
 	def save_editable_options(self, field: str, options: list[Any]) -> None:
-		"""Speichert die Optionen eines editierbaren Select-Feldes dauerhaft."""
-
+		"""
+		Speichert die Optionen eines editierbaren Select-Feldes dauerhaft.
+		"""
 		self._get_database().put_document(
 			self.editable_options_id(field),
 			{'optionen': normalize_editable_options(options)},
@@ -78,15 +104,27 @@ class ListeneinstellungenRepository:
 		)
 
 	def delete(self, benutzer_name: str) -> bool:
+		"""
+		Löscht den angegebenen Datensatz.
+		"""
 		return self._get_database().delete_document(self.einstellung_id(benutzer_name))
 
 	def einstellung_id(self, benutzer_name: str) -> str:
+		"""
+		Erzeugt die Dokument-ID für Listeneinstellungen.
+		"""
 		return f'{self.config.settings_id_prefix}/{quote(benutzer_name.strip(), safe="")}'
 
 	def editable_options_id(self, field: str) -> str:
+		"""
+		Erzeugt die Dokument-ID für editierbare Select-Optionen.
+		"""
 		return f'{self.config.key}/{quote(field.strip(), safe="")}/optionen'
 
 	def _save(self, einstellung: Listeneinstellung) -> None:
+		"""
+		Speichert ein Einstellungsdokument revisionssicher.
+		"""
 		self._get_database().put_document(
 			einstellung.id,
 			asdict(einstellung),
@@ -94,14 +132,18 @@ class ListeneinstellungenRepository:
 		)
 
 	def _get_database(self):
+		"""
+		Erzeugt den Zugriff auf die zugrunde liegende CouchDB-Datenbank.
+		"""
 		if self._database is None:
 			self._database = create_couch_database()
 		return self._database
 
 
 def normalize_editable_options(options: list[Any]) -> list[str]:
-	"""Normalisiert editierbare Select-Werte eindeutig und sortiert."""
-
+	"""
+	Normalisiert editierbare Select-Werte eindeutig und sortiert.
+	"""
 	seen = set()
 	result = []
 	for option in options:
