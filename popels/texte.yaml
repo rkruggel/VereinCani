@@ -1,0 +1,174 @@
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
+config:
+  key: texte
+  singular: Text
+  plural: Texte
+  collection_name: Texte
+  settings_collection_name: TextelistenEinstellungen
+  model_name: TextDokument
+
+# Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
+field_labels:
+  id:
+    type: string
+    text: ID
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
+      listPos: 10
+      listValueClasses: text-xs text-slate-500
+
+  name:
+    type: string
+    text: Name
+    beschreibung: Titel oder kurzer Name des Textes.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 10
+      listSection: primary
+      listPos: 20
+      listValueClasses: text-sm text-slate-700
+
+  erstelltVon:
+    type: string
+    text: Erstellt von
+    beschreibung: Person, die den Text erstellt hat.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 20
+      listSection: secondary
+      listPos: 30
+      listValueClasses: text-sm text-slate-500
+
+  gruppe:
+    type: string
+    text: Gruppe
+    beschreibung: Fachliche Gruppe oder Kategorie des Textes.
+    page:
+      steuerelement: editable_select
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 40
+      listValueClasses: text-sm text-slate-500
+
+  status:
+    type: string
+    text: Status
+    beschreibung: Bearbeitungs- oder Freigabestatus des Textes.
+    page:
+      steuerelement: editable_select
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 50
+      listValueClasses: text-sm text-slate-500
+
+  vortragsArt:
+    type: string
+    text: Vortrags Art
+    beschreibung: Art des Vortrags oder der Verwendung.
+    page:
+      steuerelement: editable_select
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 60
+      listValueClasses: text-sm text-slate-500
+
+  gehaltenAm:
+    type: datum
+    text: gehalten am
+    beschreibung: Datum, an dem der Vortrag gehalten wurde.
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 70
+      listValueClasses: text-sm text-slate-500
+
+  letzteAenderung:
+    type: datum
+    text: letzte Änderung
+    beschreibung: Datum der letzten inhaltlichen Änderung.
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 80
+      listValueClasses: text-sm text-slate-500
+
+  order:
+    type: string
+    text: order
+    beschreibung: Sortier- oder Reihenfolgewert.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 3
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
+      listPos: 90
+      listValueClasses: text-xs text-slate-500
+
+  text:
+    type: string
+    text: Text
+    beschreibung: Inhalt des Textes. Der Text wird in einem Editor-Fenster bearbeitet.
+    page:
+      steuerelement: editor
+      formular: false
+      horizont: 1
+      gesperrt: false
+      actionLabel: Text
+      actionIcon: description
+    liste:
+      suchbar: true
+      sortierbar: false
+      listSection: status
+      listPos: 100
+      listValueClasses: text-sm text-slate-500

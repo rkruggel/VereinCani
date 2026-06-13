@@ -13,6 +13,7 @@ from src.pages.kasse.start import render_kasse_page
 from src.pages.mitglieder.start import render_mitglieder_page
 from src.pages.persoenlich.start import render_persoenlich_page
 from src.pages.preise.preisstamm import render_preisstamm_page
+from src.pages.texte.start import render_texte_page
 from src.pages.termine.start import render_termine_page
 
 
@@ -70,6 +71,12 @@ PAGES: dict[str, dict[str, Any]] = {
 		'tooltip': 'Kassenprogramm verwalten',
 		'protected': True,
 		'renderer': render_kasse_page,
+	},
+	'texte': {
+		'title': 'Texte',
+		'tooltip': 'Texte verwalten',
+		'protected': True,
+		'renderer': render_texte_page,
 	},
 }
 

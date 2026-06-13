@@ -81,6 +81,53 @@ def render_popels_page(
 		sort_criteria = {'value': []}
 		ui.notify(f'Listeneinstellungen konnten nicht geladen werden: {error}', type='warning')
 
+	def rename_editable_option(field: str, old_value: str, new_value: str) -> None:
+		"""Übernimmt umbenannte Select-Werte in vorhandene Datensätze."""
+
+		old_text = str(old_value or '').strip()
+		new_text = str(new_value or '').strip()
+		if not old_text or not new_text or old_text == new_text:
+			return
+		for record in POPELS_DB.list():
+			if str(record.get(field) or '').strip() == old_text:
+				POPELS_DB.update_fields(record['id'], {field: new_text})
+
+	def editable_select_context(field: str) -> dict[str, Any]:
+		"""Liefert DB-gebundene Steuerdaten für editierbare Select-Felder."""
+
+		try:
+			options = settings.load_editable_options(field)
+		except Exception as error:
+			options = []
+			ui.notify(f'Werte für {POPELS_FIELDS[field]["text"]} konnten nicht geladen werden: {error}', type='warning')
+		return {
+			'options': options,
+			'on_options_change': lambda options, selected_field=field: settings.save_editable_options(selected_field, options),
+			'on_options_load': lambda selected_field=field: settings.load_editable_options(selected_field),
+			'on_option_rename': lambda old_value, new_value, selected_field=field: rename_editable_option(
+				selected_field,
+				old_value,
+				new_value,
+			),
+		}
+
+	def merged_form_control_contexts() -> dict[str, dict[str, Any]]:
+		"""Ergänzt fehlende DB-Kontexte für alle editierbaren Selects."""
+
+		contexts = {
+			field: dict(context)
+			for field, context in (form_control_contexts or {}).items()
+		}
+		for field in FORM_FIELDS:
+			if config.page(field).get('steuerelement') != 'editable_select':
+				continue
+			default_context = editable_select_context(field)
+			default_context.update(contexts.get(field, {}))
+			contexts[field] = default_context
+		return contexts
+
+	effective_form_control_contexts = merged_form_control_contexts()
+
 	def collect_form_data() -> dict[str, Any]:
 		"""Liest die aktuellen Werte aller Steuerelemente des Popels-Formulars."""
 
@@ -226,6 +273,11 @@ def render_popels_page(
 				ui.notify(f'{config.singular} nicht gefunden', type='warning')
 				return
 			ui.notify(f'{config.singular} #{selected_id["value"]} gespeichert')
+		if EDITOR_FIELD is not None and text_value['value']:
+			try:
+				POPELS_DB.update_text(record['id'], text_value['value'])
+			except Exception as error:
+				ui.notify(f'Text konnte nicht gespeichert werden: {error}', type='warning')
 		if on_after_save is not None:
 			try:
 				on_after_save(record)
@@ -327,10 +379,14 @@ def render_popels_page(
 		"""Speichert den freien Text des aktuell bearbeiteten Datensatzes."""
 
 		record_id = selected_id['value']
-		if record_id is None:
-			ui.notify(f'Bitte zuerst {config.singular} auswaehlen.', type='warning')
-			return
 		value = str(text_editor['element'].value or '')
+		if record_id is None:
+			text_value['value'] = value
+			text_save_button['element'].set_enabled(False)
+			text_dialog.close()
+			ui.notify('Text wird beim Speichern übernommen.')
+			render_active_actions.refresh()
+			return
 		try:
 			saved = POPELS_DB.update_text(record_id, value)
 		except Exception as error:
@@ -578,13 +634,56 @@ def render_popels_page(
 			ui.button('Abbrechen', on_click=delete_dialog.close).props('flat no-caps')
 			ui.button('Loeschen', icon='delete', on_click=delete_record).props('no-caps color=negative')
 
-	with ui.dialog() as text_dialog, ui.card().classes('w-[620px] max-w-full gap-3'):
+	with ui.dialog() as text_dialog, ui.card().classes('w-[920px] max-w-[95vw] max-h-[90vh] gap-3'):
 		ui.label('Text bearbeiten').classes('text-lg font-semibold text-slate-900')
 		text_editor['element'] = ui.editor(
 			placeholder='Text eingeben',
 			value=text_value['value'],
 			on_change=handle_text_change,
 		).classes('w-full min-h-[280px]')
+
+		text_editor['element'].props.update({
+			'toolbar': [
+				['bold', 'italic', 'underline', 'strike'],
+				[{
+					'label': 'Absatz',
+					'icon': 'title',
+					'fixedLabel': True,
+					'options': ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+				}],
+				[{
+					'label': 'Schrift',
+					'icon': 'font_download',
+					'fixedLabel': True,
+					'options': ['default_font', 'arial', 'arial_black', 'courier_new', 'times_new_roman', 'verdana'],
+				}],
+				['fontSize', 'removeFormat'],
+				['left', 'center', 'right', 'justify'],
+				['unordered', 'ordered', 'outdent', 'indent'],
+				['link', 'hr'],
+				['undo', 'redo'],
+				['print', 'fullscreen'],
+			],
+			'definitions': {
+				'p': {'cmd': 'formatBlock', 'param': 'p', 'label': 'P', 'icon': None, 'tip': 'Normaler Absatz'},
+				'h1': {'cmd': 'formatBlock', 'param': 'H1', 'label': 'H1', 'icon': None, 'tip': 'Überschrift 1'},
+				'h2': {'cmd': 'formatBlock', 'param': 'H2', 'label': 'H2', 'icon': None, 'tip': 'Überschrift 2'},
+				'h3': {'cmd': 'formatBlock', 'param': 'H3', 'label': 'H3', 'icon': None, 'tip': 'Überschrift 3'},
+				'h4': {'cmd': 'formatBlock', 'param': 'H4', 'label': 'H4', 'icon': None, 'tip': 'Überschrift 4'},
+				'h5': {'cmd': 'formatBlock', 'param': 'H5', 'label': 'H5', 'icon': None, 'tip': 'Überschrift 5'},
+				'h6': {'cmd': 'formatBlock', 'param': 'H6', 'label': 'H6', 'icon': None, 'tip': 'Überschrift 6'},
+				'default_font': {'cmd': 'fontName', 'param': 'Arial', 'label': 'Standard', 'icon': 'font_download', 'tip': 'Standard'},
+				'arial': {'cmd': 'fontName', 'param': 'Arial', 'label': 'Arial', 'icon': None, 'tip': 'Arial'},
+				'arial_black': {'cmd': 'fontName', 'param': 'Arial Black', 'label': 'Arial Black', 'icon': None, 'tip': 'Arial Black'},
+				'courier_new': {'cmd': 'fontName', 'param': 'Courier New', 'label': 'Courier', 'icon': None, 'tip': 'Courier New'},
+				'times_new_roman': {'cmd': 'fontName', 'param': 'Times New Roman', 'label': 'Times', 'icon': None, 'tip': 'Times New Roman'},
+				'verdana': {'cmd': 'fontName', 'param': 'Verdana', 'label': 'Verdana', 'icon': None, 'tip': 'Verdana'},
+			},
+			'paragraphTag': 'p',
+			'height': '55vh',
+			'maxHeight': '55vh',
+		})
+
 		with ui.row().classes('w-full justify-end gap-2'):
 			ui.button('Abbrechen', on_click=cancel_text_editing).props('flat no-caps')
 			text_save_button['element'] = ui.button(
@@ -663,9 +762,9 @@ def render_popels_page(
 
 	@ui.refreshable
 	def render_active_actions() -> None:
-		"""Zeigt Text- und Bildaktionen nur bei einem aktiven Datensatz."""
+		"""Zeigt separat bearbeitete Inhalte als Aktionen."""
 
-		if selected_id['value'] is None:
+		if not CONTENT_ACTION_FIELDS:
 			return
 		action_handlers = {
 			'editor': text_dialog.open,
@@ -674,11 +773,14 @@ def render_popels_page(
 		with ui.row().classes('w-full gap-2'):
 			for field in CONTENT_ACTION_FIELDS:
 				definition = config.page(field)
+				is_upload_without_record = definition['steuerelement'] == 'upload' and selected_id['value'] is None
 				ui.button(
 					definition['actionLabel'],
 					icon=definition['actionIcon'],
 					on_click=action_handlers[definition['steuerelement']],
-				).props('flat no-caps dense').classes('flex-1 bg-slate-100 text-slate-700')
+				).props('flat no-caps dense').classes('flex-1 bg-slate-100 text-slate-700').set_enabled(
+					not is_upload_without_record
+				)
 
 	@ui.refreshable
 	def render_records() -> None:
@@ -796,11 +898,11 @@ def render_popels_page(
 
 						form_controls.update(render_popels_form(
 							config,
-							validate_phone,
-							clear_form,
-							save_record,
-							form_control_contexts,
-						))
+				validate_phone,
+				clear_form,
+				save_record,
+				effective_form_control_contexts,
+			))
 
 				with page_splitter.after:
 					with ui.column().classes('w-full min-w-0 gap-3 pl-3'):
@@ -813,11 +915,11 @@ def render_popels_page(
 
 				form_controls.update(render_popels_form(
 					config,
-					validate_phone,
-					clear_form,
-					save_record,
-					form_control_contexts,
-				))
+				validate_phone,
+				clear_form,
+				save_record,
+				effective_form_control_contexts,
+			))
 
 	if initial_record_id is not None:
 		load_record(initial_record_id, scroll=False)
