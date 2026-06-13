@@ -1,5 +1,6 @@
 import ast
 from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
 from typing import Any, TypedDict
 
 from dateutil.relativedelta import relativedelta
@@ -99,6 +100,7 @@ def berechne(formel: str, werte: dict[str, Any], heute: date | None = None) -> A
         "intDiff": intDiff,
         "gewichtOk": gewichtOk,
         "preisNachHunden": preisNachHunden,
+        "kassenDiff": kassenDiff,
     }
 
     try:
@@ -139,3 +141,23 @@ def preisNachHunden(hunde):
         return PREISSTAMM.get_price(len(hunde))
     except Exception:
         return ""
+
+
+def kassenDiff(einnahme, ausgabe, einnahmen_c24, ausgaben_c24):
+    result = (
+        _to_decimal(einnahme)
+        - _to_decimal(ausgabe)
+        + _to_decimal(einnahmen_c24)
+        - _to_decimal(ausgaben_c24)
+    )
+    return format(result.quantize(Decimal("0.01")), "f")
+
+
+def _to_decimal(value):
+    text = str(value or "").strip().replace("€", "").replace(" ", "").replace(",", ".")
+    if not text:
+        return Decimal("0")
+    try:
+        return Decimal(text)
+    except InvalidOperation:
+        return Decimal("0")

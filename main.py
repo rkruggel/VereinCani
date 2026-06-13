@@ -69,6 +69,8 @@ def main() -> None:
 		port=port,
 		storage_secret=storage_secret,
 		uvicorn_reload_includes='*.py,popels/*.yaml',
+		native=True,
+		window_size=(1400, 900),
 	)
 
 

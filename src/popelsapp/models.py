@@ -14,6 +14,8 @@ def model_field_definition(definition: dict[str, Any]) -> tuple[type, Any]:
 		return list[str], field(default_factory=list)
 	if field_type in {'kursbuchungen', 'kursbesuche'}:
 		return list[dict[str, Any]], field(default_factory=list)
+	if field_type == 'bankdaten':
+		return dict[str, Any], field(default_factory=dict)
 	if field_type == 'bilder':
 		return list[dict[str, str]], field(default_factory=list)
 	return str, field(default='')
@@ -37,6 +39,9 @@ class PopelsModel:
 				else:
 					normalized_value = [value]
 				setattr(self, field_name, normalized_value)
+			elif definition['type'] == 'bankdaten':
+				value = getattr(self, field_name, None)
+				setattr(self, field_name, value if isinstance(value, dict) else {})
 
 	@classmethod
 	def from_json(cls, data: dict[str, Any]) -> Self:

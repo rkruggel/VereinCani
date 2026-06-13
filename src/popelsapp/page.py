@@ -33,6 +33,9 @@ def render_popels_page(
 	on_selection_change: Callable[[str | None], None] | None = None,
 	initial_form_values: dict[str, Any] | None = None,
 	show_records_list: bool = True,
+	form_card_classes: str | None = None,
+	record_enricher: Callable[[list[dict[str, Any]]], list[dict[str, Any]]] | None = None,
+	on_after_save: Callable[[dict[str, Any]], None] | None = None,
 ) -> None:
 	"""Erzeugt eine vollständige Popels-Seite für den angemeldeten Benutzer."""
 
@@ -50,6 +53,7 @@ def render_popels_page(
 	POPELS_DB = database
 	LISTEN_EINSTELLUNGEN = settings
 	default_form_values = initial_form_values or {}
+	form_card_class_names = form_card_classes or 'w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'
 	list_fields = config.list_fields
 	filter_records = partial(configured_filter_records, config)
 	display_value = partial(configured_display_value, config)
@@ -129,8 +133,13 @@ def render_popels_page(
 		"""Scrollt den Arbeitsbereich zum Anfang des Popels-Formulars."""
 
 		ui.run_javascript(
-			f'document.getElementById("{PAGE_TOP_ANCHOR_ID}")'
-			'?.scrollIntoView({behavior: "smooth", block: "start"});'
+			f'''
+				const appTop = document.getElementById("app-page-top");
+				appTop?.scrollIntoView({{behavior: "smooth", block: "start"}});
+				const pageTop = document.getElementById("{PAGE_TOP_ANCHOR_ID}");
+				const scrollArea = pageTop?.closest('.overflow-auto');
+				scrollArea?.scrollTo({{top: 0, behavior: "smooth"}});
+			'''
 		)
 
 	def load_record(record_id: str, *, scroll: bool = True) -> None:
@@ -204,6 +213,8 @@ def render_popels_page(
 			except Exception as error:
 				ui.notify(f'{config.singular} konnte nicht gespeichert werden: {error}', type='negative')
 				return
+			if not clear_form_after_save:
+				selected_id['value'] = record['id']
 			ui.notify(f'{config.singular} #{record["id"]} angelegt')
 		else:
 			try:
@@ -215,6 +226,11 @@ def render_popels_page(
 				ui.notify(f'{config.singular} nicht gefunden', type='warning')
 				return
 			ui.notify(f'{config.singular} #{selected_id["value"]} gespeichert')
+		if on_after_save is not None:
+			try:
+				on_after_save(record)
+			except Exception as error:
+				ui.notify(f'Folgeaktion nach dem Speichern fehlgeschlagen: {error}', type='warning')
 		if clear_form_after_save:
 			clear_form()
 		refresh_records_list()
@@ -670,6 +686,8 @@ def render_popels_page(
 
 		try:
 			all_records = POPELS_DB.list(sort_criteria['value'])
+			if record_enricher is not None:
+				all_records = record_enricher(all_records)
 			records = filter_records(all_records, search_query['value'])
 			database_error = None
 		except Exception as error:
@@ -771,7 +789,7 @@ def render_popels_page(
 		if show_records_list:
 			with ui.splitter(value=50, limits=(25, 60)).classes('w-full') as page_splitter:
 				with page_splitter.before:
-					with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
+					with ui.card().classes(form_card_class_names):
 						mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
 						ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
 						render_active_actions()
@@ -788,7 +806,7 @@ def render_popels_page(
 					with ui.column().classes('w-full min-w-0 gap-3 pl-3'):
 						render_records()
 		else:
-			with ui.card().classes('w-full min-w-0 p-3 rounded-lg shadow-sm border border-slate-200 gap-2'):
+			with ui.card().classes(form_card_class_names):
 				mode_label['element'] = ui.label(f'Neue {config.singular}').classes('text-lg font-semibold text-slate-900')
 				ui.label('Daten werden in CouchDB gespeichert.').classes('text-xs text-slate-600')
 				render_active_actions()

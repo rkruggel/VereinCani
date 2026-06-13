@@ -254,6 +254,22 @@ field_labels:
       listPos: 78
       listValueClasses: text-sm text-slate-500
 
+  bankdaten:
+    type: bankdaten
+    text: Bankdaten
+    beschreibung: Bankdaten, die zu diesem Mitglied erfasst wurden.
+    page:
+      steuerelement: input
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: false
+      listSection: secondary
+      listPos: 79
+      listValueClasses: text-sm text-slate-500
+
   text:
     type: string
     text: Text vorhanden

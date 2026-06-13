@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import base64
 from dataclasses import asdict
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import uuid4
 
 from src.db.client import COUCH_INTERNAL_FIELDS, create_couch_database
 from src.popelsapp import PopelsConfig
+from src.services.calc import berechne
 
 
 class CouchPopelsDatabase:
@@ -84,9 +86,38 @@ class CouchPopelsDatabase:
 					value = normalize_list_value(value)
 				elif self.config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
 					value = normalize_course_bookings_value(value)
+				elif self.config.field_labels[field]['type'] == 'iban':
+					value = normalize_iban_value(value)
+				elif self.config.field_labels[field]['type'] == 'euro':
+					value = normalize_euro_value(value)
 				document[field] = value
 				if field == 'kursbesuche':
 					document.pop('kursbuchungen', None)
+
+		document = self._get_database().mutate_document(record_id, mutate)
+		return self._normalize_document(document) if document is not None else None
+
+	def update_fields(self, record_id: str, values: dict[str, Any]) -> dict[str, Any] | None:
+		"""Aktualisiert einzelne konfigurierte Dokumentfelder außerhalb des Formulars."""
+
+		allowed_fields = set(self.config.field_labels)
+
+		def mutate(document: dict[str, Any]) -> None:
+			for field, value in values.items():
+				if field not in allowed_fields:
+					continue
+				field_type = self.config.field_labels[field]['type']
+				if field_type == 'liste':
+					value = normalize_list_value(value)
+				elif field_type in {'kursbuchungen', 'kursbesuche'}:
+					value = normalize_course_bookings_value(value)
+				elif field_type == 'iban':
+					value = normalize_iban_value(value)
+				elif field_type == 'euro':
+					value = normalize_euro_value(value)
+				elif field_type == 'bankdaten':
+					value = normalize_bankdata_value(value)
+				document[field] = value
 
 		document = self._get_database().mutate_document(record_id, mutate)
 		return self._normalize_document(document) if document is not None else None
@@ -239,6 +270,12 @@ class CouchPopelsDatabase:
 				value = normalize_list_value(value)
 			elif self.config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
 				value = normalize_course_bookings_value(value)
+			elif self.config.field_labels[field]['type'] == 'iban':
+				value = normalize_iban_value(value)
+			elif self.config.field_labels[field]['type'] == 'euro':
+				value = normalize_euro_value(value)
+			elif self.config.field_labels[field]['type'] == 'bankdaten':
+				value = normalize_bankdata_value(value)
 			values[field] = value
 		return self.model(id=record_id, **values)
 
@@ -247,7 +284,9 @@ class CouchPopelsDatabase:
 
 		values = {}
 		for field, definition in self.config.field_labels.items():
-			default = [] if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'} else ''
+			default = [] if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'} else {}
+			if definition['type'] not in {'bankdaten'}:
+				default = [] if definition['type'] in {'liste', 'bilder', 'kursbuchungen', 'kursbesuche'} else ''
 			value = document.get(field, default)
 			if definition['type'] == 'liste':
 				value = normalize_list_value(value)
@@ -255,7 +294,14 @@ class CouchPopelsDatabase:
 				value = normalize_course_bookings_value(value)
 				if field == 'kursbesuche' and not value:
 					value = normalize_course_bookings_value(document.get('kursbuchungen', default))
+			elif definition['type'] == 'iban':
+				value = normalize_iban_value(value)
+			elif definition['type'] == 'euro':
+				value = normalize_euro_value(value)
+			elif definition['type'] == 'bankdaten':
+				value = normalize_bankdata_value(value)
 			values[field] = value
+		apply_calculated_fields(self.config, values)
 		values['id'] = document.get('_id') or document.get('id') or values.get('id', '')
 		return values
 
@@ -268,6 +314,62 @@ def normalize_list_value(value: Any) -> list[Any]:
 	if isinstance(value, list):
 		return value
 	return [value]
+
+
+def apply_calculated_fields(config: PopelsConfig, values: dict[str, Any]) -> None:
+	"""Berechnet konfigurierte Rechenfelder für geladene Datensätze."""
+
+	for field in config.field_labels:
+		formula = config.page(field).get('berechnen')
+		if not formula:
+			continue
+		try:
+			values[field] = berechne(formula, values)
+		except (TypeError, ValueError):
+			values[field] = ''
+
+
+def normalize_iban_value(value: Any) -> str:
+	"""Bereinigt eine IBAN und gruppiert sie in Viererblöcke."""
+
+	compact = ''.join(
+		character
+		for character in str(value or '').upper()
+		if character.isalnum()
+	)
+	return ' '.join(compact[index:index + 4] for index in range(0, len(compact), 4))
+
+
+def normalize_euro_value(value: Any) -> str:
+	"""Normalisiert einen Euro-Betrag auf zwei Nachkommastellen."""
+
+	text = str(value or '').strip().replace('€', '').replace(' ', '').replace(',', '.')
+	if not text:
+		return ''
+	try:
+		amount = Decimal(text)
+	except InvalidOperation:
+		return ''
+	if not amount.is_finite():
+		return ''
+	return format(amount.quantize(Decimal('0.01')), 'f')
+
+
+def normalize_bankdata_value(value: Any) -> dict[str, Any]:
+	"""Normalisiert eingebettete Bankdaten im Mitglieder-Dokument."""
+
+	if not isinstance(value, dict):
+		return {}
+	result = {
+		'kreditinstitut': str(value.get('kreditinstitut') or '').strip(),
+		'iban': normalize_iban_value(value.get('iban')),
+		'mandat': str(value.get('mandat') or '').strip(),
+	}
+	return {
+		key: item_value
+		for key, item_value in result.items()
+		if item_value
+	}
 
 
 def normalize_course_bookings_value(value: Any) -> list[dict[str, Any]]:

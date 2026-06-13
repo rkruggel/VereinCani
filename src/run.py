@@ -41,6 +41,7 @@ def render_start_page() -> None:
 			render_menu(selected_page, switch_page)
 
 	with ui.column().classes('w-full h-screen bg-slate-50 gap-0'):
+		ui.element('div').props('id=app-page-top').classes('h-0')
 		render_header()
 
 		with ui.row().classes('w-full flex-1 gap-0 max-md:flex-col'):

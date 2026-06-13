@@ -1,0 +1,221 @@
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
+config:
+  key: kasse
+  singular: Kasse
+  plural: Kassen
+  collection_name: Kasse
+  settings_collection_name: KassenlistenEinstellungen
+  model_name: Kassenbuchung
+
+# Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
+field_labels:
+  id:
+    type: string
+    text: ID
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
+      listPos: 10
+      listValueClasses: text-xs text-slate-500
+
+  belegNr:
+    type: string
+    text: BelegNr
+    beschreibung: Fortlaufende oder externe Nummer des Belegs.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 20
+      listSection: headerDetail
+      listPos: 30
+      listValueClasses: text-xs text-slate-500
+
+  belege:
+    type: string
+    text: Belege
+    beschreibung: Beschreibung oder Verweis auf den zugehörigen Beleg.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 10
+      listSection: headerDetail
+      listPos: 20
+      listValueClasses: text-sm text-slate-700
+
+  datum:
+    type: datum
+    text: Datum
+    beschreibung: Buchungs- oder Belegdatum.
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 30
+      listSection: primary
+      listPos: 40
+      listValueClasses: text-sm text-slate-500
+
+  einnahme:
+    type: euro
+    text: Einnahme
+    beschreibung: Einnahmebetrag der Buchung.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 50
+      listValueClasses: text-sm text-green-700
+
+  ausgabe:
+    type: euro
+    text: Ausgabe
+    beschreibung: Ausgabebetrag der Buchung.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: primary
+      listPos: 60
+      listValueClasses: text-sm text-red-700
+
+  einnahmenC24:
+    type: euro
+    text: Einnahmen C24
+    beschreibung: Einnahmen auf dem C24-Konto.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 70
+      listValueClasses: text-sm text-green-700
+
+  ausgabenC24:
+    type: euro
+    text: Ausgaben C24
+    beschreibung: Ausgaben vom C24-Konto.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 80
+      listValueClasses: text-sm text-red-700
+
+  bank:
+    type: string
+    text: Bank
+    beschreibung: Bankbestand oder Bankbewegung.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 90
+      listValueClasses: text-sm text-slate-500
+
+  intern:
+    type: string
+    text: Intern
+    beschreibung: Interne Umbuchung oder interner Vermerk.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 100
+      listValueClasses: text-sm text-slate-500
+
+  gesamtsumme:
+    type: euro
+    text: Gesamtsumme
+    beschreibung: Gesamtsumme der Buchung oder Auswertung.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 110
+      listValueClasses: text-sm font-medium text-slate-700
+
+  soll:
+    type: euro
+    text: Soll
+    beschreibung: Sollwert für den Abgleich.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 2
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 120
+      listValueClasses: text-sm text-slate-500
+
+  diff:
+    type: euro
+    text: Diff
+    beschreibung: Automatisch berechnete Differenz aus Einnahme minus Ausgabe plus Einnahmen C24 minus Ausgaben C24.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 3
+      gesperrt: true
+      berechnen: kassenDiff(einnahme, ausgabe, einnahmenC24, ausgabenC24)
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 130
+      listValueClasses: text-sm text-slate-500

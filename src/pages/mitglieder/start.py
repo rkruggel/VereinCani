@@ -4,6 +4,7 @@ from typing import Any
 
 from nicegui import ui
 
+from src.pages.bankdaten.start import embedded_bankdata_document
 from src.pages.hunde.start import (
 	CONFIG as HUNDE_CONFIG,
 	HUNDE_DB,
@@ -16,6 +17,7 @@ from src.pages.persoenlich.start import (
 )
 from src.pages.preise.preisstamm import PREISSTAMM
 from src.popelsapp import load_popels_config
+from src.popelsapp.form import format_iban
 from src.popelsapp.models import create_popels_model
 from src.popelsapp.page import render_popels_page
 from src.popelsapp.repository import CouchPopelsDatabase
@@ -29,8 +31,9 @@ MITGLIEDERLISTEN_EINSTELLUNGEN = ListeneinstellungenRepository(CONFIG)
 
 
 def render_mitglieder_page() -> None:
-	"""Zeigt Mitglieder, persönliche Daten und Hunde in Registerkarten."""
+	"""Zeigt Mitglieder, persönliche Daten, Hunde und Bankdaten in Registerkarten."""
 
+	selected_member = {'id': None}
 	selected_personal = {'id': None}
 	selected_dog = {'id': None}
 	try:
@@ -58,8 +61,17 @@ def render_mitglieder_page() -> None:
 		mitglieder_tab = ui.tab('Mitglieder').props('no-caps').classes('text-xs px-2')
 		personal_tab = ui.tab('Persönlich').props('no-caps').classes('text-xs px-2')
 		dog_tab = ui.tab('Hund').props('no-caps').classes('text-xs px-2')
+		bank_tab = ui.tab('Bankdaten').props('no-caps').classes('text-xs px-2')
 		personal_tab.set_enabled(False)
 		dog_tab.set_enabled(False)
+		bank_tab.set_enabled(False)
+
+	def select_member(record_id: str | None) -> None:
+		"""Merkt das aktuell gewählte Mitglied und aktiviert die Bankdaten."""
+
+		selected_member['id'] = record_id
+		bank_tab.set_enabled(record_id is not None)
+		render_selected_bankdata.refresh()
 
 	def select_personal(record_id: str) -> None:
 		"""Wählt zugeordnete persönliche Daten und öffnet deren Registerkarte."""
@@ -96,6 +108,8 @@ def render_mitglieder_page() -> None:
 						'options': course_options,
 					},
 				},
+				on_selection_change=select_member,
+				record_enricher=enrich_members_with_bankdata,
 			)
 		with ui.tab_panel(personal_tab).classes('px-0'):
 			@ui.refreshable
@@ -138,6 +152,23 @@ def render_mitglieder_page() -> None:
 				)
 
 			render_selected_dog()
+		with ui.tab_panel(bank_tab).classes('px-0'):
+			@ui.refreshable
+			def render_selected_bankdata() -> None:
+				"""Bearbeitet die eingebetteten Bankdaten des ausgewählten Mitglieds."""
+
+				record_id = selected_member['id']
+				if record_id is None:
+					ui.label('Kein Mitglied ausgewählt.').classes('text-sm text-slate-500')
+					return
+				try:
+					member_record = MITGLIEDER_DB.get(record_id) or {}
+				except Exception as error:
+					ui.notify(f'Mitglied konnte nicht geladen werden: {error}', type='warning')
+					member_record = {}
+				render_embedded_bankdata_form(record_id, member_record)
+
+			render_selected_bankdata()
 
 
 def create_personal_options(personal_records: dict[str, dict[str, Any]]) -> dict[str, str]:
@@ -185,3 +216,58 @@ def load_course_options() -> list[dict[str, str]]:
 		used_options.add(name)
 		options.append(course)
 	return options
+
+
+def enrich_members_with_bankdata(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+	"""Stellt sicher, dass Bankdaten in der Mitgliederliste als Objekt vorliegen."""
+
+	return [
+		{
+			**record,
+			'bankdaten': record.get('bankdaten') if isinstance(record.get('bankdaten'), dict) else {},
+		}
+		for record in records
+	]
+
+
+def render_embedded_bankdata_form(member_id: str, member_record: dict[str, Any]) -> None:
+	"""Rendert ein Formular für Bankdaten direkt im Mitglieder-Dokument."""
+
+	bankdata = member_record.get('bankdaten') if isinstance(member_record.get('bankdaten'), dict) else {}
+	with ui.card().classes('w-[800px] max-w-full p-4 gap-4 rounded-lg shadow-sm border border-slate-200'):
+		ui.label('Bankdaten').classes('text-lg font-semibold text-slate-900')
+		ui.label('Daten werden direkt im Mitglieder-Dokument gespeichert.').classes('text-xs text-slate-600')
+		bank_name = ui.input(
+			'Kreditinstitut',
+			value=str(bankdata.get('kreditinstitut') or ''),
+		).props('dense autocomplete="off"').classes('w-full')
+		iban = ui.input(
+			'IBAN',
+			value=format_iban(bankdata.get('iban')),
+		).props('dense autocomplete="off" autocapitalize="characters" spellcheck="false"').classes('w-full')
+		mandate = ui.input(
+			'Mandat',
+			value=str(bankdata.get('mandat') or ''),
+		).props('type=date dense autocomplete="off"').classes('w-full')
+
+		def format_iban_input(_event: Any) -> None:
+			formatted = format_iban(iban.value)
+			if iban.value != formatted:
+				iban.value = formatted
+
+		def save_bankdata() -> None:
+			bankdata_record = embedded_bankdata_document({
+				'kreditinstitut': bank_name.value,
+				'iban': format_iban(iban.value),
+				'mandat': mandate.value,
+			})
+			try:
+				MITGLIEDER_DB.update_fields(member_id, {'bankdaten': bankdata_record})
+			except Exception as error:
+				ui.notify(f'Bankdaten konnten nicht gespeichert werden: {error}', type='negative')
+				return
+			ui.notify('Bankdaten wurden gespeichert.')
+
+		iban.on_value_change(format_iban_input)
+		with ui.row().classes('w-full justify-end gap-2'):
+			ui.button('Speichern', icon='save', on_click=save_bankdata).props('no-caps dense')

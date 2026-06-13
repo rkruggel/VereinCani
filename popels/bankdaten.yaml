@@ -1,0 +1,108 @@
+# Allgemeine Bezeichnungen und CouchDB-Dokumenttypen dieses Bereichs.
+config:
+  key: bankdaten
+  singular: Bankdaten
+  plural: Bankdaten
+  collection_name: Bankdaten
+  settings_collection_name: BankdatenlistenEinstellungen
+  model_name: Bankdaten
+
+# Felddefinitionen für Formular, Suche, Sortierung und Kartenliste.
+field_labels:
+  id:
+    type: string
+    text: ID
+    page:
+      steuerelement: label
+      formular: false
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: headerDetail
+      listPos: 10
+      listValueClasses: text-xs text-slate-500
+
+  mitglied:
+    type: string
+    text: Mitglied
+    beschreibung: Interne Verknüpfung zum Mitglied, zu dem diese Bankdaten gehören.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+      pflichtfeld: true
+      versteckt: true
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: off
+      listPos: 20
+      listValueClasses: text-sm text-slate-500
+
+  kontoinhaber:
+    type: string
+    text: Kontoinhaber
+    beschreibung: Name der Person oder Organisation, auf die das Konto läuft.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      formHeaderPos: 10
+      listSection: primary
+      listPos: 30
+      listValueClasses: text-sm text-slate-700
+
+  kreditinstitut:
+    type: string
+    text: Kreditinstitut
+    beschreibung: Name der Bank oder Sparkasse.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 40
+      listValueClasses: text-sm text-slate-500
+
+  iban:
+    type: iban
+    text: IBAN
+    beschreibung: Internationale Bankkontonummer für Lastschriften und Überweisungen.
+    page:
+      steuerelement: input
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: false
+      listSection: secondary
+      listPos: 50
+      listValueClasses: text-sm text-slate-500
+
+  mandat:
+    type: datum
+    text: Mandat
+    beschreibung: Mandatsreferenz oder Hinweis zum SEPA-Mandat.
+    page:
+      steuerelement: date
+      formular: true
+      horizont: 1
+      gesperrt: false
+    liste:
+      suchbar: true
+      sortierbar: true
+      listSection: secondary
+      listPos: 60
+      listValueClasses: text-sm text-slate-500

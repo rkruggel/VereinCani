@@ -109,8 +109,26 @@ def display_value(config: PopelsConfig, record: dict[str, Any], field: str) -> s
 		return ', '.join(value) if value else '-'
 	if config.field_labels[field]['type'] in {'kursbuchungen', 'kursbesuche'}:
 		return display_course_bookings(value)
+	if config.field_labels[field]['type'] == 'bankdaten':
+		return display_bankdata(value)
+	if config.field_labels[field]['type'] == 'euro':
+		return f'{value} €' if str(value or '').strip() else '-'
 	text = str(value or '-')
 	return text
+
+
+def display_bankdata(value: Any) -> str:
+	"""Formatiert eingebettete Bankdaten für die Kartenliste."""
+
+	if not isinstance(value, dict) or not value:
+		return '-'
+	parts = [
+		str(value.get('kontoinhaber') or '').strip(),
+		str(value.get('kreditinstitut') or '').strip(),
+		str(value.get('iban') or '').strip(),
+		str(value.get('mandat') or '').strip(),
+	]
+	return ' / '.join(part for part in parts if part) or '-'
 
 
 def display_course_bookings(value: Any) -> str:

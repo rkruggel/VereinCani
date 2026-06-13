@@ -9,6 +9,7 @@ from src.auth import is_authenticated
 from src.pages.beitraege.start import render_beitraege_page
 from src.pages.dashboard.start import render_dashboard_page
 from src.pages.hunde.start import render_hunde_page
+from src.pages.kasse.start import render_kasse_page
 from src.pages.mitglieder.start import render_mitglieder_page
 from src.pages.persoenlich.start import render_persoenlich_page
 from src.pages.preise.preisstamm import render_preisstamm_page
@@ -63,6 +64,12 @@ PAGES: dict[str, dict[str, Any]] = {
 		'tooltip': 'Beiträge und Zahlungen verwalten',
 		'protected': False,
 		'renderer': render_beitraege_page,
+	},
+	'kasse': {
+		'title': 'Kasse',
+		'tooltip': 'Kassenprogramm verwalten',
+		'protected': True,
+		'renderer': render_kasse_page,
 	},
 }
 

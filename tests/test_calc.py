@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 
-from src.services.calc import berechne, preisNachHunden
+from src.services.calc import berechne, kassenDiff, preisNachHunden
 
 
 class CalcTest(unittest.TestCase):
@@ -28,6 +28,21 @@ class CalcTest(unittest.TestCase):
 		self.assertEqual(
 			berechne('intDiff(gewichtSoll, gewicht)', {'gewichtSoll': '28', 'gewicht': '25'}),
 			3,
+		)
+
+	def test_kassen_diff_calculates_cash_formula(self) -> None:
+		self.assertEqual(kassenDiff('100,50', '20', '5.25', '2,75'), '83.00')
+		self.assertEqual(
+			berechne(
+				'kassenDiff(einnahme, ausgabe, einnahmenC24, ausgabenC24)',
+				{
+					'einnahme': '100',
+					'ausgabe': '25',
+					'einnahmenC24': '10',
+					'ausgabenC24': '5',
+				},
+			),
+			'80.00',
 		)
 
 	def test_berechne_supports_gewicht_ok_formula(self) -> None:

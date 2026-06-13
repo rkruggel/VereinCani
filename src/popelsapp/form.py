@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from nicegui import events, ui
@@ -261,6 +262,55 @@ class CommaSeparatedListInput:
 		self._element.on_value_change(handler)
 
 
+class IbanInput:
+	"""Formatiert IBAN-Werte in Vierergruppen."""
+
+	def __init__(self, label: str) -> None:
+		self._element = ui.input(label).props(
+			'dense autocomplete="off" autocapitalize="characters" spellcheck="false"'
+		).classes('w-full')
+		self._element.on_value_change(self._format_current_value)
+
+	@property
+	def value(self) -> str:
+		return format_iban(self._element.value)
+
+	@value.setter
+	def value(self, value: Any) -> None:
+		self._element.value = format_iban(value)
+
+	def set_enabled(self, value: bool) -> None:
+		"""Aktiviert oder deaktiviert das zugrunde liegende Eingabefeld."""
+
+		self._element.set_enabled(value)
+
+	def on_value_change(self, handler: Callable[[Any], None]) -> None:
+		"""Leitet Value-Change-Events an das Eingabefeld weiter."""
+
+		self._element.on_value_change(handler)
+
+	def classes(self, classes: str) -> None:
+		"""Leitet CSS-Klassen an das Eingabefeld weiter."""
+
+		self._element.classes(classes)
+
+	def _format_current_value(self, _event: Any) -> None:
+		formatted = format_iban(self._element.value)
+		if self._element.value != formatted:
+			self._element.value = formatted
+
+
+def format_iban(value: Any) -> str:
+	"""Bereinigt eine IBAN und gruppiert sie in Viererblöcke."""
+
+	compact = ''.join(
+		character
+		for character in str(value or '').upper()
+		if character.isalnum()
+	)
+	return ' '.join(compact[index:index + 4] for index in range(0, len(compact), 4))
+
+
 class CourseBookingsInput:
 	"""Bearbeitet gebuchte Kurse als Zeilen mit Kurs, Datum und Bezahlstatus."""
 
@@ -512,6 +562,33 @@ def is_leap_year(year: int) -> bool:
 	return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
+def euro_input_value(value: Any) -> float | None:
+	"""Bereitet gespeicherte Euro-Werte für ein Zahlenfeld vor."""
+
+	text = str(value or '').strip()
+	if not text:
+		return None
+	try:
+		return float(normalize_euro_text(text))
+	except ValueError:
+		return None
+
+
+def normalize_euro_text(value: Any) -> str:
+	"""Normalisiert einen Euro-Betrag auf zwei Nachkommastellen."""
+
+	text = str(value or '').strip().replace('€', '').replace(' ', '').replace(',', '.')
+	if not text:
+		return ''
+	try:
+		amount = Decimal(text)
+	except InvalidOperation as error:
+		raise ValueError(f'Ungültiger Euro-Betrag: {value}') from error
+	if not amount.is_finite():
+		raise ValueError(f'Ungültiger Euro-Betrag: {value}')
+	return format(amount.quantize(Decimal('0.01')), 'f')
+
+
 def create_form_control(
 	config: PopelsConfig,
 	field: str,
@@ -566,6 +643,17 @@ def create_form_control(
 	elif control_type in {'kursbuchungen', 'kursbesuche'}:
 		context = context or {}
 		control = CourseBookingsInput(label, context.get('options'))
+	elif definition['type'] == 'iban':
+		control = IbanInput(label)
+	elif definition['type'] == 'euro':
+		control = ui.number(
+			label,
+			value=euro_input_value(''),
+			step=0.01,
+			precision=2,
+			suffix='€',
+			format='%.2f',
+		).props('dense inputmode=decimal autocomplete="off"').classes('w-full')
 	elif definition['type'] == 'liste':
 		control = CommaSeparatedListInput(label)
 	else:
@@ -593,6 +681,12 @@ def create_form_control_with_description(
 	"""Erzeugt ein Formularfeld mit optionaler Feldbeschreibung links daneben."""
 
 	definition = config.field_labels[field]
+	page_definition = config.page(field)
+	if page_definition.get('versteckt'):
+		control = create_form_control(config, field, validate_phone, context)
+		control.classes('hidden')
+		return control
+
 	description = str(definition.get('beschreibung') or '').strip()
 	if not description:
 		return create_form_control(config, field, validate_phone, context)
