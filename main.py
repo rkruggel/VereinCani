@@ -63,14 +63,15 @@ def main() -> None:
 	register_request_time_logging()
 
 	ui.page('/')(render_start_page)
+	ui.page('/{path:path}')(lambda path: render_start_page(path.strip('/') or 'dashboard'))
 	ui.run(
 		title=title,
 		host=host,
 		port=port,
 		storage_secret=storage_secret,
 		uvicorn_reload_includes='*.py,popels/*.yaml',
-		native=True,
-		window_size=(1400, 900),
+		#native=True,
+		#window_size=(1400, 900),
 	)
 
 
